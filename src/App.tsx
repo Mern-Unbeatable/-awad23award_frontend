@@ -4,10 +4,14 @@ import { LocaleProvider } from './context/LocaleContext';
 import { SiteProvider } from './context/SiteContext';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { HomePage } from './pages/HomePage';
+import { AboutPage } from './pages/AboutPage';
+import { ServicesPage } from './pages/ServicesPage';
+import { ProductPage } from './pages/ProductPage';
 import { JournalPage } from './pages/JournalPage';
 import { JournalPostPage } from './pages/JournalPostPage';
 import { ServicePage } from './pages/ServicePage';
 import { GalleryPage } from './pages/GalleryPage';
+import { CaseStudyPage } from './pages/CaseStudyPage';
 import { ContactPage } from './pages/ContactPage';
 import { BookCallPage } from './pages/BookCallPage';
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -49,6 +53,12 @@ export default function App() {
             {publicPaths('/').map((p) => (
               <Route key={p} path={p} element={<HomePage />} />
             ))}
+            {publicPaths('/about').map((p) => (
+              <Route key={p} path={p} element={<AboutPage />} />
+            ))}
+            {publicPaths('/services').map((p) => (
+              <Route key={p} path={p} element={<ServicesPage />} />
+            ))}
             {publicPaths('/journal').map((p) => (
               <Route key={p} path={p} element={<JournalPage />} />
             ))}
@@ -58,8 +68,17 @@ export default function App() {
             {publicPaths('/services/:slug').map((p) => (
               <Route key={p} path={p} element={<ServicePage />} />
             ))}
-            {publicPaths('/gallery').map((p) => (
+            {publicPaths('/product/:slug').map((p) => (
+              <Route key={p} path={p} element={<ProductPage />} />
+            ))}
+            {publicPaths('/work').map((p) => (
               <Route key={p} path={p} element={<GalleryPage />} />
+            ))}
+            {publicPaths('/work/:slug').map((p) => (
+              <Route key={p} path={p} element={<CaseStudyPage />} />
+            ))}
+            {publicPaths('/gallery').map((p) => (
+              <Route key={p} path={p} element={<Navigate to={p.replace('/gallery', '/work')} replace />} />
             ))}
             {publicPaths('/book').map((p) => (
               <Route key={p} path={p} element={<BookCallPage />} />

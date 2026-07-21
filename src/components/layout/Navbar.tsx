@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLocale } from '../../context/LocaleContext';
 import { useSite } from '../../context/SiteContext';
+import { ArrowIcon, BrandLogo, ConnectButton } from '../tech';
 
 function stripLocale(pathname: string) {
   if (pathname === '/ar' || pathname.startsWith('/ar/')) {
@@ -20,11 +21,11 @@ export function Navbar() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isHome = current === '/';
+  const isAbout = current.startsWith('/about');
   const isServices = current.startsWith('/services');
+  const isWork = current.startsWith('/work') || current.startsWith('/gallery');
   const isJournal = current.startsWith('/journal');
-  const isGallery = current.startsWith('/gallery');
-  const isBook = current.startsWith('/book');
-  const isContact = current.startsWith('/contact');
+  const isContact = current.startsWith('/contact') || current.startsWith('/book');
 
   useEffect(() => {
     const header = document.querySelector('[data-site-header]');
@@ -67,6 +68,11 @@ export function Navbar() {
     return `nav-link${active ? ' is-active' : ''}`;
   }
 
+  const brandLabel =
+    /official/i.test(settings.brandName) || !settings.brandName.trim()
+      ? 'AHMED AWAD'
+      : settings.brandName.toUpperCase();
+
   return (
     <header
       data-site-header
@@ -74,24 +80,17 @@ export function Navbar() {
         open ? 'is-open' : ''
       }`}
     >
-      <div className="container-wide flex items-center justify-between py-4 md:py-5">
-        <Link
-          to={pathFor('/')}
-          className="font-display text-lg md:text-xl font-extrabold tracking-wide cursor-pointer hover:opacity-90 transition-opacity"
-        >
-          {settings.logoUrl && settings.logoUrl.startsWith('http') ? (
-            <img src={settings.logoUrl} alt={settings.brandName} className="h-8 w-auto" />
-          ) : (
-            <span>
-              {settings.brandName.split(' ')[0]}
-              <span className="text-accent"> {settings.brandName.split(' ').slice(1).join(' ')}</span>
-            </span>
-          )}
+      <div className="ref-wrap container-wide flex items-center justify-between h-[74px] gap-4">
+        <Link to={pathFor('/')} className="ref-brand-link">
+          <BrandLogo name={brandLabel} />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-[30px]">
           <Link to={pathFor('/')} className={navClass(isHome)}>
             {t('Home', 'الرئيسية')}
+          </Link>
+          <Link to={pathFor('/about')} className={navClass(isAbout)}>
+            {t('About', 'من أنا')}
           </Link>
 
           <div
@@ -99,13 +98,13 @@ export function Navbar() {
             onMouseEnter={() => setServicesOpen(true)}
             onMouseLeave={() => setServicesOpen(false)}
           >
-            <button type="button" className={navClass(isServices)}>
+            <Link to={pathFor('/services')} className={navClass(isServices)}>
               {t('Services', 'الخدمات')}
               <span className="ms-1 text-[0.65rem] opacity-70">▾</span>
-            </button>
+            </Link>
             {servicesOpen && (
               <div className="absolute top-full start-0 pt-2 min-w-[250px] z-50">
-                <div className="bg-ink-soft border border-cream/15 p-2 shadow-2xl">
+                <div className="nav-dropdown p-2 shadow-2xl">
                   {services.map((s) => {
                     const active = current === `/services/${s.slug}`;
                     return (
@@ -123,100 +122,79 @@ export function Navbar() {
             )}
           </div>
 
+          <Link to={pathFor('/work')} className={navClass(isWork)}>
+            {t('Work', 'الأعمال')}
+          </Link>
           <Link to={pathFor('/journal')} className={navClass(isJournal)}>
-            {t('Journal', 'المجلة')}
+            {t('Insights', 'مقالات')}
           </Link>
-          <Link to={pathFor('/gallery')} className={navClass(isGallery)}>
-            {t('Gallery', 'المعرض')}
-          </Link>
-          <Link to={pathFor('/book')} className={navClass(isBook)}>
-            {t('Book a Call', 'احجز مكالمة')}
-          </Link>
-          <Link to={pathFor('/contact')} className={navClass(isContact)}>
+          <Link to={pathFor('/contact')} className={navClass(isContact && !current.startsWith('/book'))}>
             {t('Contact', 'تواصل')}
           </Link>
 
           <button
             type="button"
             onClick={toggleLocale}
-            className="nav-link nav-lang ms-2"
+            className="ref-lang-btn"
             aria-label={t('Switch language', 'تبديل اللغة')}
           >
-            {locale === 'en' ? 'العربية' : 'EN'}
+            {locale === 'en' ? 'العربية' : 'English'}
           </button>
 
-          <Link to={pathFor('/book')} className="btn btn-accent !py-2.5 !px-4 !text-[0.7rem] ms-2">
-            {t('Book Call', 'احجز مكالمة')}
-          </Link>
+          <ConnectButton variant="blue" className="!py-3 !px-[22px] !text-sm">
+            {t("Let's Connect", 'تواصل معي')}
+            <ArrowIcon />
+          </ConnectButton>
         </nav>
 
         <button
           type="button"
-          className="lg:hidden text-cream font-display tracking-widest text-xs uppercase cursor-pointer hover:text-accent transition-colors"
+          className="ref-burger"
           onClick={() => setOpen((v) => !v)}
           aria-label="Menu"
         >
-          {open ? t('Close', 'إغلاق') : t('Menu', 'القائمة')}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
         </button>
       </div>
 
       {open && (
-        <div
-          ref={menuRef}
-          className="lg:hidden border-t border-cream/10 bg-ink px-5 pb-8 pt-4 flex flex-col gap-1"
-        >
-          <Link to={pathFor('/')} onClick={() => setOpen(false)} className={`nav-mobile-link${isHome ? ' is-active' : ''}`}>
+        <div ref={menuRef} className="ref-mobile-menu open lg:hidden">
+          <Link to={pathFor('/')} onClick={() => setOpen(false)} className={navClass(isHome)}>
             {t('Home', 'الرئيسية')}
           </Link>
-          <p className="text-[0.65rem] tracking-[0.2em] uppercase text-cream/40 mt-3 mb-1 px-1">
+          <Link to={pathFor('/about')} onClick={() => setOpen(false)} className={navClass(isAbout)}>
+            {t('About', 'من أنا')}
+          </Link>
+          <Link to={pathFor('/services')} onClick={() => setOpen(false)} className={navClass(isServices)}>
             {t('Services', 'الخدمات')}
-          </p>
-          {services.map((s) => {
-            const active = current === `/services/${s.slug}`;
-            return (
-              <Link
-                key={s.id}
-                to={pathFor(`/services/${s.slug}`)}
-                onClick={() => setOpen(false)}
-                className={`nav-mobile-link${active ? ' is-active' : ''}`}
-              >
-                {locale === 'ar' ? s.titleAr : s.titleEn}
-              </Link>
-            );
-          })}
-          <Link
-            to={pathFor('/journal')}
-            onClick={() => setOpen(false)}
-            className={`nav-mobile-link${isJournal ? ' is-active' : ''}`}
-          >
-            {t('Journal', 'المجلة')}
           </Link>
-          <Link
-            to={pathFor('/gallery')}
-            onClick={() => setOpen(false)}
-            className={`nav-mobile-link${isGallery ? ' is-active' : ''}`}
-          >
-            {t('Gallery', 'المعرض')}
+          {services.map((s) => (
+            <Link
+              key={s.id}
+              to={pathFor(`/services/${s.slug}`)}
+              onClick={() => setOpen(false)}
+              className={`nav-mobile-link ps-6${current === `/services/${s.slug}` ? ' is-active' : ''}`}
+            >
+              {locale === 'ar' ? s.titleAr : s.titleEn}
+            </Link>
+          ))}
+          <Link to={pathFor('/work')} onClick={() => setOpen(false)} className={navClass(isWork)}>
+            {t('Work', 'الأعمال')}
           </Link>
-          <Link
-            to={pathFor('/book')}
-            onClick={() => setOpen(false)}
-            className={`nav-mobile-link${isBook ? ' is-active' : ''}`}
-          >
-            {t('Book a Call', 'احجز مكالمة')}
+          <Link to={pathFor('/journal')} onClick={() => setOpen(false)} className={navClass(isJournal)}>
+            {t('Insights', 'مقالات')}
           </Link>
-          <Link
-            to={pathFor('/contact')}
-            onClick={() => setOpen(false)}
-            className={`nav-mobile-link${isContact ? ' is-active' : ''}`}
-          >
+          <Link to={pathFor('/contact')} onClick={() => setOpen(false)} className={navClass(isContact)}>
             {t('Contact', 'تواصل')}
           </Link>
-          <button
-            type="button"
-            onClick={toggleLocale}
-            className="nav-mobile-link text-accent text-start mt-2"
-          >
+          <div className="mt-4">
+            <ConnectButton variant="blue" className="w-full" fallbackTo="/book">
+              {t("Let's Connect", 'تواصل معي')}
+            </ConnectButton>
+          </div>
+          <button type="button" onClick={toggleLocale} className="ref-lang-btn mt-3 w-full">
             {locale === 'en' ? 'العربية' : 'English'}
           </button>
         </div>

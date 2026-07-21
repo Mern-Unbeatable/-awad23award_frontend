@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Seo } from '../components/Seo';
 import { PageReveal } from '../components/PageReveal';
 import { useLocale } from '../context/LocaleContext';
@@ -9,83 +9,66 @@ import { pick } from '../types';
 export function GalleryPage() {
   const { locale, pathFor, t } = useLocale();
   const { gallery, settings } = useSite();
-  const [active, setActive] = useState<string | null>(null);
   const ref = useReveal<HTMLElement>([gallery.length]);
-  const activeItem = gallery.find((g) => g.id === active);
 
   return (
     <>
       <Seo
-        title={`${t('Gallery', 'المعرض')} | ${settings.brandName}`}
+        title={`${t('Selected Work', 'أعمال مختارة')} | ${settings.brandName}`}
         description={t(
-          'Photos and video from stages, sessions, and studio.',
-          'صور وفيديو من المنصات والجلسات والاستوديو.'
+          'Case studies: EKSB Platform, WhatsApp Bot, BaytStay and more.',
+          'دراسات حالة: منصة EKSB، روبوت واتساب، بيت ستاي والمزيد.'
         )}
-        path={pathFor('/gallery')}
+        path={pathFor('/work')}
       />
-      <section className="pt-32 pb-10 container-site">
-        <PageReveal>
-          <p className="eyebrow mb-4">{t('Media', 'وسائط')}</p>
-          <h1 className="font-display font-extrabold text-[clamp(2.4rem,6vw,4.5rem)] leading-none">
-            {t('Gallery', 'المعرض')}
-          </h1>
-        </PageReveal>
-      </section>
-
-      <section ref={ref} className="container-wide pb-24 columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-        {gallery.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            data-reveal
-            onClick={() => setActive(item.id)}
-            className="gallery-item block w-full break-inside-avoid overflow-hidden group relative cursor-pointer"
-          >
-            {item.media.type === 'video' ? (
-              <video src={item.media.url} className="w-full" muted playsInline />
-            ) : (
-              <img
-                src={item.media.url}
-                alt={locale === 'ar' ? item.media.altAr : item.media.altEn}
-                className="w-full transition-transform duration-700 group-hover:scale-105"
-                loading="lazy"
-              />
-            )}
-            <span className="absolute inset-0 bg-ink/0 group-hover:bg-ink/35 transition-colors" />
-            <span className="absolute bottom-3 start-3 text-xs tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity font-display">
-              {pick(item, locale, 'title')}
-            </span>
-          </button>
-        ))}
-      </section>
-
-      {activeItem && (
-        <div
-          className="fixed inset-0 z-[60] bg-ink/90 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setActive(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            type="button"
-            className="absolute top-6 end-6 text-cream font-display tracking-widest text-xs uppercase"
-            onClick={() => setActive(null)}
-          >
-            {t('Close', 'إغلاق')}
-          </button>
-          <div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
-            {activeItem.media.type === 'video' ? (
-              <video src={activeItem.media.url} controls autoPlay className="w-full max-h-[80vh]" />
-            ) : (
-              <img
-                src={activeItem.media.url}
-                alt={pick(activeItem, locale, 'title')}
-                className="w-full max-h-[80vh] object-contain mx-auto"
-              />
-            )}
-          </div>
+      <section className="page-hero">
+        <div className="container-site relative z-10">
+          <PageReveal>
+            <p className="eyebrow mb-4">{t('Portfolio', 'معرض الأعمال')}</p>
+            <h1 className="page-hero__title">{t('Selected Work', 'أعمال مختارة')}</h1>
+            <p className="page-hero__lead">
+              {t(
+                'Enterprise projects across CRM, automation, and hospitality tech.',
+                'مشاريع مؤسسية في CRM والأتمتة وتقنية الضيافة.'
+              )}
+            </p>
+          </PageReveal>
         </div>
-      )}
+      </section>
+
+      <section ref={ref} className="container-site pb-24">
+        <div className="work-grid">
+          {gallery.map((item) => (
+            <Link
+              key={item.id}
+              to={pathFor(`/work/${item.slug}`)}
+              data-reveal
+              className="work-card glass-card glass-card--hover text-start w-full"
+            >
+              <div className="work-card__media">
+                {item.media.type === 'video' ? (
+                  <video src={item.media.url} className="w-full h-full object-cover" muted playsInline />
+                ) : (
+                  <img
+                    src={item.media.url}
+                    alt={locale === 'ar' ? item.media.altAr : item.media.altEn}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                )}
+              </div>
+              <div className="work-card__body">
+                <h3 className="work-card__title">{pick(item, locale, 'title')}</h3>
+                <p className="text-cream-dim text-sm mt-2 line-clamp-2">
+                  {pick(item, locale, 'excerpt') ||
+                    t('Enterprise project delivered for measurable impact.', 'مشروع مؤسسي حقق أثراً ملموساً.')}
+                </p>
+                <span className="work-card__cta">{t('View case study →', 'عرض دراسة الحالة ←')}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

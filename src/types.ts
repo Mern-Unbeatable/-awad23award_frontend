@@ -79,10 +79,31 @@ export interface Post {
   updatedAt: string;
 }
 
+export interface Product {
+  id: string;
+  slug: string;
+  titleEn: string;
+  titleAr: string;
+  excerptEn: string;
+  excerptAr: string;
+  bodyEn: string;
+  bodyAr: string;
+  imageUrl?: string | null;
+  priceLabelEn?: string | null;
+  priceLabelAr?: string | null;
+  order: number;
+  published: boolean;
+}
+
 export interface GalleryItem {
   id: string;
   titleEn: string;
   titleAr: string;
+  slug: string;
+  excerptEn: string;
+  excerptAr: string;
+  bodyEn: string;
+  bodyAr: string;
   order: number;
   published: boolean;
   media: {

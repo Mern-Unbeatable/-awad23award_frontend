@@ -1,6 +1,7 @@
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Seo } from '../components/Seo';
+import { GlassCard, ConnectButton, TechButton } from '../components/tech';
 import { useLocale } from '../context/LocaleContext';
 import { useSite } from '../context/SiteContext';
 import { publicApi } from '../lib/api';
@@ -19,12 +20,13 @@ export function ServicePage() {
   if (!service) {
     return (
       <div className="pt-40 container-site pb-24">
-        <p className="text-cream/60">{t('Loading…', 'جاري التحميل…')}</p>
+        <p className="text-cream-dim">{t('Loading…', 'جاري التحميل…')}</p>
       </div>
     );
   }
 
   const features = locale === 'ar' ? service.featuresAr : service.featuresEn;
+  const body = pick(service, locale, 'body');
 
   return (
     <>
@@ -34,26 +36,28 @@ export function ServicePage() {
         image={service.imageUrl || undefined}
         path={pathFor(`/services/${service.slug}`)}
       />
-      <section className="relative min-h-[60vh] flex items-end">
+      <section className="relative min-h-[50vh] flex items-end">
         <div className="absolute inset-0">
           <img
             src={service.imageUrl || ''}
             alt={pick(service, locale, 'title')}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/75 to-ink/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/90 to-ink/60" />
         </div>
         <div className="relative container-site pb-16 pt-36">
           <p className="eyebrow mb-4">{pick(service, locale, 'subtitle')}</p>
-          <h1 className="font-display font-extrabold text-[clamp(2.4rem,6vw,4.5rem)] leading-none max-w-4xl">
-            {pick(service, locale, 'title')}
-          </h1>
+          <h1 className="page-hero__title max-w-4xl">{pick(service, locale, 'title')}</h1>
         </div>
       </section>
 
       <section className="container-site py-16 md:py-24 grid lg:grid-cols-[1.4fr_0.8fr] gap-14">
         <div>
-          <p className="text-cream/75 text-lg leading-relaxed mb-8">{pick(service, locale, 'body')}</p>
+          {body.includes('<') ? (
+            <div className="prose-content mb-8" dangerouslySetInnerHTML={{ __html: body }} />
+          ) : (
+            <p className="text-cream-dim text-lg leading-relaxed mb-8">{body}</p>
+          )}
           <ul className="space-y-3">
             {features.map((f) => (
               <li key={f} className="flex gap-3 items-start text-cream/85">
@@ -63,24 +67,24 @@ export function ServicePage() {
             ))}
           </ul>
         </div>
-        <aside className="service-cta">
+        <GlassCard className="p-6 h-fit">
           <p className="eyebrow mb-3">{t('Next step', 'الخطوة التالية')}</p>
-          <h2 className="font-display font-bold text-2xl mb-4">
-            {t('Book a free discovery call', 'احجز مكالمة اكتشاف مجانية')}
+          <h2 className="font-display font-bold text-xl mb-4">
+            {t('Book a discovery call', 'احجز مكالمة اكتشاف')}
           </h2>
-          <p className="text-cream/60 text-sm mb-6 leading-relaxed">
+          <p className="text-cream-dim text-sm mb-6 leading-relaxed">
             {t(
-              'Pick a time that works for you. We will map your brand goals and the right programme.',
-              'اختر وقتاً يناسبك. سنحدد أهداف علامتك والبرنامج المناسب.'
+              'Discuss your CRM, automation, or AI requirements — consultation on request.',
+              'ناقش متطلبات CRM أو الأتمتة أو الذكاء الاصطناعي — الاستشارات عند الطلب.'
             )}
           </p>
-          <Link to={pathFor('/book')} className="btn btn-accent w-full mb-3">
+          <ConnectButton variant="cyan" className="w-full mb-3">
             {t('Book a Call', 'احجز مكالمة')}
-          </Link>
-          <Link to={pathFor('/contact')} className="btn btn-light w-full">
+          </ConnectButton>
+          <TechButton to={pathFor('/contact')} variant="outline" className="w-full">
             {t('Contact form', 'نموذج التواصل')}
-          </Link>
-        </aside>
+          </TechButton>
+        </GlassCard>
       </section>
     </>
   );

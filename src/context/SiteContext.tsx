@@ -8,20 +8,30 @@ import {
   type ReactNode,
 } from 'react';
 import { publicApi } from '../lib/api';
-import type { GalleryItem, HomeSection, Post, Service, SiteSettings, Testimonial } from '../types';
+import type { GalleryItem, HomeSection, Post, Product, Service, SiteSettings, Testimonial } from '../types';
 import {
   fallbackGallery,
   fallbackPosts,
+  fallbackProducts,
   fallbackSections,
   fallbackServices,
   fallbackSettings,
   fallbackTestimonials,
 } from '../data/fallback';
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 interface SiteContextValue {
   settings: SiteSettings;
   sections: HomeSection[];
   services: Service[];
+  products: Product[];
   posts: Post[];
   gallery: GalleryItem[];
   testimonials: Testimonial[];
@@ -36,6 +46,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings>(fallbackSettings);
   const [sections, setSections] = useState<HomeSection[]>(fallbackSections);
   const [services, setServices] = useState<Service[]>(fallbackServices);
+  const [products, setProducts] = useState<Product[]>(fallbackProducts);
   const [posts, setPosts] = useState<Post[]>(fallbackPosts);
   const [gallery, setGallery] = useState<GalleryItem[]>(fallbackGallery);
   const [testimonials, setTestimonials] = useState<Testimonial[]>(fallbackTestimonials);
@@ -43,10 +54,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [s, sec, svc, p, g, t] = await Promise.all([
+    const [s, sec, svc, prod, p, g, t] = await Promise.all([
       publicApi.getSettings(),
       publicApi.getSections(),
       publicApi.getServices(),
+      publicApi.getProducts(),
       publicApi.getPosts(),
       publicApi.getGallery(),
       publicApi.getTestimonials(),
@@ -55,15 +67,72 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     setSettings({
       ...fallbackSettings,
       ...s,
+      brandName: /official/i.test(s.brandName || '') ? 'Ahmed Awad' : s.brandName || fallbackSettings.brandName,
       aboutImageUrl: s.aboutImageUrl || fallbackSettings.aboutImageUrl,
       showreelPoster: s.showreelPoster || fallbackSettings.showreelPoster,
       showreelUrl: s.showreelUrl || fallbackSettings.showreelUrl,
-      logoUrl: s.logoUrl || null,
+      // Always use built-in dual-tone A mark — ignore uploaded coach-era logos
+      logoUrl: null,
     });
-    setSections(sec.length ? sec : fallbackSections);
-    setServices(svc.length ? svc : fallbackServices);
+    setSections(
+      sec.length
+        ? sec.map((section) =>
+            section.key === 'hero'
+              ? {
+                  ...section,
+                  imageUrl: section.imageUrl || fallbackSections.find((f) => f.key === 'hero')?.imageUrl,
+                  bodyEn: /Personal Brand|Keynote|Mentor/i.test(section.bodyEn)
+                    ? fallbackSections.find((f) => f.key === 'hero')!.bodyEn
+                    : section.bodyEn,
+                  bodyAr: section.bodyAr || fallbackSections.find((f) => f.key === 'hero')!.bodyAr,
+                }
+              : section
+          )
+        : fallbackSections
+    );
+    setServices(
+      (svc.length ? svc : fallbackServices).map((service) => {
+        const broken =
+          !service.imageUrl ||
+          service.imageUrl.includes('photo-1611746872915-64342b5c553a');
+        if (!broken) return service;
+        const fallback = fallbackServices.find((f) => f.slug === service.slug);
+        return { ...service, imageUrl: fallback?.imageUrl || service.imageUrl };
+      })
+    );
+    setProducts(
+      (prod.length ? prod : fallbackProducts).map((product) => {
+        if (product.imageUrl) return product;
+        const fallback = fallbackProducts.find((f) => f.slug === product.slug);
+        return { ...product, imageUrl: fallback?.imageUrl || product.imageUrl };
+      })
+    );
     setPosts(p.length ? p : fallbackPosts);
-    setGallery(g.length ? g : fallbackGallery);
+    setGallery(
+      (g.length ? g : fallbackGallery).map((item, index) => {
+        const byTitle = fallbackGallery.find(
+          (f) => f.titleEn.toLowerCase() === (item.titleEn || '').toLowerCase()
+        );
+        const byOrder = fallbackGallery[index];
+        const fallback = byTitle || byOrder;
+        const broken =
+          !item.media?.url ||
+          item.media.url.includes('photo-1611746872915-64342b5c553a') ||
+          item.media.url.includes('photo-1611606063065-ee7946f0787a');
+        return {
+          ...item,
+          slug: item.slug || fallback?.slug || slugify(item.titleEn || `work-${index + 1}`),
+          excerptEn: item.excerptEn || fallback?.excerptEn || '',
+          excerptAr: item.excerptAr || fallback?.excerptAr || '',
+          bodyEn: item.bodyEn || fallback?.bodyEn || '',
+          bodyAr: item.bodyAr || fallback?.bodyAr || '',
+          media: {
+            ...item.media,
+            url: broken ? fallback?.media.url || item.media.url : item.media.url,
+          },
+        };
+      })
+    );
     setTestimonials(t.length ? t : fallbackTestimonials);
     setLoading(false);
   }, []);
@@ -82,6 +151,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       settings,
       sections,
       services,
+      products,
       posts,
       gallery,
       testimonials,
@@ -89,7 +159,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       refresh,
       sectionByKey,
     }),
-    [settings, sections, services, posts, gallery, testimonials, loading, refresh, sectionByKey]
+    [settings, sections, services, products, posts, gallery, testimonials, loading, refresh, sectionByKey]
   );
 
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;

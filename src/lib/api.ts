@@ -3,6 +3,7 @@ import type {
   GalleryItem,
   HomeSection,
   Post,
+  Product,
   Service,
   SiteSettings,
   Testimonial,
@@ -10,6 +11,7 @@ import type {
 import {
   fallbackGallery,
   fallbackPosts,
+  fallbackProducts,
   fallbackSections,
   fallbackServices,
   fallbackSettings,
@@ -55,6 +57,15 @@ export const publicApi = {
       return (await api.get<Service>(`/services/${slug}`)).data;
     } catch {
       return fallbackServices.find((s) => s.slug === slug) || null;
+    }
+  },
+  getProducts: () =>
+    withFallback(async () => (await api.get<Product[]>('/products')).data, fallbackProducts),
+  getProduct: async (slug: string) => {
+    try {
+      return (await api.get<Product>(`/products/${slug}`)).data;
+    } catch {
+      return fallbackProducts.find((p) => p.slug === slug) || null;
     }
   },
   getPosts: () =>
