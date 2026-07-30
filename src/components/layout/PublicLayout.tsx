@@ -16,13 +16,23 @@ export function PublicLayout() {
   const { pathname } = useLocation();
   const isHome = stripLocale(pathname) === '/';
 
+  if (isHome) {
+    return (
+      <SmoothScroll>
+        <div className="min-h-screen bg-canvas text-ink">
+          <Outlet />
+        </div>
+      </SmoothScroll>
+    );
+  }
+
   return (
     <SmoothScroll>
-      <div className="min-h-screen bg-ink text-cream">
+      <div className="min-h-screen bg-canvas text-ink">
         <SiteEffects />
         <Navbar />
-        <main className={isHome ? undefined : 'inner-page'}>
-          {!isHome ? <TechGridBg full /> : null}
+        <main className="inner-page">
+          <TechGridBg full />
           <Outlet />
         </main>
         <div className="site-newsletter">
