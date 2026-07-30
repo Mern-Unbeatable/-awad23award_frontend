@@ -68,10 +68,7 @@ export function Navbar() {
     return `nav-link${active ? ' is-active' : ''}`;
   }
 
-  const brandLabel =
-    /official/i.test(settings.brandName) || !settings.brandName.trim()
-      ? 'AHMED AWAD'
-      : settings.brandName.toUpperCase();
+  const brandLabel = settings.brandName && !/official/i.test(settings.brandName) ? settings.brandName : 'Ahmed Ibrahim';
 
   return (
     <header
@@ -80,17 +77,14 @@ export function Navbar() {
         open ? 'is-open' : ''
       }`}
     >
-      <div className="ref-wrap container-wide flex items-center justify-between h-[74px] gap-4">
+      <div className="w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 flex items-center justify-between h-[74px] gap-4">
         <Link to={pathFor('/')} className="ref-brand-link">
           <BrandLogo name={brandLabel} />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-[30px]">
-          <Link to={pathFor('/')} className={navClass(isHome)}>
-            {t('Home', 'الرئيسية')}
-          </Link>
+        <nav className="hidden lg:flex items-center gap-[24px]">
           <Link to={pathFor('/about')} className={navClass(isAbout)}>
-            {t('About', 'من أنا')}
+            {t('About', 'عني')}
           </Link>
 
           <div
@@ -126,7 +120,7 @@ export function Navbar() {
             {t('Work', 'الأعمال')}
           </Link>
           <Link to={pathFor('/journal')} className={navClass(isJournal)}>
-            {t('Insights', 'مقالات')}
+            {t('Blog', 'مدونة')}
           </Link>
           <Link to={pathFor('/contact')} className={navClass(isContact && !current.startsWith('/book'))}>
             {t('Contact', 'تواصل')}
@@ -135,15 +129,18 @@ export function Navbar() {
           <button
             type="button"
             onClick={toggleLocale}
-            className="ref-lang-btn"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 text-xs text-white font-medium transition-all"
             aria-label={t('Switch language', 'تبديل اللغة')}
           >
-            {locale === 'en' ? 'العربية' : 'English'}
+            <span>🌐</span>
+            <span>{locale === 'en' ? 'English' : 'العربية'}</span>
           </button>
 
-          <ConnectButton variant="blue" className="!py-3 !px-[22px] !text-sm">
-            {t("Let's Connect", 'تواصل معي')}
-            <ArrowIcon />
+          <ConnectButton
+            variant="cyan"
+            className="!inline-flex !items-center !justify-center !px-5 !py-2.5 !rounded-lg !bg-[#35BFFB] hover:!bg-[#22aaeb] !text-[#064738] !font-bold !text-xs md:!text-sm shadow-md shadow-[#35BFFB]/25 transition-all hover:scale-[1.02]"
+          >
+            {t('Book a Consultation', 'احجز استشارة')}
           </ConnectButton>
         </nav>
 
