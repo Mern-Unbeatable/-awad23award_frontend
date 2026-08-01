@@ -2,7 +2,7 @@ import { useLocale } from '../../context/LocaleContext';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Process() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
 
   const steps = [
     {

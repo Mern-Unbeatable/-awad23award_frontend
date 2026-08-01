@@ -1,6 +1,6 @@
-import { Link, useParams } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
-import { Clock, Calendar, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Clock, Calendar, Share2, Sparkles } from 'lucide-react';
 import { Seo } from '../components/Seo';
 import { useLocale } from '../context/LocaleContext';
 import { useSite } from '../context/SiteContext';
@@ -13,7 +13,7 @@ import profileImg from '../../award/src/assets/avatar-1.jpg';
 export function JournalPostPage() {
   const { slug = '' } = useParams();
   const { locale, pathFor, t } = useLocale();
-  const { settings, posts } = useSite();
+  const { settings } = useSite();
   const [post, setPost] = useState<Post | null>(null);
 
   useEffect(() => {
@@ -131,11 +131,11 @@ export function JournalPostPage() {
           </div>
 
           {/* Featured Cover Image */}
-          <div className="rounded-[16px] overflow-hidden mb-14 shadow-sm border border-slate-100">
+          <div className="rounded-3xl overflow-hidden mb-14 shadow-sm border border-slate-100">
             <img
               src={coverImg}
               alt={title}
-              className="w-full h-auto max-h-[500px] object-cover"
+              className="w-full h-auto max-h-125 object-cover"
             />
           </div>
 
@@ -163,7 +163,7 @@ export function JournalPostPage() {
               </div>
 
               {/* Right Column: Dark Green Callout Box */}
-              <div className="lg:col-span-5 bg-[#053F32] rounded-[16px] p-7 text-white shadow-md">
+              <div className="lg:col-span-5 bg-[#053F32] rounded-3xl p-7 text-white shadow-md">
                 <p className="text-[#36BFFB] text-[13px] font-medium mb-1">Instead of asking,</p>
                 <h3 className="text-[20px] font-serif font-bold text-white leading-snug mb-5">
                   "Which AI tool should we use?"

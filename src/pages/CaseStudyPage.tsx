@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Sparkles,
   Building2,
@@ -96,7 +96,7 @@ export function CaseStudyPage() {
             <img
               src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=80"
               alt="REDF CRM Dashboard"
-              className="w-full h-auto rounded-lg object-cover max-h-[560px]"
+              className="w-full h-auto rounded-lg object-cover max-h-140"
             />
           </div>
 
@@ -220,7 +220,7 @@ export function CaseStudyPage() {
                 <img
                   src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1000&q=80"
                   alt="Legacy Audit Analytics"
-                  className="w-full h-[360px] object-cover rounded-lg mb-6 opacity-85"
+                  className="w-full h-90 object-cover rounded-lg mb-6 opacity-85"
                 />
                 <div className="p-4 bg-white/5 backdrop-blur-md rounded-lg border border-white/10">
                   <h4 className="text-[20px] font-serif font-bold text-white mb-2">
@@ -308,7 +308,7 @@ export function CaseStudyPage() {
                 <img
                   src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80"
                   alt="CRM Batch Simulator"
-                  className="rounded-lg object-cover h-[220px] w-full mb-4 opacity-90"
+                  className="rounded-lg object-cover h-55 w-full mb-4 opacity-90"
                 />
                 <div className="flex items-center justify-between text-[12px] text-emerald-300">
                   <span>Microsoft Dynamics CRM Reverse Engineering</span>
@@ -401,7 +401,7 @@ export function CaseStudyPage() {
                     <img
                       src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80"
                       alt="Technical Leadership & Team Orchestration"
-                      className="rounded-lg h-[240px] w-full object-cover shadow-md"
+                      className="rounded-lg h-60 w-full object-cover shadow-md"
                     />
                   </div>
                 </div>
@@ -447,7 +447,7 @@ export function CaseStudyPage() {
                   body: 'Implemented strict testing benchmarks to ensure flawless deployment into REDF enterprise infrastructure.',
                 },
               ].map((c, i) => (
-                <div key={i} className="bg-[#2A303C] text-white rounded-lg p-7 shadow-lg border border-slate-700/40 flex flex-col justify-between min-h-[240px]">
+                <div key={i} className="bg-[#2A303C] text-white rounded-lg p-7 shadow-lg border border-slate-700/40 flex flex-col justify-between min-h-60">
                   <div className="w-10 h-10 rounded-lg bg-slate-800/80 text-[#36BFFB] border border-slate-700 flex items-center justify-center mb-5">
                     <c.icon className="w-5 h-5" />
                   </div>
@@ -618,7 +618,7 @@ export function CaseStudyPage() {
                 <img
                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80"
                   alt="Enterprise Architecture Diagram"
-                  className="rounded-lg w-full h-[280px] object-cover"
+                  className="rounded-lg w-full h-70 object-cover"
                 />
               </div>
             </div>
@@ -682,7 +682,7 @@ export function CaseStudyPage() {
                     <img
                       src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80"
                       alt="REDF Formal Letter of Recognition"
-                      className="w-full h-[280px] object-cover opacity-90"
+                      className="w-full h-70 object-cover opacity-90"
                     />
                     <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[11px] text-amber-300">
                       ★ Real Estate Development Fund (REDF)
@@ -761,7 +761,7 @@ export function CaseStudyPage() {
                 ].map((sk) => (
                   <div
                     key={sk.num}
-                    className="bg-[#111A24] text-white rounded-lg p-6 shadow-md border border-slate-800 flex flex-col justify-between min-h-[210px]"
+                    className="bg-[#111A24] text-white rounded-lg p-6 shadow-md border border-slate-800 flex flex-col justify-between min-h-52.5"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-4">
