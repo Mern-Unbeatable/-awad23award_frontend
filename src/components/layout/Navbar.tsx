@@ -21,7 +21,6 @@ export function Navbar() {
   const [servicesOpen, setServicesOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const isHome = current === '/';
   const isAbout = current.startsWith('/about');
   const isServices = current.startsWith('/services');
   const isWork = current.startsWith('/work') || current.startsWith('/gallery');

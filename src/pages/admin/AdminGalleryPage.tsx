@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Edit3, Trash2, ArrowLeft, Type, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Link2 } from 'lucide-react';
+import { Plus, Edit3, Trash2, Type, Bold, Underline, AlignLeft, AlignCenter, AlignRight, Link2 } from 'lucide-react';
 
 interface PortfolioProjectItem {
   id: string;

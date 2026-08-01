@@ -1,6 +1,5 @@
 import { Seo } from '../components/Seo';
 import { Hero } from '../components/site/Hero';
-import { LogoStrip } from '../components/site/LogoStrip';
 import { About } from '../components/site/About';
 import { Services } from '../components/site/Services';
 import { Process } from '../components/site/Process';

@@ -16,7 +16,6 @@ import { ContactPage } from './pages/ContactPage';
 import { BookCallPage } from './pages/BookCallPage';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminLoginPage } from './pages/admin/AdminLoginPage';
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminHomepagePage } from './pages/admin/AdminHomepagePage';
 import { AdminServicesPage } from './pages/admin/AdminServicesPage';
 import { AdminPostsPage } from './pages/admin/AdminPostsPage';

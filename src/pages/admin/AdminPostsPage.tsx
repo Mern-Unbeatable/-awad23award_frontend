@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Edit3, Trash2, ArrowLeft, Type, Bold, Underline, AlignLeft, AlignCenter, AlignRight, Link2 } from 'lucide-react';
+import { Edit3, Trash2, Type, Bold, Underline, AlignLeft, AlignCenter, AlignRight, Link2 } from 'lucide-react';
 
 interface BlogPostItem {
   id: string;
