@@ -72,7 +72,7 @@ export function Nav({ dark = false }: NavProps) {
 
           <ConnectButton
             variant="cyan"
-            className="hidden sm:inline-flex rounded-xl! bg-[#35BFFB]! hover:bg-[#3F7D6E]! px-4! py-2.5! text-base! font-semibold! text-white! transition-all duration-300 cursor-pointer shadow-sm"
+            className="hidden sm:inline-flex rounded-lg! bg-[#35BFFB]! hover:bg-[#3F7D6E]! px-4! py-2.5! text-base! font-semibold! text-white! transition-all duration-300 cursor-pointer shadow-sm"
           >
             {t('Book a Consultation', 'احجز استشارة')}
           </ConnectButton>
@@ -141,7 +141,7 @@ export function Nav({ dark = false }: NavProps) {
                 toggleLocale();
                 setMobileOpen(false);
               }}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Globe className="w-5 h-5 text-[#35BFFB]" />
               <span>{locale === 'en' ? 'Switch to العربية' : 'Switch to English'}</span>
@@ -149,7 +149,7 @@ export function Nav({ dark = false }: NavProps) {
 
             <ConnectButton
               variant="cyan"
-              className="w-full justify-center rounded-xl! bg-[#35BFFB]! py-3.5! text-base! font-semibold! text-[#064738]!"
+              className="w-full justify-center rounded-lg! bg-[#35BFFB]! py-3.5! text-base! font-semibold! text-[#064738]!"
             >
               {t('Book a Consultation', 'احجز استشارة')}
             </ConnectButton>
