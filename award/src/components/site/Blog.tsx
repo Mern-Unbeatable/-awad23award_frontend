@@ -69,7 +69,7 @@ export function Blog() {
                 loading="lazy"
                 width={900}
                 height={600}
-                className="h-44 w-full rounded-lg object-cover"
+                className="h-44 w-full rounded-sm object-cover"
               />
               <h3 className="mt-4 text-[14px] leading-snug font-semibold group-hover:text-forest">
                 {p.title}

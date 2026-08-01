@@ -17,6 +17,7 @@ export function JournalPostPage() {
   const [post, setPost] = useState<Post | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     void publicApi.getPost(slug).then(setPost);
   }, [slug]);
 
@@ -54,51 +55,51 @@ export function JournalPostPage() {
         path={pathFor(`/journal/${slug}`)}
       />
 
-      <article className="bg-white pt-28 pb-12">
+      <article className="bg-white pt-28 pb-16">
         {/* Article Container */}
-        <div className="container mx-auto px-6 max-w-4xl">
+        <div className="container mx-auto px-6 max-w-7xl">
           {/* Category & Read time badge */}
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="inline-flex items-center gap-1.5 text-[#36BFFB] font-semibold text-[13px]">
+          <div className="flex flex-wrap items-center gap-3 mb-5">
+            <span className="inline-flex items-center gap-1.5 text-[#36BFFB] font-semibold text-[13.5px]">
               <Sparkles className="w-4 h-4" />
               {category}
             </span>
 
-            <span className="inline-flex items-center gap-1.5 text-slate-500 text-[12.5px] bg-slate-100 px-3 py-0.5 rounded-full">
-              <Clock className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 text-slate-500 text-[12.5px] bg-slate-100 px-3 py-0.5 rounded-full font-medium">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
               {defaultPost.readTime}
             </span>
           </div>
 
           {/* Main Title */}
-          <h1 className="text-[44px] md:text-[56px] font-serif font-bold text-[#111827] tracking-tight leading-[1.1] mb-4">
+          <h1 className="text-[38px] sm:text-[48px] md:text-[54px] font-serif font-bold text-[#0F2E25] tracking-tight leading-[1.12] mb-4">
             {title}
           </h1>
 
           {/* Subtitle */}
-          <p className="text-[17px] md:text-[18px] text-[#52606D] font-medium leading-relaxed mb-8">
+          <p className="text-[17px] md:text-[18.5px] text-[#52606D] font-normal leading-relaxed mb-8">
             {defaultPost.subtitle}
           </p>
 
           {/* Author Meta Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-t border-b border-gray-100 mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-t border-b border-gray-200/90 mb-10">
             {/* Author details */}
             <div className="flex items-center gap-3.5">
               <img
                 src={profileImg}
                 alt="Ahmed Awad"
-                className="w-12 h-12 rounded-full object-cover shadow-sm"
+                className="w-11 h-11 rounded-full object-cover shadow-sm"
               />
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[15px] text-foreground">
+                  <span className="font-bold text-[14.5px] text-foreground">
                     {defaultPost.authorName}
                   </span>
                   <span className="bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
                     {t('Author', 'الكاتب')}
                   </span>
                 </div>
-                <span className="text-[12.5px] text-slate-500 block mt-0.5">
+                <span className="text-[12.5px] text-slate-500 block mt-0.5 font-normal">
                   {defaultPost.authorRole}
                 </span>
               </div>
@@ -121,30 +122,30 @@ export function JournalPostPage() {
                     alert(t('Link copied to clipboard!', 'تم نسخ الرابط!'));
                   }
                 }}
-                className="inline-flex items-center gap-1.5 border border-slate-200 text-slate-700 text-[12px] font-medium px-3 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-1.5 border border-slate-200 text-slate-700 text-[12px] font-medium px-3 py-1.5 rounded-md hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                <Share2 className="w-3.5 h-3.5" />
+                <Share2 className="w-3.5 h-3.5 text-slate-500" />
                 <span>{t('Share', 'مشاركة')}</span>
               </button>
             </div>
           </div>
 
           {/* Featured Cover Image */}
-          <div className="rounded-[16px] overflow-hidden mb-16 shadow-sm">
+          <div className="rounded-[16px] overflow-hidden mb-14 shadow-sm border border-slate-100">
             <img
               src={coverImg}
               alt={title}
-              className="w-full h-auto max-h-[520px] object-cover"
+              className="w-full h-auto max-h-[500px] object-cover"
             />
           </div>
 
           {/* Article Main Body Content */}
-          <div className="space-y-12 text-[#374151] leading-relaxed">
+          <div className="space-y-14 text-[#374151] leading-relaxed">
             {/* Section 1 + Dark Green Callout Box Grid */}
             <div className="grid gap-8 lg:grid-cols-12 items-start">
               {/* Left Column: Intro Text */}
               <div className="lg:col-span-7 space-y-4">
-                <h2 className="text-[32px] md:text-[36px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
+                <h2 className="text-[32px] md:text-[38px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
                   {t('Why AI Strategy Matters', 'لماذا تعتبر استراتيجية الذكاء الاصطناعي مهمة')}
                 </h2>
                 <p className="text-[16px] text-gray-600 leading-relaxed">
@@ -164,7 +165,7 @@ export function JournalPostPage() {
               {/* Right Column: Dark Green Callout Box */}
               <div className="lg:col-span-5 bg-[#053F32] rounded-[16px] p-7 text-white shadow-md">
                 <p className="text-[#36BFFB] text-[13px] font-medium mb-1">Instead of asking,</p>
-                <h3 className="text-[20px] font-serif font-bold text-white leading-snug mb-4">
+                <h3 className="text-[20px] font-serif font-bold text-white leading-snug mb-5">
                   "Which AI tool should we use?"
                 </h3>
 
@@ -183,7 +184,7 @@ export function JournalPostPage() {
 
             {/* Section 2: Where AI Creates the Greatest Impact */}
             <div className="space-y-4">
-              <h2 className="text-[32px] md:text-[36px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
+              <h2 className="text-[32px] md:text-[38px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
                 {t('Where AI Creates the Greatest Impact', 'أين يحقق الذكاء الاصطناعي أكبر تأثير')}
               </h2>
               <p className="text-[16px] text-gray-600 leading-relaxed">
@@ -193,24 +194,24 @@ export function JournalPostPage() {
                 Businesses commonly see immediate improvements in:
               </p>
               <ul className="space-y-2.5 pl-4 text-[15.5px] text-gray-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Automating routine administrative tasks.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Enhancing customer support with intelligent assistants.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Improving forecasting and business reporting.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Streamlining internal workflows.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Delivering more personalised customer experiences.</span>
                 </li>
               </ul>
@@ -221,7 +222,7 @@ export function JournalPostPage() {
 
             {/* Section 3: A Practical Approach to AI Adoption */}
             <div className="space-y-4">
-              <h2 className="text-[32px] md:text-[36px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
+              <h2 className="text-[32px] md:text-[38px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
                 {t('A Practical Approach to AI Adoption', 'نهج عملي لتبني الذكاء الاصطناعي')}
               </h2>
               <p className="text-[16px] text-gray-600 leading-relaxed">
@@ -231,24 +232,24 @@ export function JournalPostPage() {
                 The most effective organisations introduce AI gradually, starting with small, high-impact initiatives before expanding across the business.
               </p>
               <ul className="space-y-2.5 pl-4 text-[15.5px] text-gray-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Assessing current workflows.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Identifying automation opportunities.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Selecting the right technology.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Measuring results.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Continuously improving processes.</span>
                 </li>
               </ul>
@@ -259,7 +260,7 @@ export function JournalPostPage() {
 
             {/* Section 4: Common Mistakes Businesses Make */}
             <div className="space-y-4">
-              <h2 className="text-[32px] md:text-[36px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
+              <h2 className="text-[32px] md:text-[38px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
                 {t('Common Mistakes Businesses Make', 'الأخطاء الشائعة التي تقع فيها الشركات')}
               </h2>
               <p className="text-[16px] text-gray-600 leading-relaxed">
@@ -269,20 +270,20 @@ export function JournalPostPage() {
                 Common mistakes include:
               </p>
               <ul className="space-y-2.5 pl-4 text-[15.5px] text-gray-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Implementing AI without clear business objectives.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Expecting immediate results.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Ignoring employee adoption and training.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-1">•</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-slate-400 mt-1.5 text-[10px]">•</span>
                   <span>Choosing tools before defining business needs.</span>
                 </li>
               </ul>
@@ -293,7 +294,7 @@ export function JournalPostPage() {
 
             {/* Section 5: Looking Ahead */}
             <div className="space-y-4">
-              <h2 className="text-[32px] md:text-[36px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
+              <h2 className="text-[32px] md:text-[38px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
                 {t('Looking Ahead', 'نظرة مستقبلية')}
               </h2>
               <p className="text-[16px] text-gray-600 leading-relaxed">
@@ -309,7 +310,7 @@ export function JournalPostPage() {
 
             {/* Section 6: Final Thoughts */}
             <div className="space-y-4 pb-8">
-              <h2 className="text-[32px] md:text-[36px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
+              <h2 className="text-[32px] md:text-[38px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
                 {t('Final Thoughts', 'أفكار ختامية')}
               </h2>
               <p className="text-[16px] text-gray-600 leading-relaxed">

@@ -1,4 +1,5 @@
 import { useLocale } from '../../context/LocaleContext';
+import { ConnectButton } from '../tech';
 
 const links = [
   { key: 'Home', en: 'Home', ar: 'الرئيسية', href: '#top' },
@@ -13,8 +14,14 @@ export function SiteFooter() {
 
   return (
     <footer className="bg-white overflow-hidden">
-      {/* Top CTA with radial mint/green gradient */}
-      <div className="bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-[#DDF0EC] via-[#F4F9F8] to-white pt-24 pb-16 text-center px-6">
+      {/* Top CTA with rich green gradient */}
+      <div
+        className="w-full pt-24 pb-16 text-center px-6"
+        style={{
+          background:
+            'radial-gradient(120% 100% at 50% 0%, #3D6E5E 0%, rgba(111, 160, 145, 0.4) 45%, #ffffff 100%)',
+        }}
+      >
         <div className="container mx-auto max-w-4xl">
           <h2 className="text-[40px] md:text-[54px] font-serif font-semibold text-foreground tracking-tight leading-[1.15]">
             {t("Let’s Build Something Meaningful Together", 'فلنبنِ شيئاً ذي قيمة معاً')}
@@ -27,12 +34,14 @@ export function SiteFooter() {
             )}
           </p>
 
-          <a
-            href="#contact"
-            className="mt-8 inline-block bg-[#36BFFB] hover:bg-[#20B0F0] text-white rounded-xl px-6 py-3 text-[14px] font-semibold transition-colors shadow-sm"
-          >
-            {t('Book a consultation', 'احجز استشارة')}
-          </a>
+          <div className="mt-8 flex justify-center">
+            <ConnectButton
+              variant="blue"
+              className="!bg-[#36BFFB] hover:!bg-[#20B0F0] !text-white !rounded-lg !px-6 !py-3 !text-[14px] !font-semibold transition-colors shadow-sm cursor-pointer"
+            >
+              {t('Book a consultation', 'احجز استشارة')}
+            </ConnectButton>
+          </div>
         </div>
       </div>
 
@@ -55,9 +64,9 @@ export function SiteFooter() {
         </p>
       </div>
 
-      {/* Giant Brand Name Watermark */}
-      <div className="w-full overflow-hidden leading-none text-center select-none pt-2">
-        <p className="font-serif italic font-semibold text-[13.5vw] md:text-[14.5vw] leading-[0.85] text-[#0A1619] tracking-tight whitespace-nowrap">
+      {/* Giant Brand Name Watermark (Scaled to fit full name without clipping) */}
+      <div className="w-full overflow-hidden leading-none text-center select-none pt-2 pb-4 px-2">
+        <p className="font-serif italic font-semibold text-[9.5vw] sm:text-[10vw] md:text-[10.5vw] leading-[0.85] text-[#0A1619] tracking-tighter whitespace-nowrap inline-block">
           Ahmed Ibrahim
         </p>
       </div>

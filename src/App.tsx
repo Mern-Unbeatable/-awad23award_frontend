@@ -90,7 +90,7 @@ export default function App() {
 
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboardPage />} />
+            <Route index element={<Navigate to="/admin/posts" replace />} />
             <Route path="homepage" element={<AdminHomepagePage />} />
             <Route path="services" element={<AdminServicesPage />} />
             <Route path="posts" element={<AdminPostsPage />} />
