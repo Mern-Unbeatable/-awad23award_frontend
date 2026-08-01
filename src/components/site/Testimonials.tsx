@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useRef } from 'react';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
 
 export function Testimonials() {
   const { t } = useLocale();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -320 : 320;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   const items = [
     {
@@ -61,7 +69,7 @@ export function Testimonials() {
         {/* Header Row */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-12">
           <div>
-            <h2 className="text-[44px] md:text-[54px] font-serif font-bold text-foreground tracking-tight leading-none">
+            <h2 className="text-[32px] sm:text-[44px] md:text-[54px] font-serif font-bold text-foreground tracking-tight leading-none">
               {t('Testimonials', 'توصيات وآراء العملاء')}
             </h2>
             <p className="mt-3 max-w-md text-[16px] leading-relaxed text-[#52606D]">
@@ -76,14 +84,16 @@ export function Testimonials() {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-600 hover:border-gray-400 transition-colors"
+              onClick={() => scroll('left')}
+              className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-600 hover:border-gray-400 transition-colors cursor-pointer"
               aria-label="Previous testimonial"
             >
               <ChevronLeft className="w-5 h-5 rtl:rotate-180" />
             </button>
             <button
               type="button"
-              className="w-10 h-10 rounded-full bg-[#36BFFB] hover:bg-[#20B0F0] text-white flex items-center justify-center transition-colors shadow-sm"
+              onClick={() => scroll('right')}
+              className="w-10 h-10 rounded-full bg-[#36BFFB] hover:bg-[#20B0F0] text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
               aria-label="Next testimonial"
             >
               <ChevronRight className="w-5 h-5 rtl:rotate-180" />
@@ -91,12 +101,15 @@ export function Testimonials() {
           </div>
         </div>
 
-        {/* Testimonials 4 Cards Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Testimonials Cards: 1 card on mobile, grid on desktop */}
+        <div
+          ref={scrollRef}
+          className="flex sm:grid overflow-x-auto sm:overflow-visible snap-x snap-mandatory scroll-smooth gap-6 sm:grid-cols-2 lg:grid-cols-4 pb-4 sm:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
           {items.map((item) => (
             <figure
               key={item.num + item.name}
-              className="bg-white rounded-b-[12px] rounded-t-[4px] border-t-[3px] border-t-[#2E7D6E] border-x border-b border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-7 flex flex-col justify-between relative min-h-[310px] hover:shadow-md transition-shadow"
+              className="w-full shrink-0 sm:w-auto snap-center bg-white rounded-b-[12px] rounded-t-[4px] border-t-[3px] border-t-[#2E7D6E] border-x border-b border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-7 flex flex-col justify-between relative min-h-[310px] hover:shadow-md transition-shadow"
             >
               {/* Top row with stars and watermark number */}
               <div>

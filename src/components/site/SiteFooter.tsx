@@ -23,7 +23,7 @@ export function SiteFooter() {
         }}
       >
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-[40px] md:text-[54px] font-serif font-semibold text-foreground tracking-tight leading-[1.15]">
+          <h2 className="text-[30px] sm:text-[40px] md:text-[54px] font-serif font-semibold text-foreground tracking-tight leading-[1.15]">
             {t("Let’s Build Something Meaningful Together", 'فلنبنِ شيئاً ذي قيمة معاً')}
           </h2>
 

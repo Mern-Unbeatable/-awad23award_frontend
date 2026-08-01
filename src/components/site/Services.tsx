@@ -58,7 +58,7 @@ export function Services() {
             <span className="text-[10px]">✦</span>
             {t('SERVICES', 'الخدمات')}
           </div>
-          <h2 className="text-[44px] md:text-[52px] leading-[1.15] font-semibold text-foreground tracking-tight">
+          <h2 className="text-[32px] sm:text-[44px] md:text-[52px] leading-[1.15] font-semibold text-foreground tracking-tight">
             {t('How I Help You Move Forward', 'كيف أساعدك على التقدم للأمام')}
           </h2>
         </div>
@@ -68,7 +68,7 @@ export function Services() {
           {services.map((s) => (
             <article
               key={s.title}
-              className="bg-[#FAFAFA] rounded-[16px] p-8 flex flex-col justify-between transition-shadow hover:shadow-sm"
+              className="group bg-[#FAFAFA] rounded-[16px] p-8 flex flex-col justify-between border border-transparent hover:border-[#35BFFB] hover:shadow-[0_8px_30px_rgba(53,191,251,0.15)] transition-all duration-300 ease-in-out cursor-pointer"
             >
               <div>
                 {/* Icon */}

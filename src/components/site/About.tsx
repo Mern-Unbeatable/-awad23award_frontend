@@ -33,13 +33,13 @@ export function About() {
             {t('( About Me )', '( عني )')}
           </p>
 
-          <h2 className="mt-4 text-[56px] leading-[1.12] font-semibold text-foreground max-w-xl">
+          <h2 className="mt-4 text-[32px] sm:text-[44px] lg:text-[56px] leading-[1.12] font-semibold text-foreground max-w-xl">
             {locale === 'ar' ? (
               'نظرة عميقة في تجاربي والدروس المستفادة'
             ) : (
               <>
-                A Deep Dive into My<br />
-                Life's Experiences and<br />
+                A Deep Dive into My<br className="hidden sm:inline" />
+                Life's Experiences and<br className="hidden sm:inline" />
                 Lessons Learned
               </>
             )}
@@ -48,10 +48,13 @@ export function About() {
           {/* Topics */}
           <div className="mt-10 flex flex-col gap-[16px] max-w-md">
             {topics.map((tItem) => (
-              <div key={tItem.title} className="bg-[#FAFAFA] p-6">
+              <div
+                key={tItem.title}
+                className="group bg-[#FAFAFA] p-5 sm:p-6 rounded-lg border border-transparent hover:border-[#35BFFB] hover:shadow-[0_8px_25px_rgba(53,191,251,0.15)] transition-all duration-300 ease-in-out cursor-pointer"
+              >
                 {/* Wave / signal icon */}
                 <svg
-                  className="w-5 h-5 text-forest mb-3"
+                  className="w-5 h-5 text-[#35BFFB] mb-3 transition-transform duration-300 group-hover:scale-110"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -62,8 +65,8 @@ export function About() {
                 >
                   <path d="M2 12h2M6 8v8M10 5v14M14 8v8M18 10v4M22 12h-2" />
                 </svg>
-                <h3 className="text-[24px] font-bold text-foreground">{tItem.title}</h3>
-                <p className="mt-2 text-[16px] leading-relaxed text-muted-foreground">{tItem.body}</p>
+                <h3 className="text-[20px] sm:text-[24px] font-bold text-foreground group-hover:text-[#35BFFB] transition-colors duration-300">{tItem.title}</h3>
+                <p className="mt-2 text-[14px] sm:text-[16px] leading-relaxed text-muted-foreground">{tItem.body}</p>
               </div>
             ))}
           </div>
@@ -80,7 +83,7 @@ export function About() {
             className="w-full rounded-[8px] object-cover max-h-[520px]"
           />
 
-          <div className="mt-5 space-y-4 text-[18px] leading-relaxed text-[#175069]">
+          <div className="mt-5 space-y-4 text-[16px] sm:text-[18px] leading-relaxed text-[#175069]">
             <p>
               {t("Hello, I'm", 'مرحباً، أنا')}{' '}
               <span className="font-semibold text-[#36BFFB]">

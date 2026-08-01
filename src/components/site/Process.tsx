@@ -57,7 +57,7 @@ export function Process() {
 
         {/* 3 Step Cards Grid */}
         <div className="relative mt-16 max-w-4xl mx-auto pb-28">
-          {/* Connector line 1 (Between 01 and 02) */}
+          {/* Desktop Connector line 1 (Between 01 and 02) */}
           <div className="hidden md:block absolute top-[110px] left-[26%] w-[130px] h-[80px] pointer-events-none z-30">
             <svg viewBox="0 0 130 80" fill="none" className="w-full h-full">
               <path
@@ -71,7 +71,7 @@ export function Process() {
             </svg>
           </div>
 
-          {/* Connector line 2 (Between 02 and 03) */}
+          {/* Desktop Connector line 2 (Between 02 and 03) */}
           <div className="hidden md:block absolute top-[190px] right-[27%] w-[130px] h-[80px] pointer-events-none z-30">
             <svg viewBox="0 0 130 80" fill="none" className="w-full h-full">
               <path
@@ -86,22 +86,39 @@ export function Process() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3 items-start">
-            {steps.map((s) => (
-              <article
-                key={s.num}
-                className={`bg-white rounded-[28px] p-8 md:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100/90 flex flex-col justify-between min-h-[340px] transition-all duration-500 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)] ${s.cardClass}`}
-              >
-                {/* Step Number */}
-                <div className="text-[54px] font-normal text-slate-800 leading-none tracking-tight">
-                  {s.num}
-                </div>
+            {steps.map((s, idx) => (
+              <div key={s.num} className="contents md:block">
+                <article
+                  className={`bg-white rounded-[28px] p-8 md:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100/90 flex flex-col justify-between min-h-[340px] transition-all duration-300 ease-out hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.12)] cursor-pointer ${s.cardClass}`}
+                >
+                  {/* Step Number */}
+                  <div className="text-[54px] font-normal text-slate-800 leading-none tracking-tight">
+                    {s.num}
+                  </div>
 
-                {/* Content */}
-                <div className="mt-14">
-                  <h3 className="text-[22px] md:text-[24px] font-bold text-foreground mb-3">{s.title}</h3>
-                  <p className="text-[14px] leading-relaxed text-[#64748B]">{s.body}</p>
-                </div>
-              </article>
+                  {/* Content */}
+                  <div className="mt-14">
+                    <h3 className="text-[22px] md:text-[24px] font-bold text-foreground mb-3">{s.title}</h3>
+                    <p className="text-[14px] leading-relaxed text-[#64748B]">{s.body}</p>
+                  </div>
+                </article>
+
+                {/* Mobile Vertical Curve Connector (shown between steps on mobile) */}
+                {idx < steps.length - 1 && (
+                  <div className="flex md:hidden justify-center my-2 pointer-events-none z-30">
+                    <svg className="w-10 h-14" viewBox="0 0 40 60" fill="none">
+                      <path
+                        d="M 20 5 C 35 20, 5 40, 20 55"
+                        stroke="#36BFFB"
+                        strokeWidth="2.5"
+                        fill="none"
+                      />
+                      <circle cx="20" cy="5" r="4" fill="white" stroke="#36BFFB" strokeWidth="2.5" />
+                      <circle cx="20" cy="55" r="4" fill="white" stroke="#36BFFB" strokeWidth="2.5" />
+                    </svg>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>

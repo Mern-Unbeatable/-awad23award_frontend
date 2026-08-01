@@ -1,9 +1,18 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
 
 export function Blog() {
   const { t, pathFor } = useLocale();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -380 : 380;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   const posts = [
     {
@@ -82,53 +91,69 @@ export function Blog() {
           <h2 className="text-[26px] font-serif font-bold text-foreground tracking-tight uppercase">
             {t('LEARN, GROW', 'تعلم وتطور')}
           </h2>
-          <Link
-            to={pathFor('/journal/building-smarter-businesses-with-ai-strategy')}
-            className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#36BFFB] hover:underline transition-colors"
-          >
-            <span>{t('View All', 'عرض الكل')}</span>
-            <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => scroll('left')}
+              className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-slate-600 hover:border-gray-400 transition-colors cursor-pointer"
+              aria-label="Previous post"
+            >
+              <ChevronLeft className="w-5 h-5 rtl:rotate-180" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scroll('right')}
+              className="w-10 h-10 rounded-full bg-[#36BFFB] hover:bg-[#20B0F0] text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
+              aria-label="Next post"
+            >
+              <ChevronRight className="w-5 h-5 rtl:rotate-180" />
+            </button>
+          </div>
         </div>
 
-        {/* 6 Grid Articles */}
-        <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((p) => (
-            <Link
-              key={p.title}
-              to={pathFor(`/journal/${p.slug}`)}
-              className="flex gap-4 group cursor-pointer"
-            >
-              {/* Left thumbnail image */}
-              <img
-                src={p.img}
-                alt={p.title}
-                loading="lazy"
-                width={300}
-                height={300}
-                className="w-32 h-32 md:w-36 md:h-36 rounded-xl object-cover shrink-0"
-              />
+        {/* Original Grid Layout with horizontal scroll container */}
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 min-w-[700px] lg:min-w-0">
+            {posts.map((p) => (
+              <Link
+                key={p.title}
+                to={pathFor(`/journal/${p.slug}`)}
+                className="flex gap-4 group cursor-pointer"
+              >
+                {/* Left thumbnail image */}
+                <img
+                  src={p.img}
+                  alt={p.title}
+                  loading="lazy"
+                  width={300}
+                  height={300}
+                  className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-xl object-cover shrink-0"
+                />
 
-              {/* Right text content */}
-              <div className="flex flex-col justify-between py-0.5">
-                <div>
-                  <h3 className="text-[15px] font-serif font-bold text-foreground leading-snug group-hover:text-[#36BFFB] transition-colors line-clamp-2">
-                    {p.title}
-                  </h3>
-                  <p className="mt-1.5 text-[12px] leading-relaxed text-gray-500 line-clamp-3">
-                    {p.excerpt}
-                  </p>
-                </div>
+                {/* Right text content */}
+                <div className="flex flex-col justify-between py-0.5">
+                  <div>
+                    <h3 className="text-[15px] font-serif font-bold text-foreground leading-snug group-hover:text-[#36BFFB] transition-colors line-clamp-2">
+                      {p.title}
+                    </h3>
+                    <p className="mt-1.5 text-[12px] leading-relaxed text-gray-500 line-clamp-3">
+                      {p.excerpt}
+                    </p>
+                  </div>
 
-                {/* Footer metadata */}
-                <div className="mt-3 text-[11px] text-gray-400 font-medium flex items-center gap-2">
-                  <span>{p.readTime}</span>
-                  <span>—</span>
-                  <span>{p.author}</span>
+                  {/* Footer metadata */}
+                  <div className="mt-3 text-[11px] text-gray-400 font-medium flex items-center gap-2">
+                    <span>{p.readTime}</span>
+                    <span>—</span>
+                    <span>{p.author}</span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>

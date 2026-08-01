@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
+import { ConnectButton } from '../tech';
 
 export function Portfolio() {
   const { t, pathFor } = useLocale();
@@ -60,7 +61,7 @@ export function Portfolio() {
     <section id="work" className="bg-black text-white py-28">
       <div className="container mx-auto px-6 max-w-7xl">
         {/* Title */}
-        <h2 className="text-[72px] md:text-[96px] leading-[1.0] font-serif font-semibold text-white tracking-tight">
+        <h2 className="text-[44px] sm:text-[72px] md:text-[96px] leading-[1.0] font-serif font-semibold text-white tracking-tight">
           {t('My Portfolio', 'معرض أعمالي')}
         </h2>
 
@@ -73,13 +74,13 @@ export function Portfolio() {
             )}
           </p>
 
-          <a
-            href="#contact"
-            className="inline-flex items-center gap-2 self-start md:self-auto rounded-full border border-white/40 px-6 py-2.5 text-[13px] font-medium text-white transition-all hover:bg-white hover:text-black shrink-0"
+          <ConnectButton
+            variant="ghost"
+            className="inline-flex items-center justify-center gap-2 self-start md:self-auto !rounded-full !border !border-white/40 !px-6 !py-2.5 !text-[13px] !font-medium !text-white hover:!bg-white hover:!text-black transition-all cursor-pointer shrink-0"
           >
             <span>{t('Access My Secret Work', 'الاطلاع على الأعمال الخاصة')}</span>
             <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-          </a>
+          </ConnectButton>
         </div>
 
         {/* 6 Projects Grid */}

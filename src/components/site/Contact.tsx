@@ -18,7 +18,7 @@ export function Contact() {
         <div className="grid gap-10 md:grid-cols-2 md:items-center">
           {/* Left Column: Heading and description */}
           <div>
-            <h2 className="text-[44px] md:text-[52px] font-bold text-foreground tracking-tight leading-tight">
+            <h2 className="text-[32px] sm:text-[44px] md:text-[52px] font-bold text-foreground tracking-tight leading-tight">
               {t('Get In Touch', 'تواصل معي')}
             </h2>
             <p className="mt-3 max-w-md text-[16px] leading-relaxed text-[#52606D]">
@@ -36,7 +36,7 @@ export function Contact() {
                 {t('Newsletter', 'النشرة البريدية')}
               </label>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <input
                   id="newsletter-email"
                   type="email"
@@ -48,7 +48,7 @@ export function Contact() {
                 />
                 <button
                   type="submit"
-                  className="bg-[#36BFFB] hover:bg-[#20B0F0] text-white font-medium rounded-full px-8 py-3.5 text-[14px] transition-colors shrink-0 cursor-pointer shadow-sm"
+                  className="bg-[#36BFFB] hover:bg-[#20B0F0] text-white font-medium rounded-full px-8 py-3.5 text-[14px] transition-colors shrink-0 cursor-pointer shadow-sm text-center"
                 >
                   {t('Submit', 'إرسال')}
                 </button>
