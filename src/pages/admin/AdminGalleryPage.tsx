@@ -153,7 +153,7 @@ export function AdminGalleryPage() {
 
           <div className="rounded-xl overflow-hidden bg-[#F3F4F6]">
             {/* Toolbar Matching Image 2 */}
-            <div className="bg-white px-4 py-3 flex items-center gap-3">
+            <div className="bg-white px-3 sm:px-4 py-3 flex flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200">
               <div className="flex items-center gap-1.5 bg-[#181C20] text-white rounded-md px-3 py-1 text-[12px] font-bold cursor-pointer">
                 <Type className="w-3.5 h-3.5" />
                 <span>H1 ⌄</span>
@@ -252,7 +252,7 @@ export function AdminGalleryPage() {
           >
             <div>
               {/* Image Container with Top-Left Badge */}
-              <div className="relative overflow-hidden rounded-xl bg-slate-900 aspect-[16/10] mb-4">
+              <div className="relative overflow-hidden rounded-xl bg-slate-900 aspect-16/10 mb-4">
                 <img
                   src={p.img}
                   alt={p.title}

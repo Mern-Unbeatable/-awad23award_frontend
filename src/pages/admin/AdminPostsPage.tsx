@@ -124,7 +124,7 @@ export function AdminPostsPage() {
 
           <div className="rounded-xl overflow-hidden bg-[#F3F4F6]">
             {/* Toolbar Matching Image 2 */}
-            <div className="bg-white px-4 py-3 flex items-center gap-3">
+            <div className="bg-white px-3 sm:px-4 py-3 flex flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200">
               <div className="flex items-center gap-1.5 bg-[#181C20] text-white rounded-md px-3 py-1 text-[12px] font-bold cursor-pointer">
                 <Type className="w-3.5 h-3.5" />
                 <span>H1 ⌄</span>
@@ -221,7 +221,7 @@ export function AdminPostsPage() {
             className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow"
           >
             <div>
-              <div className="aspect-[16/10] overflow-hidden rounded-xl bg-slate-100 mb-4">
+              <div className="aspect-16/10 overflow-hidden rounded-xl bg-slate-100 mb-4">
                 <img
                   src={b.img}
                   alt={b.title}
@@ -229,11 +229,11 @@ export function AdminPostsPage() {
                 />
               </div>
 
-              <h3 className="font-serif font-bold text-[17px] text-slate-900 leading-snug mb-2.5 min-h-[48px] line-clamp-2">
+              <h3 className="font-serif font-bold text-[17px] text-slate-900 leading-snug mb-2.5 min-h-12 line-clamp-2">
                 {b.title}
               </h3>
 
-              <p className="text-[12.5px] text-slate-500 leading-relaxed line-clamp-3 mb-4 font-sans font-normal min-h-[54px]">
+              <p className="text-[12.5px] text-slate-500 leading-relaxed line-clamp-3 mb-4 font-sans font-normal min-h-13.5">
                 {b.excerpt}
               </p>
             </div>

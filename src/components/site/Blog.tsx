@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
+import { ScrollReveal } from './ScrollReveal';
 
 export function Blog() {
   const { t, pathFor } = useLocale();
@@ -84,8 +85,9 @@ export function Blog() {
   ];
 
   return (
-    <section id="blog" className="bg-white py-16">
-      <div className="container mx-auto px-6">
+    <section id="blog" className="bg-white section-padding">
+      <ScrollReveal>
+        <div className="container mx-auto px-6">
         {/* Header with bottom line border */}
         <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-10">
           <h2 className="text-[26px] font-serif font-bold text-foreground tracking-tight uppercase">
@@ -114,48 +116,50 @@ export function Blog() {
         {/* Original Grid Layout with horizontal scroll container */}
         <div
           ref={scrollRef}
-          className="overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="overflow-x-auto scroll-smooth scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 min-w-[700px] lg:min-w-0">
-            {posts.map((p) => (
-              <Link
-                key={p.title}
-                to={pathFor(`/journal/${p.slug}`)}
-                className="flex gap-4 group cursor-pointer"
-              >
-                {/* Left thumbnail image */}
-                <img
-                  src={p.img}
-                  alt={p.title}
-                  loading="lazy"
-                  width={300}
-                  height={300}
-                  className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-xl object-cover shrink-0"
-                />
+          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 min-w-175 lg:min-w-0">
+            {posts.map((p, idx) => (
+              <ScrollReveal key={p.slug} delay={idx * 160}>
+                <Link
+                  to={pathFor(`/journal/${p.slug}`)}
+                  className="flex gap-4 group cursor-pointer"
+                >
+                  {/* Left thumbnail image */}
+                  <img
+                    src={p.img}
+                    alt={p.title}
+                    loading="lazy"
+                    width={300}
+                    height={300}
+                    className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-xl object-cover shrink-0"
+                  />
 
-                {/* Right text content */}
-                <div className="flex flex-col justify-between py-0.5">
-                  <div>
-                    <h3 className="text-[15px] font-serif font-bold text-foreground leading-snug group-hover:text-[#36BFFB] transition-colors line-clamp-2">
-                      {p.title}
-                    </h3>
-                    <p className="mt-1.5 text-[12px] leading-relaxed text-gray-500 line-clamp-3">
-                      {p.excerpt}
-                    </p>
-                  </div>
+                  {/* Right text content */}
+                  <div className="flex flex-col justify-between py-0.5">
+                    <div>
+                      <h3 className="text-[15px] font-serif font-bold text-foreground leading-snug group-hover:text-[#36BFFB] transition-colors line-clamp-2">
+                        {p.title}
+                      </h3>
+                      <p className="mt-1.5 text-[12px] leading-relaxed text-gray-500 line-clamp-3">
+                        {p.excerpt}
+                      </p>
+                    </div>
 
-                  {/* Footer metadata */}
-                  <div className="mt-3 text-[11px] text-gray-400 font-medium flex items-center gap-2">
-                    <span>{p.readTime}</span>
-                    <span>—</span>
-                    <span>{p.author}</span>
+                    {/* Footer metadata */}
+                    <div className="mt-3 text-[11px] text-gray-400 font-medium flex items-center gap-2">
+                      <span>{p.readTime}</span>
+                      <span>—</span>
+                      <span>{p.author}</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </div>
-    </section>
+    </ScrollReveal>
+  </section>
   );
 }

@@ -1,5 +1,6 @@
 import { Brain, Cpu, BarChart3, CheckCircle2 } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
+import { ScrollReveal } from './ScrollReveal';
 
 export function Services() {
   const { t } = useLocale();
@@ -50,52 +51,53 @@ export function Services() {
   ];
 
   return (
-    <section id="services" className="bg-white py-24">
-      <div className="container mx-auto px-6">
-        {/* Top Header */}
-        <div className="text-center max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF5F3] text-[#2E7D6E] text-[12px] font-semibold tracking-wide uppercase mb-4">
-            <span className="text-[10px]">✦</span>
-            {t('SERVICES', 'الخدمات')}
+    <section id="services" className="bg-white section-padding">
+      <ScrollReveal>
+        <div className="container mx-auto px-6">
+          {/* Top Header */}
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF5F3] text-[#2E7D6E] text-[12px] font-semibold tracking-wide uppercase mb-4">
+              <span className="text-[10px]">✦</span>
+              {t('SERVICES', 'الخدمات')}
+            </div>
+            <h2 className="text-[32px] sm:text-[44px] md:text-[52px] leading-[1.15] font-semibold text-foreground tracking-tight">
+              {t('How I Help You Move Forward', 'كيف أساعدك على التقدم للأمام')}
+            </h2>
           </div>
-          <h2 className="text-[32px] sm:text-[44px] md:text-[52px] leading-[1.15] font-semibold text-foreground tracking-tight">
-            {t('How I Help You Move Forward', 'كيف أساعدك على التقدم للأمام')}
-          </h2>
+
+          {/* 3 Service Cards */}
+          <div className="mt-14 grid gap-8 md:grid-cols-3">
+            {services.map((s, idx) => (
+              <ScrollReveal key={s.title} delay={idx * 160}>
+                <article className="group bg-[#FAFAFA] rounded-3xl p-8 flex flex-col justify-between border border-transparent hover:border-[#35BFFB] hover:shadow-[0_8px_30px_rgba(53,191,251,0.15)] transition-all duration-300 ease-in-out cursor-pointer h-full">
+                  <div>
+                    {/* Icon */}
+                    <div className="w-12 h-12 rounded-[14px] bg-[#36BFFB] text-white flex items-center justify-center mb-7">
+                      <s.icon className="w-6 h-6 stroke-2" />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-[20px] font-bold text-foreground mb-3">{s.title}</h3>
+
+                    {/* Body Description */}
+                    <p className="text-[16px] leading-relaxed text-[#52606D] mb-8">{s.body}</p>
+                  </div>
+
+                  {/* Checklist Points */}
+                  <ul className="space-y-3 pt-2">
+                    {s.points.map((p) => (
+                      <li key={p} className="flex items-center gap-2.5 text-[14px] text-[#52606D]">
+                        <CheckCircle2 className="w-4 h-4 text-[#36BFFB] shrink-0" />
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
-
-        {/* 3 Service Cards */}
-        <div className="mt-14 grid gap-8 md:grid-cols-3">
-          {services.map((s) => (
-            <article
-              key={s.title}
-              className="group bg-[#FAFAFA] rounded-[16px] p-8 flex flex-col justify-between border border-transparent hover:border-[#35BFFB] hover:shadow-[0_8px_30px_rgba(53,191,251,0.15)] transition-all duration-300 ease-in-out cursor-pointer"
-            >
-              <div>
-                {/* Icon */}
-                <div className="w-12 h-12 rounded-[14px] bg-[#36BFFB] text-white flex items-center justify-center mb-7">
-                  <s.icon className="w-6 h-6 stroke-[2]" />
-                </div>
-
-                {/* Title */}
-                <h3 className="text-[20px] font-bold text-foreground mb-3">{s.title}</h3>
-
-                {/* Body Description */}
-                <p className="text-[16px] leading-relaxed text-[#52606D] mb-8">{s.body}</p>
-              </div>
-
-              {/* Checklist Points */}
-              <ul className="space-y-3 pt-2">
-                {s.points.map((p) => (
-                  <li key={p} className="flex items-center gap-2.5 text-[14px] text-[#52606D]">
-                    <CheckCircle2 className="w-4 h-4 text-[#36BFFB] shrink-0" />
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </div>
+      </ScrollReveal>
     </section>
   );
 }

@@ -5,6 +5,7 @@ import { Footer } from './Footer';
 import { SiteEffects } from './SiteEffects';
 import { SmoothScroll } from '../SmoothScroll';
 import { HomeNewsletter, TechGridBg } from '../tech';
+import { ScrollToTop } from './ScrollToTop';
 
 function stripLocale(pathname: string) {
   if (pathname === '/ar' || pathname.startsWith('/ar/')) {
@@ -25,6 +26,7 @@ export function PublicLayout() {
       <SmoothScroll>
         <div className="min-h-screen bg-canvas text-ink">
           <Outlet />
+          <ScrollToTop />
         </div>
       </SmoothScroll>
     );
@@ -39,6 +41,7 @@ export function PublicLayout() {
           <main className="w-full">
             <Outlet />
           </main>
+          <ScrollToTop />
         </div>
       </SmoothScroll>
     );
@@ -59,6 +62,7 @@ export function PublicLayout() {
           </div>
         </div>
         <Footer />
+        <ScrollToTop />
       </div>
     </SmoothScroll>
   );

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
 import { ConnectButton } from '../tech';
+import { ScrollReveal } from './ScrollReveal';
 
 export function Portfolio() {
   const { t, pathFor } = useLocale();
@@ -58,10 +59,11 @@ export function Portfolio() {
   ];
 
   return (
-    <section id="work" className="bg-black text-white py-28">
-      <div className="container mx-auto px-6 max-w-7xl">
+    <section id="work" className="bg-black text-white section-padding">
+      <ScrollReveal>
+        <div className="container mx-auto px-6 max-w-7xl">
         {/* Title */}
-        <h2 className="text-[44px] sm:text-[72px] md:text-[96px] leading-[1.0] font-serif font-semibold text-white tracking-tight">
+        <h2 className="text-[44px] sm:text-[72px] md:text-[96px] leading-none font-serif font-semibold text-white tracking-tight">
           {t('My Portfolio', 'معرض أعمالي')}
         </h2>
 
@@ -76,49 +78,51 @@ export function Portfolio() {
 
           <ConnectButton
             variant="ghost"
-            className="inline-flex items-center justify-center gap-2 self-start md:self-auto !rounded-full !border !border-white/40 !px-6 !py-2.5 !text-[13px] !font-medium !text-white hover:!bg-white hover:!text-black transition-all cursor-pointer shrink-0"
+            className="inline-flex items-center justify-center gap-2 self-start md:self-auto rounded-full! border! border-white/40! px-6! py-2.5! text-[13px]! font-medium! text-white! hover:bg-white! hover:text-black! transition-all cursor-pointer shrink-0"
           >
             <span>{t('Access My Secret Work', 'الاطلاع على الأعمال الخاصة')}</span>
             <ArrowRight className="w-4 h-4 rtl:rotate-180" />
           </ConnectButton>
         </div>
 
-        {/* 6 Projects Grid */}
-        <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p) => (
-            <Link
-              key={p.title}
-              to={pathFor(`/work/${p.slug}`)}
-              className="group cursor-pointer block"
-            >
-              {/* Image Container */}
-              <div className="relative overflow-hidden rounded-[4px] bg-[#1E1E1E] aspect-[16/10]">
-                <img
-                  src={p.img}
-                  alt={p.title}
-                  loading="lazy"
-                  width={800}
-                  height={500}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+        {/* Portfolio Projects Grid */}
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((p, idx) => (
+            <ScrollReveal key={p.slug} delay={idx * 160}>
+              <Link
+                to={pathFor(`/work/${p.slug}`)}
+                className="group flex flex-col cursor-pointer"
+              >
+                {/* Image Container */}
+                <div className="relative overflow-hidden rounded-lg bg-[#1E1E1E] aspect-16/10">
+                  <img
+                    src={p.img}
+                    alt={p.title}
+                    loading="lazy"
+                    width={800}
+                    height={500}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
 
-                {/* Badge Overlay */}
-                <span
-                  className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[12px] shadow-sm ${p.tagStyle}`}
-                >
-                  {p.tag}
-                </span>
-              </div>
+                  {/* Badge Overlay */}
+                  <span
+                    className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[12px] shadow-sm ${p.tagStyle}`}
+                  >
+                    {p.tag}
+                  </span>
+                </div>
 
-              {/* Title & Category Subtitle */}
-              <h3 className="mt-4 text-[18px] font-bold text-white group-hover:text-sky-300 transition-colors">
-                {p.title}
-              </h3>
-              <p className="mt-1 text-[13.5px] text-gray-400 font-normal">{p.sub}</p>
-            </Link>
+                {/* Title & Category Subtitle */}
+                <h3 className="mt-4 text-[18px] font-bold text-white group-hover:text-sky-300 transition-colors">
+                  {p.title}
+                </h3>
+                <p className="mt-1 text-[13.5px] text-gray-400 font-normal">{p.sub}</p>
+              </Link>
+            </ScrollReveal>
           ))}
         </div>
       </div>
-    </section>
+    </ScrollReveal>
+  </section>
   );
 }

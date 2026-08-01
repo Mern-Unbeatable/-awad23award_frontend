@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLocale } from '../../context/LocaleContext';
 import { useSite } from '../../context/SiteContext';
-import { ArrowIcon, BrandLogo, ConnectButton } from '../tech';
+import { BrandLogo, ConnectButton } from '../tech';
+import { X } from 'lucide-react';
 
 function stripLocale(pathname: string) {
   if (pathname === '/ar' || pathname.startsWith('/ar/')) {
@@ -77,12 +78,12 @@ export function Navbar() {
         open ? 'is-open' : ''
       }`}
     >
-      <div className="w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 flex items-center justify-between h-[74px] gap-4">
+      <div className="w-full max-w-360 mx-auto px-6 sm:px-10 lg:px-16 flex items-center justify-between h-18.5 gap-4">
         <Link to={pathFor('/')} className="ref-brand-link">
           <BrandLogo name={brandLabel} />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-[24px]">
+        <nav className="hidden lg:flex items-center gap-6">
           <Link to={pathFor('/about')} className={navClass(isAbout)}>
             {t('About', 'عني')}
           </Link>
@@ -97,7 +98,7 @@ export function Navbar() {
               <span className="ms-1 text-[0.65rem] opacity-70">▾</span>
             </Link>
             {servicesOpen && (
-              <div className="absolute top-full start-0 pt-2 min-w-[250px] z-50">
+              <div className="absolute top-full inset-s-0 pt-2 min-w-62.5 z-50">
                 <div className="nav-dropdown p-2 shadow-2xl">
                   {services.map((s) => {
                     const active = current === `/services/${s.slug}`;
@@ -138,7 +139,7 @@ export function Navbar() {
 
           <ConnectButton
             variant="cyan"
-            className="!inline-flex !items-center !justify-center !px-5 !py-2.5 !rounded-lg !bg-[#35BFFB] hover:!bg-[#22aaeb] !text-[#064738] !font-bold !text-xs md:!text-sm shadow-md shadow-[#35BFFB]/25 transition-all hover:scale-[1.02]"
+            className="inline-flex! items-center! justify-center! px-5! py-2.5! rounded-lg! bg-[#35BFFB]! hover:bg-[#22aaeb]! text-[#064738]! font-bold! text-xs! md:text-sm! shadow-md shadow-[#35BFFB]/25 transition-all hover:scale-[1.02]"
           >
             {t('Book a Consultation', 'احجز استشارة')}
           </ConnectButton>
@@ -157,43 +158,61 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div ref={menuRef} className="ref-mobile-menu open lg:hidden">
-          <Link to={pathFor('/')} onClick={() => setOpen(false)} className={navClass(isHome)}>
-            {t('Home', 'الرئيسية')}
-          </Link>
-          <Link to={pathFor('/about')} onClick={() => setOpen(false)} className={navClass(isAbout)}>
-            {t('About', 'من أنا')}
-          </Link>
-          <Link to={pathFor('/services')} onClick={() => setOpen(false)} className={navClass(isServices)}>
-            {t('Services', 'الخدمات')}
-          </Link>
-          {services.map((s) => (
-            <Link
-              key={s.id}
-              to={pathFor(`/services/${s.slug}`)}
-              onClick={() => setOpen(false)}
-              className={`nav-mobile-link ps-6${current === `/services/${s.slug}` ? ' is-active' : ''}`}
-            >
-              {locale === 'ar' ? s.titleAr : s.titleEn}
+        <div ref={menuRef} className="fixed inset-0 z-50 bg-[#064738] text-white flex flex-col justify-between p-6 sm:px-10 overflow-y-auto animate-in fade-in duration-200 lg:hidden">
+          {/* Header inside Mobile Drawer */}
+          <div className="flex items-center justify-between h-14 border-b border-white/15 pb-4">
+            <Link to={pathFor('/')} onClick={() => setOpen(false)} className="ref-brand-link">
+              <BrandLogo name={brandLabel} />
             </Link>
-          ))}
-          <Link to={pathFor('/work')} onClick={() => setOpen(false)} className={navClass(isWork)}>
-            {t('Work', 'الأعمال')}
-          </Link>
-          <Link to={pathFor('/journal')} onClick={() => setOpen(false)} className={navClass(isJournal)}>
-            {t('Insights', 'مقالات')}
-          </Link>
-          <Link to={pathFor('/contact')} onClick={() => setOpen(false)} className={navClass(isContact)}>
-            {t('Contact', 'تواصل')}
-          </Link>
-          <div className="mt-4">
-            <ConnectButton variant="blue" className="w-full" fallbackTo="/book">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="p-2 rounded-lg text-white hover:bg-white/10 transition-colors cursor-pointer"
+              aria-label="Close menu"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <nav className="flex flex-col space-y-2 my-auto py-6">
+            <Link to={pathFor('/')} onClick={() => setOpen(false)} className="text-xl font-semibold text-white hover:text-[#35BFFB] py-2 border-b border-white/10">
+              {t('Home', 'الرئيسية')}
+            </Link>
+            <Link to={pathFor('/about')} onClick={() => setOpen(false)} className="text-xl font-semibold text-white hover:text-[#35BFFB] py-2 border-b border-white/10">
+              {t('About', 'من أنا')}
+            </Link>
+            <Link to={pathFor('/services')} onClick={() => setOpen(false)} className="text-xl font-semibold text-white hover:text-[#35BFFB] py-2 border-b border-white/10">
+              {t('Services', 'الخدمات')}
+            </Link>
+            {services.map((s) => (
+              <Link
+                key={s.id}
+                to={pathFor(`/services/${s.slug}`)}
+                onClick={() => setOpen(false)}
+                className="text-base text-white/80 hover:text-[#35BFFB] ps-4 py-1"
+              >
+                {locale === 'ar' ? s.titleAr : s.titleEn}
+              </Link>
+            ))}
+            <Link to={pathFor('/work')} onClick={() => setOpen(false)} className="text-xl font-semibold text-white hover:text-[#35BFFB] py-2 border-b border-white/10">
+              {t('Work', 'الأعمال')}
+            </Link>
+            <Link to={pathFor('/journal')} onClick={() => setOpen(false)} className="text-xl font-semibold text-white hover:text-[#35BFFB] py-2 border-b border-white/10">
+              {t('Insights', 'مقالات')}
+            </Link>
+            <Link to={pathFor('/contact')} onClick={() => setOpen(false)} className="text-xl font-semibold text-white hover:text-[#35BFFB] py-2 border-b border-white/10">
+              {t('Contact', 'تواصل')}
+            </Link>
+          </nav>
+
+          <div className="flex flex-col gap-3 pt-4 border-t border-white/15">
+            <button type="button" onClick={toggleLocale} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-colors cursor-pointer">
+              {locale === 'en' ? 'Switch to العربية' : 'Switch to English'}
+            </button>
+            <ConnectButton variant="blue" className="w-full justify-center rounded-xl! bg-[#35BFFB]! py-3.5! text-base! font-semibold! text-[#064738]!" fallbackTo="/book">
               {t("Let's Connect", 'تواصل معي')}
             </ConnectButton>
           </div>
-          <button type="button" onClick={toggleLocale} className="ref-lang-btn mt-3 w-full">
-            {locale === 'en' ? 'العربية' : 'English'}
-          </button>
         </div>
       )}
     </header>

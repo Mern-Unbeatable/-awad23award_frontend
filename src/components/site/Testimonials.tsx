@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
+import { ScrollReveal } from './ScrollReveal';
 
 export function Testimonials() {
   const { t } = useLocale();
@@ -64,8 +65,9 @@ export function Testimonials() {
   ];
 
   return (
-    <section className="bg-white py-24">
-      <div className="container mx-auto px-6">
+    <section className="bg-white section-padding">
+      <ScrollReveal>
+        <div className="container mx-auto px-6">
         {/* Header Row */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-12">
           <div>
@@ -104,13 +106,13 @@ export function Testimonials() {
         {/* Testimonials Cards: 1 card on mobile, grid on desktop */}
         <div
           ref={scrollRef}
-          className="flex sm:grid overflow-x-auto sm:overflow-visible snap-x snap-mandatory scroll-smooth gap-6 sm:grid-cols-2 lg:grid-cols-4 pb-4 sm:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex sm:grid overflow-x-auto sm:overflow-visible snap-x snap-mandatory scroll-smooth gap-6 sm:grid-cols-2 lg:grid-cols-4 pb-4 sm:pb-0 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {items.map((item) => (
-            <figure
-              key={item.num + item.name}
-              className="w-full shrink-0 sm:w-auto snap-center bg-white rounded-b-[12px] rounded-t-[4px] border-t-[3px] border-t-[#2E7D6E] border-x border-b border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-7 flex flex-col justify-between relative min-h-[310px] hover:shadow-md transition-shadow"
-            >
+          {items.map((item, idx) => (
+            <ScrollReveal key={item.num + item.name} delay={idx * 160} className="w-full shrink-0 sm:w-auto snap-center h-full">
+              <figure
+                className="w-full shrink-0 sm:w-auto snap-center bg-white rounded-b-2xl rounded-t-lg border-t-[3px] border-t-[#2E7D6E] border-x border-b border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-7 flex flex-col justify-between relative min-h-77.5 hover:shadow-md transition-shadow h-full"
+              >
               {/* Top row with stars and watermark number */}
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -151,9 +153,11 @@ export function Testimonials() {
                 </div>
               </figcaption>
             </figure>
-          ))}
+          </ScrollReveal>
+        ))}
         </div>
       </div>
-    </section>
+    </ScrollReveal>
+  </section>
   );
 }

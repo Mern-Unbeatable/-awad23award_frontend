@@ -29,16 +29,16 @@ export function Hero() {
         <div className="relative z-20 lg:col-span-6 flex flex-col items-start text-start">
           
           {/* Eyebrow Pill */}
-          <span className="group relative overflow-hidden inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-[10px] sm:text-[11px] tracking-[0.14em] uppercase font-medium max-w-full border border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:border-[#35BFFB]/50 hover:shadow-[0_0_20px_rgba(53,191,251,0.25)]">
-            <span className="h-2 w-2 rounded-full bg-[#35BFFB] animate-pulse shrink-0 shadow-[0_0_8px_#35BFFB]" />
-            <span className="relative z-10 truncate animate-text-glass font-semibold">
+          <span className="group relative overflow-hidden inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 backdrop-blur-md px-2.5 sm:px-4 py-1 sm:py-1.5 text-[8.5px] min-[380px]:text-[9.5px] sm:text-[11px] tracking-[0.04em] sm:tracking-[0.14em] uppercase font-medium max-w-full border border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:border-[#35BFFB]/50 hover:shadow-[0_0_20px_rgba(53,191,251,0.25)]">
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[#35BFFB] animate-pulse shrink-0 shadow-[0_0_8px_#35BFFB]" />
+            <span className="relative z-10 whitespace-nowrap animate-text-glass font-semibold">
               {t('Technology Consultant • AI Strategist • Keynote Speaker', 'مستشار تقني • استراتيجي ذكاء اصطناعي • متحدث رئيسي')}
             </span>
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none animate-glass-shine" />
+            <span className="absolute inset-0 bg-linear-to-r from-transparent via-white/25 to-transparent pointer-events-none animate-glass-shine" />
           </span>
 
           {/* Main Headline */}
-          <h1 className="mt-4 text-[28px] sm:text-[44px] lg:text-[56px] leading-[1.14] font-semibold text-white tracking-tight max-w-full lg:max-w-[760px]">
+          <h1 className="mt-4 text-[31px] sm:text-[44px] lg:text-[56px] leading-[1.14] font-semibold text-white tracking-tight max-w-full lg:max-w-190">
             {t(
               'Helping Businesses Build Smarter Systems That Actually Scale.',
               'مساعدة الشركات في بناء أنظمة أذكى تتوسع بالفعل.'
@@ -80,13 +80,13 @@ export function Hero() {
                 alt="Ahmed Ibrahim"
                 width={800}
                 height={1000}
-                className="relative z-10 mx-auto w-[250px] sm:w-[380px] max-w-full object-contain drop-shadow-2xl"
+                className="relative z-10 mx-auto w-62.5 sm:w-95 max-w-full object-contain drop-shadow-2xl"
               />
             </div>
           </div>
 
           {/* Value Prop Body */}
-          <p className="mt-2 lg:mt-4 text-[15px] sm:text-[18px] leading-relaxed text-white/80 max-w-full lg:max-w-[540px]">
+          <p className="mt-2 lg:mt-4 text-[15px] sm:text-[18px] leading-relaxed text-white/80 max-w-full lg:max-w-135">
             {t(
               'I work with founders, executives, and growing businesses to simplify operations, embrace AI, and create technology strategies that deliver measurable results.',
               'أعمل مع المؤسسين والتنفيذيين والشركات المتنامية لتبسيط العمليات وتبني الذكاء الاصطناعي وابتكار استراتيجيات تقنية تحقق نتائج ملموسة.'
@@ -97,7 +97,7 @@ export function Hero() {
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3.5 w-full sm:w-auto">
             <ConnectButton
               variant="ghost"
-              className="group relative overflow-hidden !rounded-[12px] !bg-[#35BFFB] !px-7 !py-3.5 !text-[15px] !font-medium !text-white transition-all duration-300 ease-out cursor-pointer shadow-md hover:shadow-[0_10px_25px_-5px_rgba(53,191,251,0.45)] hover:-translate-y-1 active:translate-y-0 text-center justify-center w-full sm:w-auto inline-flex items-center gap-2 border border-white/10"
+              className="group relative overflow-hidden rounded-2xl! bg-[#35BFFB]! px-7! py-3.5! text-[15px]! font-medium! text-white! transition-all duration-300 ease-out cursor-pointer shadow-md hover:shadow-[0_10px_25px_-5px_rgba(53,191,251,0.45)] hover:-translate-y-1 active:translate-y-0 text-center justify-center w-full sm:w-auto inline-flex items-center gap-2 border border-white/10"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 {t('Book a consultation', 'احجز استشارة')}
@@ -105,12 +105,12 @@ export function Hero() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </span>
-              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-in-out pointer-events-none" />
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-linear-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-in-out pointer-events-none" />
             </ConnectButton>
 
             <a
               href="#services"
-              className="group relative overflow-hidden rounded-[12px] bg-[#3F7D6E] px-7 py-3.5 text-[15px] font-medium text-white transition-all duration-300 ease-out shadow-md hover:shadow-[0_10px_25px_-5px_rgba(63,125,110,0.45)] hover:-translate-y-1 active:translate-y-0 text-center w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/10"
+              className="group relative overflow-hidden rounded-2xl bg-[#3F7D6E] px-7 py-3.5 text-[15px] font-medium text-white transition-all duration-300 ease-out shadow-md hover:shadow-[0_10px_25px_-5px_rgba(63,125,110,0.45)] hover:-translate-y-1 active:translate-y-0 text-center w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/10"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 {t('Explore my services', 'استكشف خدماتي')}
@@ -118,7 +118,7 @@ export function Hero() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </span>
-              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-in-out pointer-events-none" />
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-linear-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-in-out pointer-events-none" />
             </a>
           </div>
 
@@ -146,7 +146,7 @@ export function Hero() {
             alt="Ahmed Ibrahim, technology consultant and keynote speaker"
             width={1024}
             height={1280}
-            className="mx-auto w-[560px] max-w-full object-contain object-bottom drop-shadow-2xl"
+            className="mx-auto w-140 max-w-full object-contain object-bottom drop-shadow-2xl"
           />
         </div>
 
@@ -178,7 +178,7 @@ export function Hero() {
           </p>
 
           <div
-            className={`relative mt-6 lg:mt-[184px] max-w-[350px] bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 lg:bg-transparent lg:border-none lg:p-0 ${
+            className={`relative mt-6 lg:mt-46 max-w-87.5 bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 lg:bg-transparent lg:border-none lg:p-0 ${
               isRtl ? 'lg:translate-x-6 sm:translate-x-0' : 'lg:-translate-x-6 sm:translate-x-0'
             }`}
           >

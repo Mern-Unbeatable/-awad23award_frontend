@@ -63,7 +63,7 @@ export function Nav({ dark = false }: NavProps) {
           <button
             type="button"
             onClick={toggleLocale}
-            className={`hidden items-center gap-1.5 rounded-[4px] border px-3.5 py-2 text-base ${langBtnStyle} transition-colors sm:flex cursor-pointer`}
+            className={`hidden items-center gap-1.5 rounded-lg border px-3.5 py-2 text-base ${langBtnStyle} transition-colors sm:flex cursor-pointer`}
             aria-label={t('Switch language', 'تبديل اللغة')}
           >
             <Globe className={`h-4 w-4 ${globeColor}`} />
@@ -72,7 +72,7 @@ export function Nav({ dark = false }: NavProps) {
 
           <ConnectButton
             variant="cyan"
-            className="hidden sm:inline-flex !rounded-[8px] !bg-[#35BFFB] hover:!bg-[#3F7D6E] !px-4 !py-2.5 !text-base !font-semibold !text-white transition-all duration-300 cursor-pointer shadow-sm"
+            className="hidden sm:inline-flex rounded-xl! bg-[#35BFFB]! hover:bg-[#3F7D6E]! px-4! py-2.5! text-base! font-semibold! text-white! transition-all duration-300 cursor-pointer shadow-sm"
           >
             {t('Book a Consultation', 'احجز استشارة')}
           </ConnectButton>
@@ -89,14 +89,33 @@ export function Nav({ dark = false }: NavProps) {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden fixed inset-x-0 top-20 bg-[#0B0F17]/95 backdrop-blur-xl border-b border-white/10 p-6 space-y-4 shadow-2xl z-50">
-          <nav className="flex flex-col space-y-3">
+        <div className="fixed inset-0 z-50 bg-[#064738] text-white flex flex-col justify-between p-6 sm:px-10 overflow-y-auto animate-in fade-in duration-200 md:hidden">
+          {/* Top Bar inside Mobile Drawer */}
+          <div className="flex items-center justify-between h-14 border-b border-white/15 pb-4">
+            <a href={pathFor('/')} onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#35BFFB] text-xs font-bold text-[#064738]">
+                AI
+              </span>
+              <span className="text-base font-semibold text-white">Ahmed Ibrahim</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="p-2 rounded-lg text-white hover:bg-white/10 transition-colors cursor-pointer"
+              aria-label="Close navigation menu"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex flex-col space-y-3 my-auto py-6">
             {links.map((l) => (
               <a
                 key={l.name}
                 href={l.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-lg font-medium text-white/90 hover:text-[#35BFFB] py-2 transition-colors border-b border-white/5"
+                className="text-2xl font-semibold text-white hover:text-[#35BFFB] py-2.5 transition-colors border-b border-white/10"
               >
                 {t(
                   l.name,
@@ -114,22 +133,23 @@ export function Nav({ dark = false }: NavProps) {
             ))}
           </nav>
 
-          <div className="pt-2 flex flex-col gap-3">
+          {/* Bottom Language & Action Buttons */}
+          <div className="flex flex-col gap-3 pt-4 border-t border-white/15">
             <button
               type="button"
               onClick={() => {
                 toggleLocale();
                 setMobileOpen(false);
               }}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-white/20 text-white font-medium text-sm hover:bg-white/10 transition-colors"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Globe className="w-4 h-4" />
+              <Globe className="w-5 h-5 text-[#35BFFB]" />
               <span>{locale === 'en' ? 'Switch to العربية' : 'Switch to English'}</span>
             </button>
 
             <ConnectButton
               variant="cyan"
-              className="w-full justify-center !rounded-lg !bg-[#35BFFB] !py-3 !text-base !font-semibold !text-white"
+              className="w-full justify-center rounded-xl! bg-[#35BFFB]! py-3.5! text-base! font-semibold! text-[#064738]!"
             >
               {t('Book a Consultation', 'احجز استشارة')}
             </ConnectButton>
