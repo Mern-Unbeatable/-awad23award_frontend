@@ -6,99 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Ahmed Awad — Technology Strategist & Entrepreneur. CRM, automation, AI, and digital solutions for KSA." />
     <title>Ahmed Awad | Technology Strategist & Entrepreneur</title>
-    <link rel="stylesheet" href="/boot-loader.css" />
   </head>
   <body>
-    <!-- Boot loader: tech / video HUD — shows on every page open, before app view -->
-    <div id="boot-loader" role="status" aria-live="polite" aria-label="Loading">
-      <div class="bl-grid" aria-hidden="true"></div>
-      <div class="bl-glow" aria-hidden="true"></div>
-      <div class="bl-scan" aria-hidden="true"></div>
-      <div class="bl-beam" aria-hidden="true"></div>
-      <div class="bl-noise" aria-hidden="true"></div>
-      <div class="bl-frame" aria-hidden="true"></div>
-      <div class="bl-corners" aria-hidden="true"></div>
-
-      <div class="bl-hud" aria-hidden="true">
-        <span class="bl-rec"><i></i> SYS</span>
-        <span>SYSTEM // ONLINE</span>
-        <span>SECURE · LIVE</span>
-      </div>
-
-      <div class="bl-core">
-        <div class="bl-ring-wrap" aria-hidden="true">
-          <div class="bl-ring"></div>
-          <div class="bl-ring-spin"></div>
-          <div class="bl-ring-spin-2"></div>
-          <div class="bl-hex" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center;">
-            <span style="font-family: system-ui, sans-serif; font-weight: 800; font-size: 26px; color: #38bdf8; letter-spacing: 0.05em; text-shadow: 0 0 12px rgba(56, 189, 248, 0.6);">
-              AI
-            </span>
-          </div>
-        </div>
-
-        <div class="bl-brand">Ahmed Ibrahim</div>
-        <div class="bl-sub">Technology · Strategy · Systems</div>
-
-        <div class="bl-bar" aria-hidden="true"><span id="boot-bar"></span></div>
-        <div class="bl-meta">
-          <span>Booting interface</span>
-          <span class="bl-pct"><span id="boot-pct">0</span>%</span>
-        </div>
-      </div>
-    </div>
-
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      (function () {
-        var loader = document.getElementById('boot-loader');
-        var bar = document.getElementById('boot-bar');
-        var pctEl = document.getElementById('boot-pct');
-        if (!loader) return;
-
-        var DURATION = 2400; // always finishes — never waits on fonts/images
-        var start = performance.now();
-        var finished = false;
-        var raf = 0;
-
-        function setProgress(p) {
-          p = Math.max(0, Math.min(100, p));
-          if (bar) bar.style.width = p + '%';
-          if (pctEl) pctEl.textContent = String(Math.floor(p));
-        }
-
-        function easeOutCubic(t) {
-          return 1 - Math.pow(1 - t, 3);
-        }
-
-        function dismiss() {
-          if (finished) return;
-          finished = true;
-          cancelAnimationFrame(raf);
-          setProgress(100);
-          loader.classList.add('is-done');
-          document.documentElement.classList.add('boot-ready');
-          setTimeout(function () {
-            if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
-          }, 700);
-        }
-
-        function frame(now) {
-          var t = Math.min(1, (now - start) / DURATION);
-          setProgress(easeOutCubic(t) * 100);
-          if (t < 1) {
-            raf = requestAnimationFrame(frame);
-          } else {
-            dismiss();
-          }
-        }
-
-        raf = requestAnimationFrame(frame);
-
-        // Hard failsafe — never stuck, even if rAF is throttled in background tabs
-        setTimeout(dismiss, DURATION + 500);
-      })();
-    </script>
   </body>
 </html>
