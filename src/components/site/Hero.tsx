@@ -97,7 +97,7 @@ export function Hero() {
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3.5 w-full sm:w-auto">
             <ConnectButton
               variant="ghost"
-              className="group relative overflow-hidden rounded-2xl! bg-[#35BFFB]! px-7! py-3.5! text-[15px]! font-medium! text-white! transition-all duration-300 ease-out cursor-pointer shadow-md hover:shadow-[0_10px_25px_-5px_rgba(53,191,251,0.45)] hover:-translate-y-1 active:translate-y-0 text-center justify-center w-full sm:w-auto inline-flex items-center gap-2 border border-white/10"
+              className="group relative overflow-hidden rounded-lg! bg-[#35BFFB]! px-7! py-3.5! text-[15px]! font-medium! text-white! transition-all duration-300 ease-out cursor-pointer shadow-md hover:shadow-[0_10px_25px_-5px_rgba(53,191,251,0.45)] hover:-translate-y-1 active:translate-y-0 text-center justify-center w-full sm:w-auto inline-flex items-center gap-2 border border-white/10"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 {t('Book a consultation', 'احجز استشارة')}
@@ -110,7 +110,7 @@ export function Hero() {
 
             <a
               href="#services"
-              className="group relative overflow-hidden rounded-2xl bg-[#3F7D6E] px-7 py-3.5 text-[15px] font-medium text-white transition-all duration-300 ease-out shadow-md hover:shadow-[0_10px_25px_-5px_rgba(63,125,110,0.45)] hover:-translate-y-1 active:translate-y-0 text-center w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/10"
+              className="group relative overflow-hidden rounded-lg bg-[#3F7D6E] px-7 py-3.5 text-[15px] font-medium text-white transition-all duration-300 ease-out shadow-md hover:shadow-[0_10px_25px_-5px_rgba(63,125,110,0.45)] hover:-translate-y-1 active:translate-y-0 text-center w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/10"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 {t('Explore my services', 'استكشف خدماتي')}
