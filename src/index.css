@@ -201,3 +201,21 @@ body {
   display: inline-block;
   animation: wave-bounce 2.8s ease-in-out infinite;
 }
+
+@keyframes hero-title-wave {
+  0%, 14%, 100% {
+    transform: translateY(0);
+    color: #ffffff;
+    filter: drop-shadow(0 0 0px transparent);
+  }
+  6% {
+    transform: translateY(-2.5px);
+    color: #35BFFB;
+    filter: drop-shadow(0 0 8px rgba(53, 191, 251, 0.5));
+  }
+}
+
+.animate-hero-title-wave {
+  display: inline-block;
+  animation: hero-title-wave 5.5s ease-in-out infinite;
+}

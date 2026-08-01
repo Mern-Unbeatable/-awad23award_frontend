@@ -39,7 +39,34 @@ export function Hero() {
 
           {/* Main Headline */}
           <h1 className="mt-4 text-[28px] sm:text-[44px] lg:text-[56px] leading-[1.14] font-semibold text-white tracking-tight max-w-full lg:max-w-[760px]">
-            {t('Helping Businesses Build Smarter Systems That Actually Scale.', 'مساعدة الشركات في بناء أنظمة أذكى تتوسع بالفعل.')}
+            {t(
+              'Helping Businesses Build Smarter Systems That Actually Scale.',
+              'مساعدة الشركات في بناء أنظمة أذكى تتوسع بالفعل.'
+            )
+              .split(' ')
+              .map((word, wordIdx, wordArr) => {
+                const prevCharsCount = wordArr
+                  .slice(0, wordIdx)
+                  .reduce((acc, w) => acc + w.length + 1, 0);
+
+                return (
+                  <span key={wordIdx} className="inline-block whitespace-nowrap">
+                    {word.split('').map((char, charIdx) => {
+                      const globalIdx = prevCharsCount + charIdx;
+                      return (
+                        <span
+                          key={charIdx}
+                          className="inline-block animate-hero-title-wave"
+                          style={{ animationDelay: `${globalIdx * 0.048}s` }}
+                        >
+                          {char}
+                        </span>
+                      );
+                    })}
+                    {wordIdx < wordArr.length - 1 && <span className="inline-block">&nbsp;</span>}
+                  </span>
+                );
+              })}
           </h1>
 
           {/* MOBILE FEATURED PORTRAIT IMAGE — Prominently placed right under headline on mobile (<1024px) */}
@@ -70,7 +97,7 @@ export function Hero() {
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3.5 w-full sm:w-auto">
             <ConnectButton
               variant="ghost"
-              className="group relative overflow-hidden !rounded-[12px] !bg-[#3F7D6E] hover:!bg-[#35BFFB] !px-7 !py-3.5 !text-[15px] !font-medium !text-white transition-all duration-300 ease-out cursor-pointer shadow-md hover:shadow-[0_10px_25px_-5px_rgba(53,191,251,0.45)] hover:-translate-y-1 active:translate-y-0 text-center justify-center w-full sm:w-auto inline-flex items-center gap-2 border border-white/10"
+              className="group relative overflow-hidden !rounded-[12px] !bg-[#35BFFB] !px-7 !py-3.5 !text-[15px] !font-medium !text-white transition-all duration-300 ease-out cursor-pointer shadow-md hover:shadow-[0_10px_25px_-5px_rgba(53,191,251,0.45)] hover:-translate-y-1 active:translate-y-0 text-center justify-center w-full sm:w-auto inline-flex items-center gap-2 border border-white/10"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 {t('Book a consultation', 'احجز استشارة')}
@@ -83,7 +110,7 @@ export function Hero() {
 
             <a
               href="#services"
-              className="group relative overflow-hidden rounded-[12px] bg-[#35BFFB] hover:bg-[#25A0D4] px-7 py-3.5 text-[15px] font-medium text-white transition-all duration-300 ease-out shadow-md hover:shadow-[0_10px_25px_-5px_rgba(53,191,251,0.45)] hover:-translate-y-1 active:translate-y-0 text-center w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/10"
+              className="group relative overflow-hidden rounded-[12px] bg-[#3F7D6E] px-7 py-3.5 text-[15px] font-medium text-white transition-all duration-300 ease-out shadow-md hover:shadow-[0_10px_25px_-5px_rgba(63,125,110,0.45)] hover:-translate-y-1 active:translate-y-0 text-center w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/10"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 {t('Explore my services', 'استكشف خدماتي')}
