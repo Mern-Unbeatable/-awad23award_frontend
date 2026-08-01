@@ -2,8 +2,8 @@ import type { GalleryItem, HomeSection, Post, Product, Service, SiteSettings, Te
 
 const IMG = {
   // Soft professional portrait (desk / consultant feel) — soft-masked in hero CSS
-  hero: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1400&q=80',
-  about: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1200&q=80',
+  hero: '/award.png',
+  about: '/award.png',
   service1: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1000&q=80',
   service2: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1000&q=80',
   service3: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1000&q=80',

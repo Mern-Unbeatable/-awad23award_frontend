@@ -1,9 +1,11 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
+import { Nav } from '../site/Nav';
 import { Footer } from './Footer';
 import { SiteEffects } from './SiteEffects';
 import { SmoothScroll } from '../SmoothScroll';
 import { HomeNewsletter, TechGridBg } from '../tech';
+import { ScrollToTop } from './ScrollToTop';
 
 function stripLocale(pathname: string) {
   if (pathname === '/ar' || pathname.startsWith('/ar/')) {
@@ -14,15 +16,44 @@ function stripLocale(pathname: string) {
 
 export function PublicLayout() {
   const { pathname } = useLocation();
-  const isHome = stripLocale(pathname) === '/';
+  const currentPath = stripLocale(pathname);
+  const isHome = currentPath === '/';
+  const isJournalPage = currentPath.startsWith('/journal');
+  const isWorkPage = currentPath.startsWith('/work') || currentPath.startsWith('/gallery');
+
+  if (isHome) {
+    return (
+      <SmoothScroll>
+        <div className="min-h-screen bg-canvas text-ink">
+          <Outlet />
+          <ScrollToTop />
+        </div>
+      </SmoothScroll>
+    );
+  }
+
+  if (isJournalPage || isWorkPage) {
+    return (
+      <SmoothScroll>
+        <div className="min-h-screen bg-white text-ink relative">
+          <SiteEffects />
+          <Nav dark />
+          <main className="w-full">
+            <Outlet />
+          </main>
+          <ScrollToTop />
+        </div>
+      </SmoothScroll>
+    );
+  }
 
   return (
     <SmoothScroll>
-      <div className="min-h-screen bg-ink text-cream">
+      <div className="min-h-screen bg-canvas text-ink">
         <SiteEffects />
         <Navbar />
-        <main className={isHome ? undefined : 'inner-page'}>
-          {!isHome ? <TechGridBg full /> : null}
+        <main className="inner-page">
+          <TechGridBg full />
           <Outlet />
         </main>
         <div className="site-newsletter">
@@ -31,6 +62,7 @@ export function PublicLayout() {
           </div>
         </div>
         <Footer />
+        <ScrollToTop />
       </div>
     </SmoothScroll>
   );

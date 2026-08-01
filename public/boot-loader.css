@@ -10,7 +10,7 @@ html:not(.boot-ready) {
   z-index: 99999;
   display: grid;
   place-items: center;
-  background: #04070d;
+  background: #0b0f17;
   overflow: hidden;
   transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.7s;
 }
@@ -25,8 +25,8 @@ html:not(.boot-ready) {
   position: absolute;
   inset: -20%;
   background-image:
-    linear-gradient(rgba(94, 161, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(94, 161, 255, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.07) 1px, transparent 1px);
   background-size: 48px 48px;
   transform: perspective(600px) rotateX(58deg) translateY(-8%);
   animation: bl-grid-drift 8s linear infinite;
@@ -38,7 +38,7 @@ html:not(.boot-ready) {
   width: min(70vw, 520px);
   height: min(70vw, 520px);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(26, 156, 196, 0.22) 0%, rgba(94, 161, 255, 0.08) 42%, transparent 70%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(2, 132, 199, 0.08) 42%, transparent 70%);
   filter: blur(8px);
   animation: bl-pulse 2.4s ease-in-out infinite;
 }
@@ -62,8 +62,8 @@ html:not(.boot-ready) {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #5ea1ff, #22d3ee, transparent);
-  box-shadow: 0 0 18px rgba(94, 161, 255, 0.65);
+  background: linear-gradient(90deg, transparent, #38bdf8, #0284c7, transparent);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.65);
   animation: bl-beam 2.8s ease-in-out infinite;
   opacity: 0.85;
 }
@@ -71,7 +71,7 @@ html:not(.boot-ready) {
 #boot-loader .bl-frame {
   position: absolute;
   inset: 18px;
-  border: 1px solid rgba(94, 161, 255, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.18);
   pointer-events: none;
 }
 
@@ -83,7 +83,7 @@ html:not(.boot-ready) {
   position: absolute;
   width: 28px;
   height: 28px;
-  border-color: #5ea1ff;
+  border-color: #38bdf8;
   border-style: solid;
 }
 
@@ -129,7 +129,7 @@ html:not(.boot-ready) {
   font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(148, 160, 180, 0.9);
+  color: rgba(148, 163, 184, 0.9);
 }
 
 #boot-loader .bl-rec {
@@ -170,7 +170,7 @@ html:not(.boot-ready) {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px solid rgba(94, 161, 255, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 #boot-loader .bl-ring-spin {
@@ -178,10 +178,10 @@ html:not(.boot-ready) {
   inset: -4px;
   border-radius: 50%;
   border: 2px solid transparent;
-  border-top-color: #5ea1ff;
-  border-right-color: #22d3ee;
+  border-top-color: #38bdf8;
+  border-right-color: #0284c7;
   animation: bl-spin 1.1s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(94, 161, 255, 0.55));
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.55));
 }
 
 #boot-loader .bl-ring-spin-2 {
@@ -189,8 +189,8 @@ html:not(.boot-ready) {
   inset: 12px;
   border-radius: 50%;
   border: 1.5px solid transparent;
-  border-bottom-color: #1a9cc4;
-  border-left-color: rgba(94, 161, 255, 0.5);
+  border-bottom-color: #38bdf8;
+  border-left-color: rgba(56, 189, 248, 0.5);
   animation: bl-spin 1.8s linear infinite reverse;
 }
 
@@ -198,8 +198,8 @@ html:not(.boot-ready) {
   position: absolute;
   inset: 28px;
   clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  background: linear-gradient(145deg, rgba(94, 161, 255, 0.12), rgba(26, 156, 196, 0.06));
-  border: 1px solid rgba(94, 161, 255, 0.35);
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.12), rgba(2, 132, 199, 0.06));
+  border: 1px solid rgba(56, 189, 248, 0.35);
   display: grid;
   place-items: center;
   animation: bl-hex-glow 2s ease-in-out infinite;
@@ -216,8 +216,8 @@ html:not(.boot-ready) {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #eef2f8;
-  text-shadow: 0 0 24px rgba(94, 161, 255, 0.35);
+  color: #f8fafc;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
   animation: bl-glitch 3.2s steps(1) infinite;
 }
 
@@ -227,13 +227,13 @@ html:not(.boot-ready) {
   font-size: 0.7rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: #1a9cc4;
+  color: #38bdf8;
 }
 
 #boot-loader .bl-bar {
   width: min(220px, 55vw);
   height: 2px;
-  background: rgba(24, 33, 54, 0.9);
+  background: rgba(15, 23, 42, 0.9);
   overflow: hidden;
   border-radius: 2px;
 }
@@ -242,8 +242,8 @@ html:not(.boot-ready) {
   display: block;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #3b82f6, #5ea1ff, #22d3ee);
-  box-shadow: 0 0 12px rgba(94, 161, 255, 0.7);
+  background: linear-gradient(90deg, #0284c7, #38bdf8, #36bffb);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
   transition: width 0.15s linear;
 }
 
@@ -255,11 +255,11 @@ html:not(.boot-ready) {
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #94a0b4;
+  color: #94a3b8;
 }
 
 #boot-loader .bl-pct {
-  color: #5ea1ff;
+  color: #38bdf8;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }

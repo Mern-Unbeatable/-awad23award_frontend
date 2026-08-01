@@ -65,6 +65,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     let stRaf = 0;
     const onScroll = () => {
+      window.dispatchEvent(new Event('scroll'));
       if (stRaf) return;
       stRaf = requestAnimationFrame(() => {
         ScrollTrigger.update();
