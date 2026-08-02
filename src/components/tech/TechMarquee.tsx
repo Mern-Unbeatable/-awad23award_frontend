@@ -21,7 +21,7 @@ export function TechMarquee() {
   ];
 
   return (
-    <div className="relative w-full overflow-hidden whitespace-nowrap py-2" aria-hidden>
+    <div className="relative w-full overflow-hidden whitespace-nowrap py-2" dir="ltr" aria-hidden>
       <div className="flex items-center animate-marquee">
         {items.map((logo, index) => (
           <div
