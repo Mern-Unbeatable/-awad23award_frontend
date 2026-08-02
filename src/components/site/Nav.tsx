@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Globe, Menu, X } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
 import { ConnectButton } from '../tech';
+import { useCalendly } from '../../hooks/useCalendly';
 
 interface NavProps {
   dark?: boolean;
@@ -10,14 +11,41 @@ interface NavProps {
 export function Nav({ dark = false }: NavProps) {
   const { locale, toggleLocale, t, pathFor } = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isConfigured, openCalendar } = useCalendly();
 
   const links = [
     { name: 'About', href: pathFor('/#about') },
     { name: 'Services', href: pathFor('/#services') },
     { name: 'Work', href: pathFor('/#work') },
     { name: 'Blog', href: pathFor('/#blog') },
-    { name: 'Contact', href: pathFor('/#contact') },
   ];
+
+  // Lock body scroll when mobile drawer is open (works on iOS Safari too)
+  useEffect(() => {
+    if (mobileOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   const textColor = dark ? 'text-slate-800 hover:text-[#36BFFB]' : 'text-white hover:text-white/80';
   const brandColor = dark ? 'text-slate-900' : 'text-white';
@@ -41,7 +69,7 @@ export function Nav({ dark = false }: NavProps) {
             <a
               key={l.name}
               href={l.href}
-              className={`text-base font-normal ${textColor} transition-colors`}
+              className={`text-base font-normal cursor-pointer ${textColor} transition-colors`}
             >
               {t(
                 l.name,
@@ -51,12 +79,18 @@ export function Nav({ dark = false }: NavProps) {
                   ? 'الخدمات'
                   : l.name === 'Work'
                   ? 'الأعمال'
-                  : l.name === 'Blog'
-                  ? 'مدونة'
-                  : 'تواصل'
+                  : 'مدونة'
               )}
             </a>
           ))}
+          {/* Contact — opens same booking flow as Book a Consultation */}
+          <ConnectButton
+            variant="ghost"
+            className={`text-base font-normal cursor-pointer ${textColor} transition-colors bg-transparent! shadow-none! p-0! hover:bg-transparent!`}
+            fallbackTo="/book"
+          >
+            {t('Contact', 'تواصل')}
+          </ConnectButton>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -80,7 +114,7 @@ export function Nav({ dark = false }: NavProps) {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className={`md:hidden p-2 rounded-lg ${dark ? 'text-slate-800' : 'text-white'} hover:bg-white/10 transition-colors`}
+            className={`md:hidden p-2 rounded-lg ${dark ? 'text-slate-800' : 'text-white'} hover:bg-white/10 transition-colors cursor-pointer`}
             aria-label="Toggle navigation menu"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -115,7 +149,7 @@ export function Nav({ dark = false }: NavProps) {
                 key={l.name}
                 href={l.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-2xl font-semibold text-white hover:text-[#35BFFB] py-2.5 transition-colors border-b border-white/10"
+                className="text-2xl font-semibold text-white hover:text-[#35BFFB] py-2.5 transition-colors border-b border-white/10 cursor-pointer"
               >
                 {t(
                   l.name,
@@ -125,12 +159,28 @@ export function Nav({ dark = false }: NavProps) {
                     ? 'الخدمات'
                     : l.name === 'Work'
                     ? 'الأعمال'
-                    : l.name === 'Blog'
-                    ? 'مدونة'
-                    : 'تواصل'
+                    : 'مدونة'
                 )}
               </a>
             ))}
+            {/* Contact — plain button styled like nav links */}
+            {isConfigured ? (
+              <button
+                type="button"
+                onClick={() => { void openCalendar(); setMobileOpen(false); }}
+                className="text-start text-2xl font-semibold text-white hover:text-[#35BFFB] py-2.5 transition-colors border-b border-white/10 cursor-pointer bg-transparent"
+              >
+                {t('Contact', 'تواصل')}
+              </button>
+            ) : (
+              <a
+                href={pathFor('/book')}
+                onClick={() => setMobileOpen(false)}
+                className="text-2xl font-semibold text-white hover:text-[#35BFFB] py-2.5 transition-colors border-b border-white/10 cursor-pointer"
+              >
+                {t('Contact', 'تواصل')}
+              </a>
+            )}
           </nav>
 
           {/* Bottom Language & Action Buttons */}
