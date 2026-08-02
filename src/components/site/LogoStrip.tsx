@@ -4,6 +4,7 @@ const logos = [
   { name: 'Partner 3', src: '/p3.png' },
   { name: 'Partner 4', src: '/p4.png' },
   { name: 'Partner 5', src: '/p5.png' },
+  {name: 'Partner 6', src: '/p6.png'}
 ];
 
 export function LogoStrip() {

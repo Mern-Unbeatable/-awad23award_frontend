@@ -4,6 +4,10 @@ const LOGO_IMAGES = [
   { name: 'Partner 3', src: '/p3.png' },
   { name: 'Partner 4', src: '/p4.png' },
   { name: 'Partner 5', src: '/p5.png' },
+  {name: 'Partner 6', src: '/p6.png'},
+  { name: 'Partner 7', src: '/p7.png' },
+  {name: 'Partner 8', src: '/p8.png'},
+  {name: 'Partner 9', src: '/p9.png'}
 ];
 
 export function TechMarquee() {
