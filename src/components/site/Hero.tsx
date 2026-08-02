@@ -2,12 +2,7 @@ import { Nav } from './Nav';
 import { useLocale } from '../../context/LocaleContext';
 import { ConnectButton, TechMarquee } from '../tech';
 import { AnimatedCounter } from './AnimatedCounter';
-import a1 from '../../../award/src/assets/avatar-1.jpg';
-import a2 from '../../../award/src/assets/avatar-2.jpg';
-import a3 from '../../../award/src/assets/avatar-3.jpg';
-import a4 from '../../../award/src/assets/avatar-4.jpg';
 
-const avatars = [a1, a2, a3, a4];
 
 export function Hero() {
   const { t, isRtl } = useLocale();
@@ -37,7 +32,7 @@ export function Hero() {
           </span>
 
           {/* Main Headline */}
-          <h1 className={`mt-4 text-[31px] sm:text-[44px] lg:text-[56px] leading-[1.14] font-semibold text-white tracking-tight max-w-full${isRtl ? ' lg:max-w-[420px]' : ''}`}>
+          <h1 className={`mt-4 text-[31px] sm:text-[44px] lg:text-[56px] leading-[1.14] font-semibold text-white tracking-tight max-w-full${isRtl ? ' lg:max-w-105' : ''}`}>
             {isRtl
               ? t(
                   'Helping Businesses Build Smarter Systems That Actually Scale.',
@@ -202,7 +197,7 @@ export function Hero() {
                   </div>
                   {/* Animated connector */}
                   <div className="relative w-px flex-1 my-1 overflow-hidden" style={{ height: '40px' }}>
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#35BFFB]/50 to-emerald-400/50" />
+                    <div className="absolute inset-0 bg-linear-to-b from-[#35BFFB]/50 to-emerald-400/50" />
                     <div className="absolute top-0 left-0 w-full animate-journey-beam" style={{ height: '40%', background: 'linear-gradient(to bottom, transparent, white, transparent)' }} />
                   </div>
                 </div>
@@ -232,7 +227,7 @@ export function Hero() {
 
             {/* Quote */}
             <div className="flex gap-2.5 items-start">
-              <div className="w-0.5 rounded-full bg-gradient-to-b from-[#35BFFB] to-emerald-400 self-stretch shrink-0 mt-0.5" />
+              <div className="w-0.5 rounded-full bg-linear-to-b from-[#35BFFB] to-emerald-400 self-stretch shrink-0 mt-0.5" />
               <p className="text-[12.5px] leading-relaxed text-white/70 italic">
                 {t(
                   'I bring a multicultural perspective that helps organizations bridge global technology with local business realities.',
