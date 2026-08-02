@@ -148,7 +148,7 @@ export function Hero() {
             {statsConfig.map((s, idx) => (
               <div key={idx} className="flex flex-col shrink-0 group cursor-default">
                 <dt className="font-display text-[1.8rem] sm:text-[2.2rem] lg:text-[2.2rem] leading-none font-bold text-white transition-colors duration-300">
-                  <AnimatedCounter end={s.end} suffix={s.suffix} formatCommas={s.formatCommas} baseDelay={s.baseDelay} duration={2200} />
+                  <AnimatedCounter end={s.end} suffix={s.suffix} formatCommas={s.formatCommas} baseDelay={s.baseDelay} duration={2200} isRtl={isRtl} />
                 </dt>
                 <dd className="mt-2 text-[11px] sm:text-[12.5px] text-white/75 font-normal leading-snug whitespace-nowrap">{s.label}</dd>
               </div>
