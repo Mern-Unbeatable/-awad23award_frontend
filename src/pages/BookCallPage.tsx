@@ -74,7 +74,7 @@ export function BookCallPage() {
               )}
             </div>
 
-            <div className="book-panel glass-card !p-6">
+            <div className="book-panel glass-card p-6!">
               <p className="book-panel-kicker">{t('How it works', 'كيف يعمل')}</p>
               <ul className="book-steps">
                 {steps.map((step) => (

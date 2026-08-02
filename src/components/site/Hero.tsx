@@ -2,7 +2,6 @@ import { Nav } from './Nav';
 import { useLocale } from '../../context/LocaleContext';
 import { ConnectButton, TechMarquee } from '../tech';
 import { AnimatedCounter } from './AnimatedCounter';
-
 import a1 from '../../../award/src/assets/avatar-1.jpg';
 import a2 from '../../../award/src/assets/avatar-2.jpg';
 import a3 from '../../../award/src/assets/avatar-3.jpg';
@@ -38,35 +37,62 @@ export function Hero() {
           </span>
 
           {/* Main Headline */}
-          <h1 className="mt-4 text-[31px] sm:text-[44px] lg:text-[56px] leading-[1.14] font-semibold text-white tracking-tight max-w-full lg:max-w-190">
-            {t(
-              'Helping Businesses Build Smarter Systems That Actually Scale.',
-              'مساعدة الشركات في بناء أنظمة أذكى تتوسع بالفعل.'
-            )
-              .split(' ')
-              .map((word, wordIdx, wordArr) => {
-                const prevCharsCount = wordArr
-                  .slice(0, wordIdx)
-                  .reduce((acc, w) => acc + w.length + 1, 0);
-
-                return (
-                  <span key={wordIdx} className="inline-block whitespace-nowrap">
-                    {word.split('').map((char, charIdx) => {
-                      const globalIdx = prevCharsCount + charIdx;
-                      return (
-                        <span
-                          key={charIdx}
-                          className="inline-block animate-hero-title-wave"
-                          style={{ animationDelay: `${globalIdx * 0.048}s` }}
-                        >
-                          {char}
+          <h1 className={`mt-4 text-[31px] sm:text-[44px] lg:text-[56px] leading-[1.14] font-semibold text-white tracking-tight max-w-full${isRtl ? ' lg:max-w-[420px]' : ''}`}>
+            {isRtl
+              ? t(
+                  'Helping Businesses Build Smarter Systems That Actually Scale.',
+                  'مساعدة الشركات في بناء أنظمة أذكى تتوسع بالفعل.'
+                )
+                  .split(' ')
+                  .map((word, wordIdx, wordArr) => (
+                    <span key={wordIdx} className="inline-block">
+                      <span
+                        className="inline-block animate-hero-title-wave"
+                        style={{ animationDelay: `${wordIdx * 0.12}s` }}
+                      >
+                        {word}
+                      </span>
+                      {wordIdx < wordArr.length - 1 && <span className="inline-block">&nbsp;</span>}
+                    </span>
+                  ))
+              : (() => {
+                  const lines = [
+                    ['Helping', 'Businesses', 'Build'],
+                    ['Smarter', 'Systems', 'That'],
+                    ['Actually', 'Scale.'],
+                  ];
+                  let globalCharIdx = 0;
+                  return lines.map((words, lineIdx) => (
+                    <span key={lineIdx} className="block">
+                      {words.map((word, wordIdx) => (
+                        <span key={wordIdx} className="inline whitespace-nowrap">
+                          <span className="inline-block whitespace-nowrap">
+                            {word.split('').map((char) => {
+                              const delay = globalCharIdx++ * 0.048;
+                              return (
+                                <span
+                                  key={delay}
+                                  className="inline-block animate-hero-title-wave"
+                                  style={{ animationDelay: `${delay}s` }}
+                                >
+                                  {char}
+                                </span>
+                              );
+                            })}
+                          </span>
+                          {wordIdx < words.length - 1 && (
+                            <span
+                              className="inline-block animate-hero-title-wave"
+                              style={{ animationDelay: `${globalCharIdx++ * 0.048}s` }}
+                            >
+                              &nbsp;
+                            </span>
+                          )}
                         </span>
-                      );
-                    })}
-                    {wordIdx < wordArr.length - 1 && <span className="inline-block">&nbsp;</span>}
-                  </span>
-                );
-              })}
+                      ))}
+                    </span>
+                  ));
+                })()}
           </h1>
 
           {/* MOBILE FEATURED PORTRAIT IMAGE — Prominently placed right under headline on mobile (<1024px) */}
@@ -150,60 +176,73 @@ export function Hero() {
           />
         </div>
 
-        {/* RIGHT COLUMN — Social Proof & Advisor Quote */}
-        <div className="relative z-20 lg:col-span-3 lg:col-start-10 lg:pt-2">
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-3 dir-rtl:space-x-reverse">
-              {avatars.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt=""
-                  loading="lazy"
-                  width={512}
-                  height={512}
-                  className="h-10 w-10 rounded-full object-cover ring-2 ring-forest transform transition-transform duration-300 hover:scale-115 hover:z-30 hover:ring-[#35BFFB] shadow-md"
-                />
-              ))}
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3F7D6E] text-white text-lg ring-2 ring-forest shadow-md animate-pulse hover:scale-110 transition-transform">
-                +
-              </span>
+        {/* RIGHT COLUMN — Journey Card */}
+        <div className="relative z-20 lg:col-span-3 lg:col-start-10 lg:pt-2 flex flex-col justify-start">
+          <div className="relative rounded-2xl bg-white/7 backdrop-blur-md border border-white/12 p-5 shadow-[0_8px_40px_rgba(0,0,0,0.3)] overflow-hidden">
+
+            {/* Ambient glows */}
+            <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#35BFFB]/12 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Section label */}
+            <p className="text-[10px] tracking-[0.18em] uppercase font-semibold text-white/40 mb-4">
+              {t('The Journey', 'رحلة المسير')}
+            </p>
+
+            {/* Timeline */}
+            <div className="relative flex flex-col gap-0">
+
+              {/* Node 1 — Malaysia */}
+              <div className="flex items-start gap-3">
+                <div className="flex flex-col items-center">
+                  {/* Circle */}
+                  <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#35BFFB]/20 border border-[#35BFFB]/40 shadow-[0_0_12px_rgba(53,191,251,0.3)]">
+                    <span className="text-base leading-none">🇲🇾</span>
+                    <span className="absolute inset-0 rounded-full animate-ping bg-[#35BFFB]/20" style={{ animationDuration: '2.5s' }} />
+                  </div>
+                  {/* Animated connector */}
+                  <div className="relative w-px flex-1 my-1 overflow-hidden" style={{ height: '40px' }}>
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#35BFFB]/50 to-emerald-400/50" />
+                    <div className="absolute top-0 left-0 w-full animate-journey-beam" style={{ height: '40%', background: 'linear-gradient(to bottom, transparent, white, transparent)' }} />
+                  </div>
+                </div>
+                <div className="pt-1 pb-5">
+                  <p className="text-[12px] font-bold text-[#35BFFB] tracking-wide uppercase">{t('Malaysia', 'ماليزيا')}</p>
+                  <p className="text-[12.5px] text-white/80 mt-0.5">{t('Studied & built foundations', 'دراسة وبناء الأسس')}</p>
+                </div>
+              </div>
+
+              {/* Node 2 — Saudi Arabia */}
+              <div className="flex items-start gap-3">
+                <div className="flex flex-col items-center">
+                  <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-400/40 shadow-[0_0_12px_rgba(52,211,153,0.3)]">
+                    <span className="text-base leading-none">🇸🇦</span>
+                    <span className="absolute inset-0 rounded-full animate-ping bg-emerald-400/20" style={{ animationDuration: '2.5s', animationDelay: '1s' }} />
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <p className="text-[12px] font-bold text-emerald-400 tracking-wide uppercase">{t('Saudi Arabia', 'السعودية')}</p>
+                  <p className="text-[12.5px] text-white/80 mt-0.5">{t('Built real-world solutions', 'بنى حلولاً واقعية')}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="w-full h-px bg-white/10 my-4" />
+
+            {/* Quote */}
+            <div className="flex gap-2.5 items-start">
+              <div className="w-0.5 rounded-full bg-gradient-to-b from-[#35BFFB] to-emerald-400 self-stretch shrink-0 mt-0.5" />
+              <p className="text-[12.5px] leading-relaxed text-white/70 italic">
+                {t(
+                  'I bring a multicultural perspective that helps organizations bridge global technology with local business realities.',
+                  'أحمل منظوراً متعدد الثقافات يساعد المؤسسات على الجمع بين التكنولوجيا العالمية وواقع الأعمال المحلية.'
+                )}
+              </p>
             </div>
           </div>
-          <p className="mt-3 text-[15px] sm:text-[18px] leading-relaxed text-white/90 font-medium">
-            <span className="font-bold text-white text-[18px] sm:text-[20px] tracking-tight">
-              <AnimatedCounter end={18} suffix="k+" duration={2000} />
-            </span>{' '}
-            {t('satisfied customer all over World', 'عميل راضٍ في جميع أنحاء العالم')}
-          </p>
-
-          <div
-            className={`relative mt-6 lg:mt-46 max-w-87.5 bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 lg:bg-transparent lg:border-none lg:p-0 ${
-              isRtl ? 'lg:translate-x-6 sm:translate-x-0' : 'lg:-translate-x-6 sm:translate-x-0'
-            }`}
-          >
-            <svg
-              className="w-8 h-8 text-white/20 absolute -top-4 -left-2 pointer-events-none lg:-top-8 lg:-left-4 lg:w-11 lg:h-11"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-            </svg>
-            <p className="text-[14px] sm:text-[18px] leading-relaxed text-white/85 relative z-10">
-              {t(
-                "I'm a technology consultant, keynote speaker, and trusted advisor helping businesses embrace AI, modernize operations, and build future-ready systems through practical strategies and real-world experience.",
-                "أنا مستشار تقني ومتحدث رئيسي ومستشار موثوق أساعد الشركات على تبني الذكاء الاصطناعي وتحديث العمليات وبناء أنظمة مستقبلية من خلال استراتيجيات عملية وخبرات واقعية."
-              )}
-              <svg
-                className="w-8 h-8 text-white/20 inline-block align-bottom ms-2 pointer-events-none lg:w-10 lg:h-10"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.57-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z" />
-              </svg>
-            </p>
-          </div>
         </div>
+
       </div>
 
       {/* FADE BRIDGE: dark green → white */}

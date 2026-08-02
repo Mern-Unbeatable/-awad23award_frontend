@@ -228,3 +228,12 @@ body {
 .section-padding {
   @apply py-10 sm:py-16 lg:py-20;
 }
+
+@keyframes journey-beam {
+  0% { top: -40%; }
+  100% { top: 140%; }
+}
+
+.animate-journey-beam {
+  animation: journey-beam 1.8s ease-in-out infinite;
+}
