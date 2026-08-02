@@ -26,7 +26,7 @@ export function TechMarquee() {
         {items.map((logo, index) => (
           <div
             key={`${logo.name}-${index}`}
-            className="mx-8 sm:mx-12 md:mx-16 flex-shrink-0 flex items-center justify-center"
+            className="mx-8 sm:mx-12 md:mx-16 shrink-0 flex items-center justify-center"
           >
             <img
               src={logo.src}
