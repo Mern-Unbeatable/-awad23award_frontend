@@ -16,7 +16,7 @@ const initialBlogs: BlogPostItem[] = [
     title: 'Building Smarter Businesses with AI Strategy',
     excerpt: 'Discover practical ways AI can streamline operations, improve decision-making, and create long-term business value.',
     readTime: '10 Minutes',
-    author: 'Ahmed Awad',
+    author: 'Ahmed Ibrahim',
     img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
   },
   {
@@ -24,7 +24,7 @@ const initialBlogs: BlogPostItem[] = [
     title: 'The Future of Business Automation',
     excerpt: 'See how intelligent automation is reshaping workflows, increasing productivity, and improving customer experiences.',
     readTime: '10 Minutes',
-    author: 'Ahmed Awad',
+    author: 'Ahmed Ibrahim',
     img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
   },
   {
@@ -32,7 +32,7 @@ const initialBlogs: BlogPostItem[] = [
     title: 'Leading Through Change and Innovation',
     excerpt: 'Explore leadership strategies that help businesses embrace technology while staying focused on sustainable growth.',
     readTime: '10 Minutes',
-    author: 'Ahmed Awad',
+    author: 'Ahmed Ibrahim',
     img: 'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=800&q=80',
   },
   {
@@ -40,7 +40,7 @@ const initialBlogs: BlogPostItem[] = [
     title: 'Digital Transformation That Actually Works',
     excerpt: 'Learn how organizations can modernize processes without unnecessary complexity or expensive technology investments.',
     readTime: '10 Minutes',
-    author: 'Ahmed Awad',
+    author: 'Ahmed Ibrahim',
     img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
   },
 ];
@@ -94,7 +94,7 @@ export function AdminPostsPage() {
         title,
         excerpt: excerpt || 'Discover practical insights and strategies for modern business technology.',
         readTime: '10 Minutes',
-        author: 'Ahmed Awad',
+        author: 'Ahmed Ibrahim',
         img: img || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
       };
       setBlogs([newB, ...blogs]);

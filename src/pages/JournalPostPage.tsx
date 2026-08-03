@@ -32,7 +32,7 @@ export function JournalPostPage() {
     ),
     category: t('AI Strategy & Digital Transformation', 'استراتيجية الذكاء الاصطناعي والتحول الرقمي'),
     readTime: t('5 min read', '5 دقائق قراءة'),
-    authorName: t('Ahmed Awad', 'أحمد عوض'),
+    authorName: t('Ahmed Ibrahim', 'أحمد عوض'),
     authorRole: t(
       'Senior AI Strategy Consultant & Enterprise Advisor',
       'مستشار رئيسي لاستراتيجية الذكاء الاصطناعي ومستشار مؤسسي'
@@ -87,7 +87,7 @@ export function JournalPostPage() {
             <div className="flex items-center gap-3.5">
               <img
                 src={profileImg}
-                alt="Ahmed Awad"
+                alt="Ahmed Ibrahim"
                 className="w-11 h-11 rounded-full object-cover shadow-sm"
               />
               <div>
