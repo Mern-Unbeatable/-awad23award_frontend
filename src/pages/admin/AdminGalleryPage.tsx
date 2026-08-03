@@ -167,7 +167,7 @@ function ImageUpload({
   );
 }
 
-// ─── MultiImageUpload — multiple images, grid preview, parallel upload ────────
+
 
 function MultiImageUpload({
   label,
@@ -298,7 +298,7 @@ function MultiImageUpload({
   );
 }
 
-// ─── Form Types & State ───────────────────────────────────────────────────────
+
 
 interface PortfolioForm {
   titleEn: string; titleAr: string;
@@ -380,7 +380,6 @@ function formFromItem(item: GalleryItem): PortfolioForm {
   };
 }
 
-// ─── Shared Field wrapper ─────────────────────────────────────────────────────
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -396,11 +395,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const inputCls = 'w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13.5px] text-slate-800 focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all';
 const textareaCls = `${inputCls} resize-none`;
 
-// ─── Tab names ────────────────────────────────────────────────────────────────
+
 
 const TABS = ['Overview', 'Challenge', 'Approach', 'Leadership', 'Solution', 'Outcome', 'Skills'];
 
-// ─── AdminGalleryPage ─────────────────────────────────────────────────────────
+
 
 export function AdminGalleryPage() {
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -470,7 +469,7 @@ export function AdminGalleryPage() {
     }
   }
 
-  // ─── Array helpers ──────────────────────────────────────────────────────────
+
 
   function addItem<T>(key: keyof PortfolioForm, blank: T) {
     setForm((prev) => ({ ...prev, [key]: [...(prev[key] as T[]), blank] }));
@@ -487,7 +486,7 @@ export function AdminGalleryPage() {
     }));
   }
 
-  // ─── Tab renderers ──────────────────────────────────────────────────────────
+
 
   function renderOverview() {
     return (
