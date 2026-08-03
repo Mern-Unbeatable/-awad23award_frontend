@@ -66,7 +66,7 @@ export function Services() {
           </div>
 
           {/* 3 Service Cards */}
-          <div className="mt-14 grid gap-8 md:grid-cols-3">
+          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((s, idx) => (
               <ScrollReveal key={s.title} delay={idx * 160}>
                 <article className="group bg-[#FAFAFA] rounded-3xl p-8 flex flex-col justify-between border border-transparent hover:border-[#35BFFB] hover:shadow-[0_8px_30px_rgba(53,191,251,0.15)] transition-all duration-300 ease-in-out cursor-pointer h-full">

@@ -25,7 +25,7 @@ export function Blog() {
         'اكتشف طرقاً عملية يمكن للذكاء الاصطناعي من خلالها تبسيط العمليات وتحسين اتخاذ القرار.'
       ),
       readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Awad', 'أحمد عوض'),
+      author: t('Ahmed Ibrahim', 'أحمد عوض'),
     },
     {
       slug: 'leading-through-change-and-innovation',
@@ -36,7 +36,7 @@ export function Blog() {
         'استكشف استراتيجيات القيادة التي تساعد الشركات على تبني التكنولوجيا والحفاظ على النمو المستدام.'
       ),
       readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Awad', 'أحمد عوض'),
+      author: t('Ahmed Ibrahim', 'أحمد عوض'),
     },
     {
       slug: 'turning-data-into-better-decisions',
@@ -47,7 +47,7 @@ export function Blog() {
         'افهم كيف تساعد الاستراتيجيات القائمة على البيانات الشركات في تحديد الفرص واتخاذ قرارات أسرع.'
       ),
       readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Awad', 'أحمد عوض'),
+      author: t('Ahmed Ibrahim', 'أحمد عوض'),
     },
     {
       slug: 'digital-transformation-that-actually-works',
@@ -58,7 +58,7 @@ export function Blog() {
         'تعرف على كيفية تحديث العمليات في المؤسسات دون تعقيد غير ضروري أو استثمارات مكلفة.'
       ),
       readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Awad', 'أحمد عوض'),
+      author: t('Ahmed Ibrahim', 'أحمد عوض'),
     },
     {
       slug: 'future-of-business-automation',
@@ -69,7 +69,7 @@ export function Blog() {
         'شاهد كيف تعيد الأتمتة الذكية تشكيل مسارات العمل وتزيد الإنتاجية وتحسن تجربة العملاء.'
       ),
       readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Awad', 'أحمد عوض'),
+      author: t('Ahmed Ibrahim', 'أحمد عوض'),
     },
     {
       slug: 'technology-trends-every-leader-should-know',
@@ -80,7 +80,7 @@ export function Blog() {
         'ابق على اطلاع بالتكنولوجيات الناشئة التي تغير الصناعات وتخلق فرصاً جديدة للأعمال.'
       ),
       readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Awad', 'أحمد عوض'),
+      author: t('Ahmed Ibrahim', 'أحمد عوض'),
     },
   ];
 
@@ -118,7 +118,7 @@ export function Blog() {
           ref={scrollRef}
           className="overflow-x-auto scroll-smooth scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 min-w-175 lg:min-w-0">
+          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((p, idx) => (
               <ScrollReveal key={p.slug} delay={idx * 160}>
                 <Link

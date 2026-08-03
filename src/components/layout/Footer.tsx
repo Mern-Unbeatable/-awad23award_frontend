@@ -9,7 +9,7 @@ export function Footer() {
 
   const brandLabel =
     /official/i.test(settings.brandName) || !settings.brandName.trim()
-      ? 'AHMED AWAD'
+      ? 'Ahmed Ibrahim'
       : settings.brandName.toUpperCase();
 
   return (

@@ -64,7 +64,7 @@ export function Nav({ dark = false }: NavProps) {
           <span className={`text-base font-semibold ${brandColor}`}>Ahmed Ibrahim</span>
         </a>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-8 lg:flex">
           {links.map((l) => (
             <a
               key={l.name}
@@ -97,7 +97,7 @@ export function Nav({ dark = false }: NavProps) {
           <button
             type="button"
             onClick={toggleLocale}
-            className={`hidden items-center gap-1.5 rounded-lg border px-3.5 py-2 text-base ${langBtnStyle} transition-colors sm:flex cursor-pointer`}
+            className={`hidden items-center gap-1.5 rounded-lg border px-3.5 py-2 text-base ${langBtnStyle} transition-colors lg:flex cursor-pointer`}
             aria-label={t('Switch language', 'تبديل اللغة')}
           >
             <Globe className={`h-4 w-4 ${globeColor}`} />
@@ -106,7 +106,7 @@ export function Nav({ dark = false }: NavProps) {
 
           <ConnectButton
             variant="cyan"
-            className="hidden sm:inline-flex rounded-lg! bg-[#35BFFB]! hover:bg-[#3F7D6E]! px-4! py-2.5! text-base! font-semibold! text-white! transition-all duration-300 cursor-pointer shadow-sm"
+            className="hidden lg:inline-flex rounded-lg! bg-[#35BFFB]! hover:bg-[#3F7D6E]! px-4! py-2.5! text-base! font-semibold! text-white! transition-all duration-300 cursor-pointer shadow-sm"
           >
             {t('Book a Consultation', 'احجز استشارة')}
           </ConnectButton>
@@ -114,7 +114,7 @@ export function Nav({ dark = false }: NavProps) {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className={`md:hidden p-2 rounded-lg ${dark ? 'text-slate-800' : 'text-white'} hover:bg-white/10 transition-colors cursor-pointer`}
+            className={`lg:hidden p-2 rounded-lg ${dark ? 'text-slate-800' : 'text-white'} hover:bg-white/10 transition-colors cursor-pointer`}
             aria-label="Toggle navigation menu"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -123,7 +123,7 @@ export function Nav({ dark = false }: NavProps) {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 bg-[#064738] text-white flex flex-col justify-between p-6 sm:px-10 overflow-y-auto animate-in fade-in duration-200 md:hidden">
+        <div className="fixed inset-0 z-50 bg-[#064738] text-white flex flex-col justify-between p-6 sm:px-10 overflow-y-auto animate-in fade-in duration-200 lg:hidden">
           {/* Top Bar inside Mobile Drawer */}
           <div className="flex items-center justify-between h-14 border-b border-white/15 pb-4">
             <a href={pathFor('/')} onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5">

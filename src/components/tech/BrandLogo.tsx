@@ -5,7 +5,7 @@ interface BrandLogoProps {
   markOnly?: boolean;
 }
 
-/** Dual-tone “A” mark matching the Ahmed Awad reference brand. */
+/** Dual-tone “A” mark matching the Ahmed Ibrahim reference brand. */
 export function BrandLogo({ className = '', name = 'Ahmed Ibrahim', markOnly = false }: BrandLogoProps) {
   return (
     <span className={`ref-brand flex items-center gap-2.5 ${className}`.trim()}>

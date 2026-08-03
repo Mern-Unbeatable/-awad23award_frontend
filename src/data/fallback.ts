@@ -18,7 +18,7 @@ const IMG = {
 
 export const fallbackSettings: SiteSettings = {
   id: 'settings',
-  brandName: 'Ahmed Awad',
+  brandName: 'Ahmed Ibrahim',
   taglineEn: 'Technology Strategist & Entrepreneur',
   taglineAr: 'استراتيجي تقني ورائد أعمال',
   contactEmail: 'hello@ahmedawad.com',
@@ -26,8 +26,8 @@ export const fallbackSettings: SiteSettings = {
   socialInstagram: 'https://instagram.com',
   socialLinkedin: 'https://linkedin.com',
   socialYoutube: 'https://youtube.com',
-  seoTitleEn: 'Ahmed Awad | Technology Strategist & Entrepreneur',
-  seoTitleAr: 'أحمد عوض | استراتيجي تقني ورائد أعمال',
+  seoTitleEn: 'Ahmed Ibrahim | Technology Strategist & Entrepreneur',
+  seoTitleAr: 'أحمد إبراهيم | استراتيجي تقني ورائد أعمال',
   seoDescriptionEn:
     'CRM, business systems, WhatsApp automation, and AI agents for enterprises in KSA and globally.',
   seoDescriptionAr:
@@ -73,7 +73,7 @@ export const fallbackSections: HomeSection[] = [
   {
     id: '3',
     key: 'about',
-    titleEn: "I'm Ahmed Awad",
+    titleEn: "I'm Ahmed Ibrahim",
     titleAr: 'أنا أحمد عوض',
     subtitleEn: 'About',
     subtitleAr: 'نبذة',
@@ -221,7 +221,7 @@ export const fallbackPosts: Post[] = [
     coverImage: IMG.journal1,
     categoryEn: 'CRM',
     categoryAr: 'CRM',
-    seoTitleEn: 'CRM Transformation in KSA | Ahmed Awad Insights',
+    seoTitleEn: 'CRM Transformation in KSA | Ahmed Ibrahim Insights',
     seoTitleAr: 'تحول CRM في السعودية | رؤى أحمد عوض',
     seoDescriptionEn: 'Common CRM rollout mistakes and how to fix them.',
     seoDescriptionAr: 'أخطاء شائعة في نشر CRM وكيفية إصلاحها.',

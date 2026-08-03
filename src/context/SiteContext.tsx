@@ -63,15 +63,20 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       publicApi.getGallery(),
       publicApi.getTestimonials(),
     ]);
-    // Empty DB after migrate (no seed) returns blank rows — keep rich fallbacks
+    // Sanitise: backend may still carry the old "Awad" brand — normalise to Ibrahim everywhere
+    const rawBrand = s.brandName || fallbackSettings.brandName;
+    const brand = rawBrand.replace(/Awad/gi, 'Ibrahim').replace(/عوض/g, 'إبراهيم').replace(/official/gi, '').trim();
+    const rawSeoEn = s.seoTitleEn || fallbackSettings.seoTitleEn;
+    const rawSeoAr = s.seoTitleAr || fallbackSettings.seoTitleAr;
     setSettings({
       ...fallbackSettings,
       ...s,
-      brandName: /official/i.test(s.brandName || '') ? 'Ahmed Awad' : s.brandName || fallbackSettings.brandName,
+      brandName: brand,
+      seoTitleEn: rawSeoEn.replace(/Awad/gi, 'Ibrahim'),
+      seoTitleAr: rawSeoAr.replace(/عوض/g, 'إبراهيم'),
       aboutImageUrl: s.aboutImageUrl || fallbackSettings.aboutImageUrl,
       showreelPoster: s.showreelPoster || fallbackSettings.showreelPoster,
       showreelUrl: s.showreelUrl || fallbackSettings.showreelUrl,
-      // Always use built-in dual-tone A mark — ignore uploaded coach-era logos
       logoUrl: null,
     });
     setSections(

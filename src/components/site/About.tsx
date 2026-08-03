@@ -26,7 +26,7 @@ export function About() {
   return (
     <section id="about" className="bg-white section-padding">
       <ScrollReveal>
-        <div className="container mx-auto px-6 grid gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="container mx-auto px-6 grid gap-12 md:grid-cols-2 md:gap-14 lg:gap-20">
 
           {/* Left column */}
           <div>
@@ -35,7 +35,7 @@ export function About() {
               {t('( About Me )', '( عني )')}
             </p>
 
-            <h2 className="mt-4 text-[32px] sm:text-[44px] lg:text-[56px] leading-[1.12] font-semibold text-foreground max-w-xl">
+            <h2 className="mt-4 text-[32px] sm:text-[40px] lg:text-[52px] xl:text-[56px] leading-[1.12] font-semibold text-foreground">
               {locale === 'ar' ? (
                 'نظرة عميقة في تجاربي والدروس المستفادة'
               ) : (
@@ -48,7 +48,7 @@ export function About() {
             </h2>
 
             {/* Topics */}
-            <div className="mt-10 flex flex-col gap-4 max-w-md">
+            <div className="mt-10 flex flex-col gap-4">
               {topics.map((tItem) => (
                 <div
                   key={tItem.title}
@@ -82,7 +82,7 @@ export function About() {
               loading="lazy"
               width={1200}
               height={800}
-              className="w-full rounded-xl object-cover max-h-130"
+              className="w-full rounded-xl object-cover md:max-h-96 lg:max-h-130"
             />
 
             <div className="mt-5 space-y-4 text-[16px] sm:text-[18px] leading-relaxed text-[#175069]">
