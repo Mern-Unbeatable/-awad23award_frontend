@@ -8,7 +8,7 @@ import { publicApi } from '../lib/api';
 import { pick, type Post } from '../types';
 import { SiteFooter } from '../components/site/SiteFooter';
 
-import profileImg from '../../award/src/assets/avatar-1.jpg';
+import profileImg from '../assets/award.png';
 
 export function JournalPostPage() {
   const { slug = '' } = useParams();
