@@ -95,6 +95,46 @@ export interface Product {
   published: boolean;
 }
 
+
+
+export interface ChallengeItem {
+  iconName: string;
+  title: string;
+  body: string;
+}
+
+export interface ApproachCard {
+  title: string;
+  bullets: string[];
+}
+
+export interface LeadershipCard {
+  iconName: string;
+  title: string;
+  body: string;
+}
+
+export interface SolutionCard {
+  color: 'green' | 'blue' | 'orange' | 'purple';
+  tag: string;
+  title: string;
+  body: string;
+}
+
+export interface OutcomeItem {
+  color: 'emerald' | 'purple' | 'amber';
+  text: string;
+}
+
+export interface SkillCard {
+  num: string;
+  category: string;
+  title: string;
+  body: string;
+}
+
+
+
 export interface GalleryItem {
   id: string;
   titleEn: string;
@@ -113,6 +153,54 @@ export interface GalleryItem {
     altEn: string;
     altAr: string;
   };
+
+  // Overview / Hero
+  tag?: string;
+  heroImageUrl?: string;
+  client?: string;
+  role?: string;
+  duration?: string;
+
+  // Challenge
+  challengeHeadingEn?: string;
+  challengeHeadingAr?: string;
+  challengeBodyEn?: string;
+  challengeBodyAr?: string;
+  challengeItems?: ChallengeItem[];
+  challengeImageUrl?: string;
+  challengeCaption?: string;
+  challengeBadgeLabel?: string;
+
+  // Approach
+  approachBodyEn?: string;
+  approachBodyAr?: string;
+  approachCards?: ApproachCard[];
+  approachInsight?: string;
+
+  // Technical Leadership
+  leadershipBodyEn?: string;
+  leadershipBodyAr?: string;
+  leadershipCards?: LeadershipCard[];
+  leadershipBannerStat?: string;
+
+  // Solution Delivered
+  solutionBodyEn?: string;
+  solutionBodyAr?: string;
+  solutionCards?: SolutionCard[];
+  solutionArchImageUrl?: string;
+  solutionArchTitle?: string;
+  solutionArchBody?: string;
+
+  // Outcome
+  outcomeItems?: OutcomeItem[];
+  recognitionImageUrl?: string;
+  recognitionLabel?: string;
+
+  // Key Skills
+  skillCards?: SkillCard[];
+
+  // Project Screenshots (multi-upload)
+  screenshots?: string[];
 }
 
 export interface Testimonial {

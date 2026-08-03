@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react';
 import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Lock, Mail, ArrowRight, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { adminApi } from '../../lib/api';
+import { isLoggedIn } from '../../lib/auth';
 
 export function AdminLoginPage() {
   const navigate = useNavigate();
@@ -11,7 +12,8 @@ export function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (localStorage.getItem('awad_token') || localStorage.getItem('awad_admin_logged') === 'true') {
+
+  if (isLoggedIn()) {
     return <Navigate to="/admin/posts" replace />;
   }
 
@@ -20,13 +22,12 @@ export function AdminLoginPage() {
     setLoading(true);
     setError('');
     try {
+
       await adminApi.login(email, password);
-      localStorage.setItem('awad_admin_logged', 'true');
       navigate('/admin/posts');
     } catch {
-      // Allow fallback login for smooth local dev / demonstration
-      localStorage.setItem('awad_admin_logged', 'true');
-      navigate('/admin/posts');
+
+      setError('Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }

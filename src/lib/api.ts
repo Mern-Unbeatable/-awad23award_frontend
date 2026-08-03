@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { saveSession, getAccessToken, clearSession, getRefreshToken, updateTokens } from './auth';
 import type {
   GalleryItem,
   HomeSection,
@@ -24,12 +25,66 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('awad_token');
+  const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+interface RefreshResponse {
+  data: { accessToken: string; refreshToken: string };
+}
+
+let isRefreshing = false;
+let pendingRequests: Array<(token: string) => void> = [];
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+
+    if (error.response?.status !== 401 || original._retried) {
+      return Promise.reject(error);
+    }
+
+    original._retried = true;
+
+    if (isRefreshing) {
+      return new Promise((resolve) => {
+        pendingRequests.push((newToken) => {
+          original.headers.Authorization = `Bearer ${newToken}`;
+          resolve(api(original));
+        });
+      });
+    }
+
+    isRefreshing = true;
+
+    try {
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) throw new Error('No refresh token');
+
+      const { data } = await api.post<RefreshResponse>('/auth/refresh', { refreshToken });
+      const { accessToken, refreshToken: newRefreshToken } = data.data;
+
+      updateTokens(accessToken, newRefreshToken);
+
+      pendingRequests.forEach((cb) => cb(accessToken));
+      pendingRequests = [];
+
+      original.headers.Authorization = `Bearer ${accessToken}`;
+      return api(original);
+    } catch {
+      clearSession();
+      window.location.href = '/admin/login';
+      return Promise.reject(error);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
+
 
 async function withFallback<T>(request: () => Promise<T>, fallback: T): Promise<T> {
   try {
@@ -97,17 +152,43 @@ export const publicApi = {
   }) => api.post('/contact', { ...payload, website: '' }),
 };
 
+
+interface LoginResponse {
+  token: string;        
+  accessToken: string;  
+  refreshToken: string; 
+  admin: {
+    id: string;
+    email: string;
+    name: string;
+  };
+}
+
 export const adminApi = {
+
   login: async (email: string, password: string) => {
-    const { data } = await api.post<{ token: string; admin: { id: string; email: string; name: string } }>(
-      '/auth/login',
-      { email, password }
-    );
-    localStorage.setItem('awad_token', data.token);
+    const { data } = await api.post<LoginResponse>('/auth/login', { email, password });
+
+    saveSession({
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      admin: data.admin,
+    });
+
     return data;
   },
   me: () => api.get('/auth/me'),
-  logout: () => localStorage.removeItem('awad_token'),
+
+  logout: async () => {
+    const refreshToken = getRefreshToken();
+    try {
+      if (refreshToken) {
+        await api.post('/auth/logout', { refreshToken });
+      }
+    } finally {
+      clearSession();
+    }
+  },
   stats: () => api.get('/contact/stats'),
   updateSettings: (data: Partial<SiteSettings>) => api.put('/settings', data),
   getSections: () => api.get<HomeSection[]>('/pages'),
@@ -123,6 +204,8 @@ export const adminApi = {
   getGallery: () => api.get<GalleryItem[]>('/gallery?all=1'),
   createGalleryItem: (data: { mediaId: string; titleEn?: string; titleAr?: string }) =>
     api.post('/gallery', data),
+  createPortfolioItem: (data: Partial<GalleryItem>) => api.post('/gallery', data),
+  updatePortfolioItem: (id: string, data: Partial<GalleryItem>) => api.put(`/gallery/${id}`, data),
   deleteGalleryItem: (id: string) => api.delete(`/gallery/${id}`),
   getMedia: () => api.get('/media'),
   uploadMedia: (file: File, altEn = '', altAr = '') => {

@@ -25,8 +25,8 @@ export function Contact() {
               </h2>
               <p className="mt-3 max-w-md text-[16px] leading-relaxed text-[#52606D]">
                 {t(
-                  'Get practical insights on AI, business strategy, and digital transformation—delivered straight to your inbox. No spam, just valuable ideas.',
-                  'احصل على رؤى عملية حول الذكاء الاصطناعي، واستراتيجية الأعمال، والتحول الرقمي - تصل مباشرة إلى بريدك الإلكتروني.'
+                  'Insights on startups, business strategy, digital transformation, and building products in the Middle East. Real experiences, practical lessons, and ideas you can apply.',
+                  'ارؤى حول الشركات الناشئة، استراتيجية الأعمال، التحول الرقمي، وبناء المنتجات في الشرق الأوسط. تجارب واقعية، دروس عملية، وأفكار يمكنك تطبيقها.'
                 )}
               </p>
             </div>

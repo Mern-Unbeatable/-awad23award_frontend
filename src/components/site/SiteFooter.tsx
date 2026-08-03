@@ -37,7 +37,7 @@ export function SiteFooter() {
           <div className="mt-8 flex justify-center">
             <ConnectButton
               variant="blue"
-              className="!bg-[#36BFFB] hover:!bg-[#20B0F0] !text-white !rounded-lg !px-6 !py-3 !text-[14px] !font-semibold transition-colors shadow-sm cursor-pointer"
+              className="bg-[#36BFFB]! hover:bg-[#20B0F0]! text-white! rounded-lg! px-6! py-3! text-[14px]! font-semibold! transition-colors shadow-sm cursor-pointer"
             >
               {t('Book a consultation', 'احجز استشارة')}
             </ConnectButton>

@@ -9,6 +9,12 @@ interface AnimatedCounterProps {
   className?: string;
   enableWave?: boolean;
   baseDelay?: number;
+  isRtl?: boolean;
+}
+
+// Converts Western digits to Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩)
+function toArabicNumerals(str: string): string {
+  return str.replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d]);
 }
 
 export function AnimatedCounter({
@@ -20,6 +26,7 @@ export function AnimatedCounter({
   className = '',
   enableWave = true,
   baseDelay = 0,
+  isRtl = false,
 }: AnimatedCounterProps) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -65,7 +72,10 @@ export function AnimatedCounter({
     ? count.toLocaleString('en-US')
     : count.toString();
 
-  const fullText = `${prefix}${formattedNumber}${suffix}`;
+  const fullText = isRtl
+    ? `${toArabicNumerals(formattedNumber)}${suffix}`
+    : `${prefix}${formattedNumber}${suffix}`;
+
   const chars = fullText.split('');
 
   return (

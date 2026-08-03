@@ -33,7 +33,7 @@ export function AboutPage() {
 
       <section ref={ref} className="container-site py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div data-reveal-scale className="tech-hero__portrait-wrap max-h-[480px]">
+          <div data-reveal-scale className="tech-hero__portrait-wrap max-h-120">
             <img
               src={about?.imageUrl || settings.aboutImageUrl || ''}
               alt={settings.brandName}
