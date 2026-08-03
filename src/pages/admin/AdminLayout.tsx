@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, Navigate, useNavigate, Link } from 'react-router-dom';
 import { FileText, Briefcase, Mail, LogOut, Menu, X, ExternalLink } from 'lucide-react';
 import { adminApi } from '../../lib/api';
+import { isLoggedIn } from '../../lib/auth';
 
 const navItems = [
   { to: '/admin/posts', label: 'Blogs', icon: FileText },
@@ -13,14 +14,13 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const token = localStorage.getItem('awad_token');
-  if (!token && localStorage.getItem('awad_admin_logged') !== 'true') {
+
+  if (!isLoggedIn()) {
     return <Navigate to="/admin/login" replace />;
   }
 
   function handleLogout() {
-    localStorage.removeItem('awad_token');
-    localStorage.removeItem('awad_admin_logged');
+
     adminApi.logout();
     navigate('/admin/login');
   }
@@ -69,7 +69,7 @@ export function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans">
+    <div className="h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans overflow-hidden">
       {/* TOP HEADER BAR - SENIOR UX DESIGN */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shadow-2xs">
         {/* Left Side: Burger Menu + Brand */}
@@ -119,9 +119,9 @@ export function AdminLayout() {
       </header>
 
       {/* BODY CONTENT AREA */}
-      <div className="flex-1 flex min-h-[calc(100vh-57px)]">
+      <div className="flex-1 flex overflow-hidden">
         {/* DESKTOP SIDEBAR */}
-        <aside className="hidden lg:block w-55 shrink-0 sticky top-14.25 h-[calc(100vh-57px)]">
+        <aside className="hidden lg:flex lg:flex-col w-55 shrink-0 overflow-y-auto border-r border-slate-200 bg-white">
           {sidebarContent}
         </aside>
 
@@ -165,7 +165,7 @@ export function AdminLayout() {
         </div>
 
         {/* MAIN CONTENT PAGE */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-x-hidden">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>

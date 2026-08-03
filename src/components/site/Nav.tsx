@@ -20,7 +20,7 @@ export function Nav({ dark = false }: NavProps) {
     { name: 'Blog', href: pathFor('/#blog') },
   ];
 
-  // Lock body scroll when mobile drawer is open (works on iOS Safari too)
+  
   useEffect(() => {
     if (mobileOpen) {
       const scrollY = window.scrollY;
