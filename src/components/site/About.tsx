@@ -77,7 +77,7 @@ export function About() {
           {/* Right column */}
           <div>
             <img
-              src="/about.jpg"
+              src="/about.png"
               alt="Ahmed Ibrahim at a technology conference"
               loading="lazy"
               width={1200}
