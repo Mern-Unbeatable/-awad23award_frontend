@@ -23,14 +23,14 @@ export function SiteFooter() {
         }}
       >
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-[30px] sm:text-[40px] md:text-[54px] font-serif font-semibold text-foreground tracking-tight leading-[1.15]">
-            {t("Let’s Build Something Meaningful Together", 'فلنبنِ شيئاً ذي قيمة معاً')}
+          <h2 className="text-[30px] sm:text-[40px] md:text-[54px] font-serif font-bold text-foreground tracking-tight leading-[1.15]">
+            {t("Let's turn your idea into reality", 'لنحول فكرتك إلى واقع')}
           </h2>
 
           <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-[#52606D]">
             {t(
-              "Always open to new opportunities, collaborations, and creative challenges. Let’s work together to bring your ideas to life",
-              'لنحوّل فكرتك إلى واقع سواء كنت تطلق منتجًا جديدًا أو تطور عملك الحالي، أساعدك على تحويل الأفكار إلى حلول قابلة للتنفيذ'
+              'Whether you are launching a new product or developing your current business, I will help you turn your ideas into actionable solutions.',
+              'سواء كنت تطلق منتجاً جديداً أو تطور أعمالك الحالية، سأقوم بمساعدتك لتحويل أفكارك إلى حلول قابلة للتنفيذ'
             )}
           </p>
 
