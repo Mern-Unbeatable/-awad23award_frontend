@@ -69,17 +69,17 @@ export function AnimatedCounter({
   }, [end, duration]);
 
   const formattedNumber = formatCommas
-    ? count.toLocaleString('en-US')
-    : count.toString();
+    ? count.toLocaleString(isRtl ? 'ar-SA' : 'en-US')
+    : isRtl
+      ? toArabicNumerals(count.toString())
+      : count.toString();
 
-  const fullText = isRtl
-    ? `${toArabicNumerals(formattedNumber)} ${suffix}`
-    : `${prefix}${formattedNumber}${suffix}`;
+  const fullText = `${prefix}${formattedNumber}${suffix}`;
 
   const chars = fullText.split('');
 
   return (
-    <span ref={ref} className={`inline-block ${className}`}>
+    <span ref={ref} dir="ltr" className={`inline-block unicode-bidi-isolate ${className}`}>
       {enableWave
         ? chars.map((char, i) => (
             <span
