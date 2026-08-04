@@ -73,7 +73,7 @@ export function AnimatedCounter({
     : count.toString();
 
   const fullText = isRtl
-    ? `${toArabicNumerals(formattedNumber)}${suffix}`
+    ? `${suffix}${toArabicNumerals(formattedNumber)}`
     : `${prefix}${formattedNumber}${suffix}`;
 
   const chars = fullText.split('');
