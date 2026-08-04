@@ -68,11 +68,13 @@ export function AnimatedCounter({
     return () => observer.disconnect();
   }, [end, duration]);
 
-  const formattedNumber = formatCommas
+  let formattedNumber = formatCommas
     ? count.toLocaleString(isRtl ? 'ar-SA' : 'en-US')
-    : isRtl
-      ? toArabicNumerals(count.toString())
-      : count.toString();
+    : count.toString();
+
+  if (isRtl) {
+    formattedNumber = toArabicNumerals(formattedNumber);
+  }
 
   const fullText = `${prefix}${formattedNumber}${suffix}`;
 
