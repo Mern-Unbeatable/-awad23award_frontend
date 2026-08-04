@@ -46,13 +46,13 @@ export function AdminDashboardPage() {
         <div className="admin-card p-6">
           <h2 className="font-display font-semibold text-lg mb-2">Quick actions</h2>
           <div className="flex flex-wrap gap-2 mt-4">
-            <Link to="/admin/posts" className="btn btn-accent !py-2 !px-3 !text-[0.65rem]">
+            <Link to="/admin/posts" className="btn btn-accent py-2! px-3! text-[0.65rem]!">
               New journal post
             </Link>
-            <Link to="/admin/gallery" className="btn btn-outline !py-2 !px-3 !text-[0.65rem]">
+            <Link to="/admin/gallery" className="btn btn-outline py-2! px-3! text-[0.65rem]!">
               Upload media
             </Link>
-            <Link to="/admin/settings" className="btn btn-outline !py-2 !px-3 !text-[0.65rem]">
+            <Link to="/admin/settings" className="btn btn-outline py-2! px-3! text-[0.65rem]!">
               Calendly settings
             </Link>
           </div>

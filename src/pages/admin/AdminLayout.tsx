@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, Navigate, useNavigate, Link } from 'react-router-dom';
-import { FileText, Briefcase, Mail, LogOut, Menu, X, ExternalLink } from 'lucide-react';
+import { FileText, Briefcase, Mail, LogOut, Menu, X, Home } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { isLoggedIn } from '../../lib/auth';
 
@@ -40,7 +40,7 @@ export function AdminLayout() {
                 to={item.to}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] font-medium transition-all ${
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-sm text-[14px] font-medium transition-all ${
                     isActive
                       ? 'bg-[#38BDF8] text-white shadow-xs font-semibold'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -59,7 +59,7 @@ export function AdminLayout() {
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-[13px] font-semibold text-[#EF4444] bg-[#FFF5F5] hover:bg-red-100 transition-colors text-start cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-sm text-[13px] font-semibold text-[#EF4444] bg-[#FFF5F5] hover:bg-red-100 transition-colors text-start cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           <span>Log Out</span>
@@ -83,7 +83,7 @@ export function AdminLayout() {
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-full bg-[#38BDF8] text-white font-bold text-[12px] flex items-center justify-center shrink-0 shadow-xs">
               AI
             </div>
@@ -95,17 +95,16 @@ export function AdminLayout() {
                 Admin Panel
               </span>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Right Side: View Site Action + Admin Profile Badge */}
         <div className="flex items-center gap-3">
           <Link
             to="/"
-            target="_blank"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-[12.5px] font-semibold transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-slate-100 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-[12.5px] font-semibold transition-all cursor-pointer shadow-2xs"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <Home className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>View Site</span>
           </Link>
 

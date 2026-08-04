@@ -207,7 +207,7 @@ export function AdminPostsPage() {
         <button
           type="button"
           onClick={openCreate}
-          className="bg-[#38BDF8] hover:bg-[#20B0F0] text-white rounded-lg px-6 py-2.5 text-[13.5px] font-semibold transition-colors shadow-xs self-start sm:self-auto cursor-pointer font-sans"
+          className="bg-[#38BDF8] hover:bg-[#20B0F0] text-white rounded-sm px-6 py-2.5 text-[13.5px] font-semibold transition-colors shadow-xs self-start sm:self-auto cursor-pointer font-sans"
         >
           New Blog
         </button>
@@ -218,10 +218,10 @@ export function AdminPostsPage() {
         {blogs.map((b) => (
           <div
             key={b.id}
-            className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow"
+            className="bg-white rounded-sm p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow"
           >
             <div>
-              <div className="aspect-16/10 overflow-hidden rounded-xl bg-slate-100 mb-4">
+              <div className="aspect-16/10 overflow-hidden rounded-sm bg-slate-100 mb-4">
                 <img
                   src={b.img}
                   alt={b.title}
@@ -229,11 +229,11 @@ export function AdminPostsPage() {
                 />
               </div>
 
-              <h3 className="font-serif font-bold text-[17px] text-slate-900 leading-snug mb-2.5 min-h-12 line-clamp-2">
+              <h3 className="font-serif font-bold text-[18px] text-slate-900 mb-2.5 min-h-12 line-clamp-2">
                 {b.title}
               </h3>
 
-              <p className="text-[12.5px] text-slate-500 leading-relaxed line-clamp-3 mb-4 font-sans font-normal min-h-13.5">
+              <p className="text-[14px] text-slate-500 line-clamp-3 mb-4 font-sans font-normal min-h-13.5">
                 {b.excerpt}
               </p>
             </div>
@@ -249,7 +249,7 @@ export function AdminPostsPage() {
                 <button
                   type="button"
                   onClick={() => openEdit(b)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold py-2 rounded-lg transition-colors cursor-pointer font-sans"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold py-2 rounded-sm transition-colors cursor-pointer font-sans"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   <span>Edit</span>
@@ -258,7 +258,7 @@ export function AdminPostsPage() {
                 <button
                   type="button"
                   onClick={() => handleDelete(b.id)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] font-semibold py-2 rounded-lg transition-colors cursor-pointer font-sans"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] font-semibold py-2 rounded-sm transition-colors cursor-pointer font-sans"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete</span>
