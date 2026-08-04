@@ -57,7 +57,7 @@ export function Hero() {
             <span className="relative z-10 whitespace-nowrap animate-text-glass font-semibold">
               {t(
                 "Technology Consultant • AI Strategist • Keynote Speaker",
-                "مستشار تقني • استراتيجي ذكاء اصطناعي • متحدث رئيسي",
+                "مستشار تقني • رائد أعمال • خبير ذكاء اصطناعي",
               )}
             </span>
             <span className="absolute inset-0 bg-linear-to-r from-transparent via-white/25 to-transparent pointer-events-none animate-glass-shine" />
@@ -70,7 +70,8 @@ export function Hero() {
             {isRtl
               ? t(
                   "Helping Businesses Build Smarter Systems That Actually Scale.",
-                  "مساعدة الشركات في بناء أنظمة أذكى تتوسع بالفعل.",
+                  // "مساعدة الشركات في بناء أنظمة أذكى تتوسع بالفعل.",
+                  "أساعد الشركات على بناء أنظمة ذكية تمكّنها من النمو والتوسع بكفاءة"
                 )
                   .split(" ")
                   .map((word, wordIdx, wordArr) => (
@@ -154,7 +155,7 @@ export function Hero() {
           <p className="mt-2 lg:mt-4 text-[15px] sm:text-[18px] leading-relaxed text-white/80 max-w-full lg:max-w-135">
             {t(
               "I work with founders, executives, and growing businesses to simplify operations, embrace AI, and create technology strategies that deliver measurable results.",
-              "أعمل مع المؤسسين والتنفيذيين والشركات المتنامية لتبسيط العمليات وتبني الذكاء الاصطناعي وابتكار استراتيجيات تقنية تحقق نتائج ملموسة.",
+              "أساعد المؤسسين والتنفيذيين والشركات الناشئة على تبسيط العمليات، وتطبيق الذكاء الاصطناعي، وبناء حلول تقنية تحقق نتائج ملموسة",
             )}
           </p>
 
@@ -167,7 +168,7 @@ export function Hero() {
               <span className="relative z-10 inline-flex items-center gap-2">
                 {t("Book a consultation", "احجز استشارة")}
                 <svg
-                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 dir-rtl:group-hover:-translate-x-1"
+                  className={`w-4 h-4 transition-transform duration-300 ${isRtl ? "-scale-x-100 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
