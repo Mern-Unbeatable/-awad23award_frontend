@@ -26,7 +26,7 @@ export function Contact() {
               <p className="mt-3 max-w-md text-[16px] leading-relaxed text-[#52606D]">
                 {t(
                   'Insights on startups, business strategy, digital transformation, and building products in the Middle East. Real experiences, practical lessons, and ideas you can apply.',
-                  'نحوّل فكرتك إلى واقع سواء كنت تطلق منتجًا جديدًا أو تطور عملك الحالي، أساعدك على تحويل الأفكار إلى حلول قابلة للتنفيذ.'
+                  'اشترك في النشرة البريدية لتصلك رؤى عملية حول الشركات الناشئة، بناء المنتجات، والتحول الرقمي، مع دروس وأفكار قابلة للتطبيق'
                 )}
               </p>
             </div>
