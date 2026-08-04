@@ -30,7 +30,7 @@ export function SiteFooter() {
           <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-[#52606D]">
             {t(
               "Always open to new opportunities, collaborations, and creative challenges. Let’s work together to bring your ideas to life",
-              'منفتح دائماً على أفكار وشراكات وتحديات إبداعية جديدة. معاً، نحوّل أفكارك إلى واقع'
+              'لنحوّل فكرتك إلى واقع سواء كنت تطلق منتجًا جديدًا أو تطور عملك الحالي، أساعدك على تحويل الأفكار إلى حلول قابلة للتنفيذ'
             )}
           </p>
 
