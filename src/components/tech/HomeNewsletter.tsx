@@ -29,11 +29,11 @@ export function HomeNewsletter() {
           </svg>
         </div>
         <div className="ref-nl-copy">
-          <h3>{t('Insights in your inbox', 'رؤى في بريدك')}</h3>
+          <h3>{t('Subscribe to the newsletter for practical insights on startups, product building, and digital transformation', 'اشترك في النشرة البريدية لتصلك رؤى عملية حول الشركات الناشئة، بناء المنتجات، والتحول الرقمي')}</h3>
           <p>
             {t(
-              'Practical insights on technology, SaaS, and building in Saudi Arabia.',
-              'رؤى عملية حول التقنية والبرمجيات وريادة الأعمال في السعودية.'
+              "Let's turn your idea into reality. Whether you're launching a new product or scaling your current business, I help transform ideas into actionable solutions.",
+              'نحوّل فكرتك إلى واقع سواء كنت تطلق منتجًا جديدًا أو تطور عملك الحالي، أساعدك على تحويل الأفكار إلى حلول قابلة للتنفيذ'
             )}
           </p>
         </div>

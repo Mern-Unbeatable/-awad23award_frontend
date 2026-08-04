@@ -61,7 +61,7 @@ export function Services() {
               {t('SERVICES', 'الخدمات')}
             </div>
             <h2 className="text-[32px] sm:text-[44px] md:text-[52px] leading-[1.15] font-semibold text-foreground tracking-tight">
-              {t('How I Help You Move Forward', 'كيف أساعدك على التقدم للأمام')}
+              {t('How to Develop Your Business with Modern Technologies', 'كيف اطوّر اعمالك بالتقنيات الحديثة')}
             </h2>
           </div>
 
