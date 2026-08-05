@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { NavLink, Outlet, Navigate, useNavigate, Link } from 'react-router-dom';
 import { FileText, Briefcase, Mail, LogOut, Menu, X, Home } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { isLoggedIn } from '../../lib/auth';
 import { ADMIN_ROUTES } from './adminRoutes';
+import type { AdminLayoutContextValue } from './adminLayoutContext';
 
 const navItems = [
   { to: ADMIN_ROUTES.blogs, label: 'Blogs', icon: FileText },
@@ -14,6 +15,9 @@ const navItems = [
 export function AdminLayout() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [headerExtension, setHeaderExtension] = useState<ReactNode | null>(null);
+
+  const outletContext: AdminLayoutContextValue = { setHeaderExtension };
 
 
   if (!isLoggedIn()) {
@@ -73,7 +77,8 @@ export function AdminLayout() {
   return (
     <div className="h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans overflow-hidden">
       {/* TOP HEADER BAR - SENIOR UX DESIGN */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shadow-2xs">
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-2xs shrink-0">
+        <div className="px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
         {/* Left Side: Burger Menu + Brand */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           <button
@@ -116,6 +121,7 @@ export function AdminLayout() {
               Admin
             </span>
           </div>
+        </div>
         </div>
       </header>
 
@@ -165,10 +171,17 @@ export function AdminLayout() {
           </div>
         </div>
 
-        {/* MAIN CONTENT PAGE */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-y-auto overflow-x-hidden">
-          <Outlet />
-        </main>
+        {/* MAIN CONTENT AREA RIGHT OF SIDEBAR */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {headerExtension && (
+            <div className="border-b border-slate-200 bg-white shrink-0">
+              {headerExtension}
+            </div>
+          )}
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-y-auto overflow-x-hidden">
+            <Outlet context={outletContext} />
+          </main>
+        </div>
       </div>
     </div>
   );

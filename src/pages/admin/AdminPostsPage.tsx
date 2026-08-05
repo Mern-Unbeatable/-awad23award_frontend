@@ -1,20 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useMatch } from 'react-router-dom';
-import { Edit3, Trash2, Type, Bold, Underline, AlignLeft, AlignCenter, AlignRight, Link2 } from 'lucide-react';
+﻿import { useState, useEffect, useMemo, useLayoutEffect, useRef } from 'react';
+import { useNavigate, useParams, useMatch, useOutletContext } from 'react-router-dom';
+import { Edit3, Trash2 } from 'lucide-react';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
+import { AdminImageUpload } from '../../components/admin/AdminImageUpload';
+import { BlogEditor } from '../../components/admin/BlogEditor';
+import { BlogArticlePreview } from '../../components/admin/BlogArticlePreview';
+import { BlogFormHeaderBar } from '../../components/admin/BlogFormHeaderBar';
 import { usePagination } from '../../hooks/usePagination';
 import {
   ADMIN_ROUTES,
   ADMIN_BLOG_NEW,
   adminBlogEditPath,
 } from './adminRoutes';
+import type { AdminLayoutContextValue } from './adminLayoutContext';
+
+function plainTextFromHtml(html: string) {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function countWords(html: string) {
+  const text = plainTextFromHtml(html);
+  return text ? text.split(' ').length : 0;
+}
+
+function estimateReadTime(html: string) {
+  const words = countWords(html);
+  return `${Math.max(1, Math.round(words / 200))} min read`;
+}
 
 const BLOGS_PAGE_SIZE = 4;
+const DEFAULT_COVER =
+  'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80';
 
 interface BlogPostItem {
   id: string;
   title: string;
+  subtitle: string;
   excerpt: string;
+  body: string;
+  category: string;
   readTime: string;
   author: string;
   img: string;
@@ -24,52 +48,85 @@ const initialBlogs: BlogPostItem[] = [
   {
     id: '1',
     title: 'Building Smarter Businesses with AI Strategy',
-    excerpt: 'Discover practical ways AI can streamline operations, improve decision-making, and create long-term business value.',
-    readTime: '10 Minutes',
+    subtitle:
+      'How Artificial Intelligence Is Helping Businesses Work Smarter, Faster, and More Efficiently',
+    excerpt:
+      'Discover practical ways AI can streamline operations, improve decision-making, and create long-term business value.',
+    body: '<h2>Why AI Strategy Matters</h2><p>Many organisations invest in AI tools without a clear roadmap, often leading to unnecessary costs and limited results.</p><p>A successful AI strategy starts by identifying areas where technology can solve real business challenges.</p>',
+    category: 'AI Strategy & Digital Transformation',
+    readTime: '5 min read',
     author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
+    img: DEFAULT_COVER,
   },
   {
     id: '2',
     title: 'The Future of Business Automation',
-    excerpt: 'See how intelligent automation is reshaping workflows, increasing productivity, and improving customer experiences.',
-    readTime: '10 Minutes',
+    subtitle: 'How intelligent systems reshape workflows without adding complexity',
+    excerpt:
+      'See how intelligent automation is reshaping workflows, increasing productivity, and improving customer experiences.',
+    body: '<p>See how intelligent automation is reshaping workflows, increasing productivity, and improving customer experiences.</p>',
+    category: 'Automation',
+    readTime: '10 min read',
     author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+    img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: '3',
     title: 'Leading Through Change and Innovation',
-    excerpt: 'Explore leadership strategies that help businesses embrace technology while staying focused on sustainable growth.',
-    readTime: '10 Minutes',
+    subtitle: 'Leadership patterns that keep teams focused during transformation',
+    excerpt:
+      'Explore leadership strategies that help businesses embrace technology while staying focused on sustainable growth.',
+    body: '<p>Explore leadership strategies that help businesses embrace technology while staying focused on sustainable growth.</p>',
+    category: 'Leadership',
+    readTime: '10 min read',
     author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=800&q=80',
+    img: 'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: '4',
     title: 'Digital Transformation That Actually Works',
-    excerpt: 'Learn how organizations can modernize processes without unnecessary complexity or expensive technology investments.',
-    readTime: '10 Minutes',
+    subtitle: 'Modernize processes without expensive, unused technology',
+    excerpt:
+      'Learn how organizations can modernize processes without unnecessary complexity or expensive technology investments.',
+    body: '<p>Learn how organizations can modernize processes without unnecessary complexity or expensive technology investments.</p>',
+    category: 'Digital Transformation',
+    readTime: '10 min read',
     author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: '5',
     title: 'Scaling Teams Without Losing Velocity',
-    excerpt: 'Practical frameworks for growing engineering and product teams while keeping delivery predictable.',
-    readTime: '8 Minutes',
+    subtitle: 'Practical frameworks for growing product and engineering teams',
+    excerpt:
+      'Practical frameworks for growing engineering and product teams while keeping delivery predictable.',
+    body: '<p>Practical frameworks for growing engineering and product teams while keeping delivery predictable.</p>',
+    category: 'Teams & Delivery',
+    readTime: '8 min read',
     author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+    img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: '6',
     title: 'From Strategy Decks to Shipped Products',
-    excerpt: 'How to close the gap between executive vision and the systems your teams actually build.',
-    readTime: '12 Minutes',
+    subtitle: 'Closing the gap between executive vision and real systems',
+    excerpt:
+      'How to close the gap between executive vision and the systems your teams actually build.',
+    body: '<p>How to close the gap between executive vision and the systems your teams actually build.</p>',
+    category: 'Product Strategy',
+    readTime: '12 min read',
     author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80',
+    img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80',
   },
 ];
+
+function todayLabel() {
+  return new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
 export function AdminPostsPage() {
   const navigate = useNavigate();
@@ -85,26 +142,53 @@ export function AdminPostsPage() {
     BLOGS_PAGE_SIZE,
   );
 
-  // Form State
   const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
-  const [img, setImg] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80');
+  const [body, setBody] = useState('');
+  const [category, setCategory] = useState('');
+  const [readTime, setReadTime] = useState('5 min read');
+  const [readTimeTouched, setReadTimeTouched] = useState(false);
+  const [img, setImg] = useState('');
+  const [error, setError] = useState('');
+  const [mode, setMode] = useState<'write' | 'preview'>('write');
+
+  const wordCount = useMemo(() => countWords(body), [body]);
+  const autoReadTime = useMemo(() => estimateReadTime(body), [body]);
+  const effectiveReadTime = readTimeTouched ? readTime : autoReadTime;
+  const publishedLabel = useMemo(() => todayLabel(), []);
+
+  const { setHeaderExtension } = useOutletContext<AdminLayoutContextValue>();
 
   useEffect(() => {
     if (isNewPage) {
       setTitle('');
+      setSubtitle('');
       setExcerpt('');
-      setImg('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80');
+      setBody('');
+      setCategory('AI Strategy & Digital Transformation');
+      setReadTime('5 min read');
+      setReadTimeTouched(false);
+      setImg('');
       setEditingBlog(null);
+      setError('');
+      setMode('write');
       return;
     }
     if (isEditPage && postId) {
       const blog = blogs.find((b) => b.id === postId);
       if (blog) {
         setTitle(blog.title);
+        setSubtitle(blog.subtitle || '');
         setExcerpt(blog.excerpt);
+        setBody(blog.body || `<p>${blog.excerpt}</p>`);
+        setCategory(blog.category || 'Insights');
+        setReadTime(blog.readTime);
+        setReadTimeTouched(true);
         setImg(blog.img);
         setEditingBlog(blog);
+        setError('');
+        setMode('write');
       } else {
         navigate(ADMIN_ROUTES.blogs, { replace: true });
       }
@@ -129,125 +213,208 @@ export function AdminPostsPage() {
     }
   }
 
-  function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
+  function handleSave(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!title.trim()) {
+      setError('Add a title — it becomes the headline on the public article page.');
+      return;
+    }
+    if (!body.trim()) {
+      setError('Add article content before publishing.');
+      return;
+    }
+    setError('');
+
+    const nextExcerpt =
+      excerpt.trim() ||
+      subtitle.trim() ||
+      body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) ||
+      title;
+
+    const payload = {
+      title: title.trim(),
+      subtitle: subtitle.trim(),
+      excerpt: nextExcerpt,
+      body,
+      category: category.trim() || 'Insights',
+      readTime: (readTimeTouched ? readTime.trim() : autoReadTime) || '5 min read',
+      img: img || DEFAULT_COVER,
+    };
 
     if (editingBlog) {
-      setBlogs(
-        blogs.map((b) =>
-          b.id === editingBlog.id
-            ? { ...b, title, excerpt: excerpt || title, img: img || b.img }
-            : b
-        )
-      );
+      setBlogs(blogs.map((b) => (b.id === editingBlog.id ? { ...b, ...payload } : b)));
     } else {
-      const newB: BlogPostItem = {
-        id: String(Date.now()),
-        title,
-        excerpt: excerpt || 'Discover practical insights and strategies for modern business technology.',
-        readTime: '10 Minutes',
-        author: 'Ahmed Ibrahim',
-        img: img || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
-      };
-      setBlogs([newB, ...blogs]);
+      setBlogs([
+        {
+          id: String(Date.now()),
+          author: 'Ahmed Ibrahim',
+          ...payload,
+        },
+        ...blogs,
+      ]);
     }
 
     navigate(ADMIN_ROUTES.blogs);
   }
 
+  const closeFormRef = useRef(closeForm);
+  const handleSaveRef = useRef(handleSave);
+  closeFormRef.current = closeForm;
+  handleSaveRef.current = handleSave;
+
+  useLayoutEffect(() => {
+    if (!isFormMode) {
+      setHeaderExtension(null);
+      return;
+    }
+    setHeaderExtension(
+      <BlogFormHeaderBar
+        title={title}
+        isEditing={Boolean(editingBlog)}
+        mode={mode}
+        onBack={() => closeFormRef.current()}
+        onModeChange={setMode}
+        onSave={() => handleSaveRef.current()}
+      />,
+    );
+  }, [isFormMode, title, mode, editingBlog, setHeaderExtension]);
+
+  useEffect(() => {
+    return () => setHeaderExtension(null);
+  }, [setHeaderExtension]);
+
   if (isFormMode) {
+    const labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2';
+    const fieldCls =
+      'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition';
+
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-[32px] font-sans font-bold text-[#111827] tracking-tight">
-            {editingBlog ? 'Edit Blog Post' : 'Create New Blog Post'}
-          </h1>
-          <p className="text-[14px] text-[#9CA3AF] mt-1 font-sans">
-            Fill in the details to publish or save as draft.
-          </p>
-        </div>
+      <div className="pb-6">
+        {error ? (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-700">
+            {error}
+          </div>
+        ) : null}
 
-        {/* EDITOR CONTAINER CARD MATCHING IMAGE 2 EXACTLY */}
-        <div className="bg-white rounded-2xl p-8 border border-slate-100/90 shadow-2xs">
-          <label className="text-[14px] font-bold text-[#111827] block mb-3 font-sans">
-            Tagline
-          </label>
+        {mode === 'preview' ? (
+          <div className="max-w-3xl mx-auto">
+            <BlogArticlePreview
+              title={title}
+              subtitle={subtitle}
+              category={category}
+              readTime={effectiveReadTime}
+              coverImage={img || DEFAULT_COVER}
+              bodyHtml={body}
+              publishedLabel={publishedLabel}
+            />
+            <p className="mt-4 text-center text-[12px] text-slate-400 tabular-nums">
+              {wordCount} words · {effectiveReadTime}
+            </p>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSave}
+            className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start"
+          >
+            <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-7">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Article title"
+                className="w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0"
+              />
+              <input
+                type="text"
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                placeholder="Add a subtitle (optional)"
+                className="mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0"
+              />
 
-          <div className="rounded-xl overflow-hidden bg-[#F3F4F6]">
-            {/* Toolbar Matching Image 2 */}
-            <div className="bg-white px-3 sm:px-4 py-3 flex flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200">
-              <div className="flex items-center gap-1.5 bg-[#181C20] text-white rounded-md px-3 py-1 text-[12px] font-bold cursor-pointer">
-                <Type className="w-3.5 h-3.5" />
-                <span>H1 ⌄</span>
+              <div className="my-5 h-px bg-slate-100" />
+
+              <div className="flex items-center justify-between mb-2.5 gap-3">
+                <span className={labelCls + ' mb-0'}>Content</span>
+                <span className="text-[11.5px] text-slate-400 tabular-nums shrink-0">
+                  {wordCount} words · {effectiveReadTime}
+                </span>
               </div>
-              <div className="flex items-center gap-1.5 bg-[#181C20] text-white rounded-md px-3 py-1 text-[12px] font-bold cursor-pointer">
-                <span>16px ⌄</span>
-              </div>
-
-              <div className="h-4 w-px bg-slate-200 mx-1" />
-
-              <button type="button" className="p-1 text-[#111827] font-bold text-[14px] hover:text-slate-600">
-                <Bold className="w-4 h-4" />
-              </button>
-              <button type="button" className="p-1 text-[#111827] hover:text-slate-600">
-                <Underline className="w-4 h-4" />
-              </button>
-
-              <div className="h-4 w-px bg-slate-200 mx-1" />
-
-              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">
-                <AlignLeft className="w-4 h-4" />
-              </button>
-              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">
-                <AlignCenter className="w-4 h-4" />
-              </button>
-              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">
-                <AlignRight className="w-4 h-4" />
-              </button>
-
-              <div className="h-4 w-px bg-slate-200 mx-1" />
-
-              <button type="button" className="p-1 text-slate-400 hover:text-slate-600">
-                <Link2 className="w-4 h-4" />
-              </button>
+              <BlogEditor value={body} onChange={setBody} />
             </div>
 
-            {/* Writing Canvas Area */}
-            <textarea
-              rows={10}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Write title"
-              className="w-full p-6 bg-[#F3F4F6] text-[14px] text-slate-800 focus:outline-none resize-none placeholder:text-[#9CA3AF] font-sans font-normal border-none"
-            />
-          </div>
+            <aside className="space-y-5 lg:sticky lg:top-6">
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                <AdminImageUpload
+                  label="Cover image"
+                  value={img}
+                  onChange={setImg}
+                  height="aspect-[16/10] min-h-36"
+                />
+              </div>
 
-          <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={closeForm}
-              className="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13.5px] font-semibold cursor-pointer font-sans"
-            >
-              Back to Blogs
-            </button>
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+                <div>
+                  <label className={labelCls}>Category</label>
+                  <input
+                    type="text"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    placeholder="e.g. AI Strategy"
+                    className={fieldCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Read time</label>
+                  <input
+                    type="text"
+                    value={readTimeTouched ? readTime : autoReadTime}
+                    onChange={(e) => {
+                      setReadTimeTouched(true);
+                      setReadTime(e.target.value);
+                    }}
+                    placeholder="5 min read"
+                    className={fieldCls}
+                  />
+                  <p className="mt-1.5 text-[11.5px] text-slate-400">Auto-calculated — edit to override.</p>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={handleSave}
-              className="px-6 py-2.5 rounded-lg bg-[#38BDF8] hover:bg-[#20B0F0] text-white transition-colors text-[13.5px] font-semibold cursor-pointer font-sans"
-            >
-              {editingBlog ? 'Save Changes' : 'Publish Blog Post'}
-            </button>
-          </div>
-        </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                <label className={labelCls}>Card excerpt</label>
+                <textarea
+                  rows={3}
+                  value={excerpt}
+                  onChange={(e) => setExcerpt(e.target.value)}
+                  placeholder="Short teaser for list & homepage cards. Leave blank to auto-generate."
+                  className={`${fieldCls} resize-y min-h-21`}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={closeForm}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13px] font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors text-[13px] font-semibold cursor-pointer"
+                >
+                  {editingBlog ? 'Save' : 'Publish'}
+                </button>
+              </div>
+            </aside>
+          </form>
+        )}
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* HEADER BAR MATCHING SCREENSHOT 1 */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-[34px] font-sans font-extrabold text-slate-900 tracking-tight">Blogs</h1>
@@ -265,7 +432,6 @@ export function AdminPostsPage() {
         </button>
       </div>
 
-      {/* 4-COLUMN GRID MATCHING SCREENSHOT 1 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {paginatedItems.map((b) => (
           <div
@@ -274,11 +440,7 @@ export function AdminPostsPage() {
           >
             <div>
               <div className="aspect-16/10 overflow-hidden rounded-sm bg-slate-100 mb-4">
-                <img
-                  src={b.img}
-                  alt={b.title}
-                  className="w-full h-full object-cover"
-                />
+                <img src={b.img} alt={b.title} className="w-full h-full object-cover" />
               </div>
 
               <h3 className="font-serif font-bold text-[18px] text-slate-900 mb-2.5 min-h-12 line-clamp-2">
