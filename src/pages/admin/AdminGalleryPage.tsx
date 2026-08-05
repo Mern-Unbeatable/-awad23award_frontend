@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams, useMatch } from 'react-router-dom';
 import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { usePagination } from '../../hooks/usePagination';
+import {
+  ADMIN_ROUTES,
+  ADMIN_PORTFOLIO_NEW,
+  adminPortfolioEditPath,
+} from './adminRoutes';
 import type {
   GalleryItem,
   ChallengeItem,
@@ -407,10 +413,15 @@ const PORTFOLIO_PAGE_SIZE = 4;
 
 
 export function AdminGalleryPage() {
+  const navigate = useNavigate();
+  const { itemId } = useParams<{ itemId: string }>();
+  const isNewPage = Boolean(useMatch({ path: '/admin/portfolio/new', end: true }));
+  const isEditPage = Boolean(useMatch({ path: '/admin/portfolio/:itemId/edit', end: true }));
+  const isFormMode = isNewPage || isEditPage;
+
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [view, setView] = useState<'list' | 'form'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [form, setForm] = useState<PortfolioForm>(EMPTY_FORM);
@@ -428,24 +439,41 @@ export function AdminGalleryPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (isNewPage) {
+      setForm(EMPTY_FORM);
+      setEditingId(null);
+      setActiveTab(0);
+      setError('');
+      return;
+    }
+    if (isEditPage && itemId && !loading) {
+      const item = items.find((i) => i.id === itemId);
+      if (item) {
+        setForm(formFromItem(item));
+        setEditingId(item.id);
+        setActiveTab(0);
+        setError('');
+      } else {
+        navigate(ADMIN_ROUTES.portfolio, { replace: true });
+      }
+    }
+  }, [isNewPage, isEditPage, itemId, items, loading, navigate]);
+
+  function closeForm() {
+    navigate(ADMIN_ROUTES.portfolio);
+  }
+
   function setField<K extends keyof PortfolioForm>(key: K, value: PortfolioForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   function openCreate() {
-    setForm(EMPTY_FORM);
-    setEditingId(null);
-    setActiveTab(0);
-    setError('');
-    setView('form');
+    navigate(ADMIN_PORTFOLIO_NEW);
   }
 
   function openEdit(item: GalleryItem) {
-    setForm(formFromItem(item));
-    setEditingId(item.id);
-    setActiveTab(0);
-    setError('');
-    setView('form');
+    navigate(adminPortfolioEditPath(item.id));
   }
 
   async function handleDelete(id: string) {
@@ -471,7 +499,7 @@ export function AdminGalleryPage() {
         const res = await adminApi.createPortfolioItem(payload);
         setItems((prev) => [res.data as GalleryItem, ...prev]);
       }
-      setView('list');
+      navigate(ADMIN_ROUTES.portfolio);
     } catch {
       setError('Failed to save. Please try again.');
     } finally {
@@ -937,7 +965,7 @@ export function AdminGalleryPage() {
 
  
 
-  if (view === 'form') {
+  if (isFormMode) {
     return (
       <div className="space-y-5 pb-10">
         {/* Header */}
@@ -949,7 +977,7 @@ export function AdminGalleryPage() {
             <p className="text-[13px] text-slate-400 mt-0.5">Fill out each section to build the full case study page.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button type="button" onClick={() => setView('list')}
+            <button type="button" onClick={closeForm}
               className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-[13px] font-semibold transition-colors cursor-pointer">
               Cancel
             </button>

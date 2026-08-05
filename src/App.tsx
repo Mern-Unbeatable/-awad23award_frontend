@@ -23,6 +23,7 @@ import { AdminGalleryPage } from './pages/admin/AdminGalleryPage';
 import { AdminNewsletterPage } from './pages/admin/AdminNewsletterPage';
 import { AdminMessagesPage } from './pages/admin/AdminMessagesPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
+import { ADMIN_DEFAULT_ROUTE, ADMIN_ROUTES } from './pages/admin/adminRoutes';
 
 function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -89,11 +90,17 @@ export default function App() {
 
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/posts" replace />} />
+            <Route index element={<Navigate to={ADMIN_DEFAULT_ROUTE} replace />} />
             <Route path="homepage" element={<AdminHomepagePage />} />
             <Route path="services" element={<AdminServicesPage />} />
-            <Route path="posts" element={<AdminPostsPage />} />
-            <Route path="gallery" element={<AdminGalleryPage />} />
+            <Route path="blogs/new" element={<AdminPostsPage />} />
+            <Route path="blogs/:postId/edit" element={<AdminPostsPage />} />
+            <Route path="blogs" element={<AdminPostsPage />} />
+            <Route path="portfolio/new" element={<AdminGalleryPage />} />
+            <Route path="portfolio/:itemId/edit" element={<AdminGalleryPage />} />
+            <Route path="portfolio" element={<AdminGalleryPage />} />
+            <Route path="posts" element={<Navigate to={ADMIN_ROUTES.blogs} replace />} />
+            <Route path="gallery" element={<Navigate to={ADMIN_ROUTES.portfolio} replace />} />
             <Route path="newsletter" element={<AdminNewsletterPage />} />
             <Route path="messages" element={<AdminMessagesPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
