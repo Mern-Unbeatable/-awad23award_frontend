@@ -1062,7 +1062,7 @@ export function AdminGalleryPage() {
           <p className="text-[13.5px] text-slate-500 mt-0.5">Manage portfolio projects and case studies.</p>
         </div>
         <button type="button" onClick={openCreate}
-          className="inline-flex items-center gap-2 bg-[#38BDF8] hover:bg-[#20B0F0] text-white rounded-xl px-5 py-2.5 text-[14px] font-semibold transition-colors shadow-xs self-start sm:self-auto cursor-pointer">
+          className="inline-flex items-center gap-2 bg-[#38BDF8] hover:bg-[#20B0F0] text-white rounded-sm px-5 py-2.5 text-[13.5px] font-semibold transition-colors shadow-xs self-start sm:self-auto cursor-pointer font-sans">
           <Plus className="w-4 h-4" />
           New Item
         </button>
@@ -1087,7 +1087,7 @@ export function AdminGalleryPage() {
           <p className="text-slate-500 font-semibold mb-1">No portfolio items yet</p>
           <p className="text-slate-400 text-[13px] mb-5">Create your first case study to get started.</p>
           <button type="button" onClick={openCreate}
-            className="inline-flex items-center gap-2 bg-[#38BDF8] text-white rounded-lg px-5 py-2.5 text-[13.5px] font-semibold cursor-pointer hover:bg-[#20B0F0] transition-colors">
+            className="inline-flex items-center gap-2 bg-[#38BDF8] text-white rounded-sm px-5 py-2.5 text-[13.5px] font-semibold cursor-pointer hover:bg-[#20B0F0] transition-colors font-sans">
             <Plus className="w-4 h-4" /> Create First Item
           </button>
         </div>
