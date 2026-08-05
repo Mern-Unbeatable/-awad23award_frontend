@@ -3,11 +3,12 @@ import { NavLink, Outlet, Navigate, useNavigate, Link } from 'react-router-dom';
 import { FileText, Briefcase, Mail, LogOut, Menu, X, Home } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { isLoggedIn } from '../../lib/auth';
+import { ADMIN_ROUTES } from './adminRoutes';
 
 const navItems = [
-  { to: '/admin/posts', label: 'Blogs', icon: FileText },
-  { to: '/admin/gallery', label: 'Portfolio', icon: Briefcase },
-  { to: '/admin/newsletter', label: 'Newsletter', icon: Mail },
+  { to: ADMIN_ROUTES.blogs, label: 'Blogs', icon: FileText },
+  { to: ADMIN_ROUTES.portfolio, label: 'Portfolio', icon: Briefcase },
+  { to: ADMIN_ROUTES.newsletter, label: 'Newsletter', icon: Mail },
 ];
 
 export function AdminLayout() {
@@ -16,13 +17,13 @@ export function AdminLayout() {
 
 
   if (!isLoggedIn()) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to={ADMIN_ROUTES.login} replace />;
   }
 
   function handleLogout() {
 
     adminApi.logout();
-    navigate('/admin/login');
+    navigate(ADMIN_ROUTES.login);
   }
 
   const sidebarContent = (
@@ -38,6 +39,7 @@ export function AdminLayout() {
               <NavLink
                 key={item.to}
                 to={item.to}
+                end={false}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3.5 py-2.5 rounded-sm text-[14px] font-medium transition-all ${

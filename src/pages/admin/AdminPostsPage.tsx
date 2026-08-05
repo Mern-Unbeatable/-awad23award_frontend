@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useMatch } from 'react-router-dom';
 import { Edit3, Trash2, Type, Bold, Underline, AlignLeft, AlignCenter, AlignRight, Link2 } from 'lucide-react';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { usePagination } from '../../hooks/usePagination';
+import {
+  ADMIN_ROUTES,
+  ADMIN_BLOG_NEW,
+  adminBlogEditPath,
+} from './adminRoutes';
 
 const BLOGS_PAGE_SIZE = 4;
 
@@ -66,8 +72,13 @@ const initialBlogs: BlogPostItem[] = [
 ];
 
 export function AdminPostsPage() {
+  const navigate = useNavigate();
+  const { postId } = useParams<{ postId: string }>();
+  const isNewPage = Boolean(useMatch({ path: '/admin/blogs/new', end: true }));
+  const isEditPage = Boolean(useMatch({ path: '/admin/blogs/:postId/edit', end: true }));
+  const isFormMode = isNewPage || isEditPage;
+
   const [blogs, setBlogs] = useState<BlogPostItem[]>(initialBlogs);
-  const [isCreating, setIsCreating] = useState(false);
   const [editingBlog, setEditingBlog] = useState<BlogPostItem | null>(null);
   const { page, setPage, totalPages, paginatedItems, totalItems, pageSize } = usePagination(
     blogs,
@@ -79,19 +90,37 @@ export function AdminPostsPage() {
   const [excerpt, setExcerpt] = useState('');
   const [img, setImg] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80');
 
+  useEffect(() => {
+    if (isNewPage) {
+      setTitle('');
+      setExcerpt('');
+      setImg('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80');
+      setEditingBlog(null);
+      return;
+    }
+    if (isEditPage && postId) {
+      const blog = blogs.find((b) => b.id === postId);
+      if (blog) {
+        setTitle(blog.title);
+        setExcerpt(blog.excerpt);
+        setImg(blog.img);
+        setEditingBlog(blog);
+      } else {
+        navigate(ADMIN_ROUTES.blogs, { replace: true });
+      }
+    }
+  }, [isNewPage, isEditPage, postId, blogs, navigate]);
+
   function openCreate() {
-    setTitle('');
-    setExcerpt('');
-    setEditingBlog(null);
-    setIsCreating(true);
+    navigate(ADMIN_BLOG_NEW);
   }
 
   function openEdit(b: BlogPostItem) {
-    setTitle(b.title);
-    setExcerpt(b.excerpt);
-    setImg(b.img);
-    setEditingBlog(b);
-    setIsCreating(true);
+    navigate(adminBlogEditPath(b.id));
+  }
+
+  function closeForm() {
+    navigate(ADMIN_ROUTES.blogs);
   }
 
   function handleDelete(id: string) {
@@ -124,11 +153,10 @@ export function AdminPostsPage() {
       setBlogs([newB, ...blogs]);
     }
 
-    setIsCreating(false);
-    setEditingBlog(null);
+    navigate(ADMIN_ROUTES.blogs);
   }
 
-  if (isCreating) {
+  if (isFormMode) {
     return (
       <div className="space-y-6">
         <div>
@@ -198,7 +226,7 @@ export function AdminPostsPage() {
           <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => setIsCreating(false)}
+              onClick={closeForm}
               className="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13.5px] font-semibold cursor-pointer font-sans"
             >
               Back to Blogs

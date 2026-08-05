@@ -3,6 +3,7 @@ import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Lock, Mail, ArrowRight, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { isLoggedIn } from '../../lib/auth';
+import { ADMIN_DEFAULT_ROUTE } from './adminRoutes';
 
 export function AdminLoginPage() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export function AdminLoginPage() {
 
 
   if (isLoggedIn()) {
-    return <Navigate to="/admin/posts" replace />;
+    return <Navigate to={ADMIN_DEFAULT_ROUTE} replace />;
   }
 
   async function onSubmit(e: FormEvent) {
@@ -24,7 +25,7 @@ export function AdminLoginPage() {
     try {
 
       await adminApi.login(email, password);
-      navigate('/admin/posts');
+      navigate(ADMIN_DEFAULT_ROUTE);
     } catch {
 
       setError('Invalid email or password. Please try again.');
