@@ -4,7 +4,7 @@ import { publicApi } from '../../lib/api';
 import { ArrowIcon } from './ArrowIcon';
 
 export function HomeNewsletter() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'ok' | 'err'>('idle');
 

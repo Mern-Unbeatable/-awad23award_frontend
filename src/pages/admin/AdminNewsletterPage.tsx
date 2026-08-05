@@ -170,7 +170,7 @@ export function AdminNewsletterPage() {
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
               LATEST SUBSCRIPTION
             </span>
-            <span className="text-[14px] font-bold text-slate-900 truncate block mb-2 max-w-[180px]">
+            <span className="text-[14px] font-bold text-slate-900 truncate block mb-2 max-w-45">
               {subscribers[0]?.email || 'None'}
             </span>
             <span className="text-[12px] text-slate-400 flex items-center gap-1">
@@ -188,37 +188,43 @@ export function AdminNewsletterPage() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         {/* Mobile cards */}
         <div className="md:hidden divide-y divide-slate-100">
-          {paginatedItems.map((s) => (
-            <article key={s.id} className="p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                    Email address
-                  </p>
-                  <p className="text-[14px] font-medium text-slate-800 break-all leading-snug">{s.email}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(s.id)}
-                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
-                  title="Delete subscriber"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                    Date subscribed
-                  </p>
-                  <p className="text-[13px] text-slate-500 font-mono">{s.date}</p>
-                </div>
-                <SubscriberStatusBadge status={s.status} />
-              </div>
-            </article>
-          ))}
-          {subscribers.length === 0 && (
+          {loading ? (
+            <div className="py-10 text-center text-slate-400 flex items-center justify-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin text-[#38BDF8]" />
+              <span className="text-[14px]">Loading subscribers...</span>
+            </div>
+          ) : subscribers.length === 0 ? (
             <p className="py-10 px-4 text-center text-slate-400 text-[14px]">No subscribers found.</p>
+          ) : (
+            paginatedItems.map((s) => (
+              <article key={s.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                      Email address
+                    </p>
+                    <p className="text-[14px] font-medium text-slate-800 break-all leading-snug">{s.email}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(s.id)}
+                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                    title="Delete subscriber"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                      Date subscribed
+                    </p>
+                    <p className="text-[13px] text-slate-500 font-mono">{s.date}</p>
+                  </div>
+                  <SubscriberStatusBadge status={s.status} />
+                </div>
+              </article>
+            ))
           )}
         </div>
 
@@ -234,36 +240,46 @@ export function AdminNewsletterPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-[14px]">
-              {paginatedItems.map((s) => (
-                <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="py-4 px-6 font-medium text-slate-800">
-                    <span className="inline-flex items-center gap-3">
-                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span>{s.email}</span>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center text-slate-400 font-medium">
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin text-[#38BDF8]" />
+                      Loading subscribers...
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-slate-500 font-mono text-[13px]">{s.date}</td>
-                  <td className="py-4 px-6">
-                    <SubscriberStatusBadge status={s.status} />
-                  </td>
-                  <td className="py-4 px-6 text-end">
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(s.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                      title="Delete subscriber"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
                 </tr>
-              ))}
-              {subscribers.length === 0 && (
+              ) : subscribers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-slate-400 text-[14px]">
                     No subscribers found.
                   </td>
                 </tr>
+              ) : (
+                paginatedItems.map((s) => (
+                  <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-4 px-6 font-medium text-slate-800">
+                      <span className="inline-flex items-center gap-3">
+                        <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                        <span>{s.email}</span>
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-slate-500 font-mono text-[13px]">{s.date}</td>
+                    <td className="py-4 px-6">
+                      <SubscriberStatusBadge status={s.status} />
+                    </td>
+                    <td className="py-4 px-6 text-end">
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(s.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        title="Delete subscriber"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
