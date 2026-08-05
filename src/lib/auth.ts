@@ -27,17 +27,21 @@ export function saveSession(session: AuthSession): void {
 
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(KEYS.accessToken);
+  const token = localStorage.getItem(KEYS.accessToken);
+  if (!token || token === 'undefined' || token === 'null' || token.trim() === '') return null;
+  return token;
 }
 
 export function getRefreshToken(): string | null {
-  return localStorage.getItem(KEYS.refreshToken);
+  const token = localStorage.getItem(KEYS.refreshToken);
+  if (!token || token === 'undefined' || token === 'null' || token.trim() === '') return null;
+  return token;
 }
 
 
 export function getAdmin(): AdminInfo | null {
   const raw = localStorage.getItem(KEYS.admin);
-  if (!raw) return null;
+  if (!raw || raw === 'undefined' || raw === 'null') return null;
   try {
     return JSON.parse(raw) as AdminInfo;
   } catch {

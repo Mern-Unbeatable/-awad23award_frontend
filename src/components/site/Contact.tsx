@@ -1,16 +1,23 @@
 import { useState } from 'react';
 import { useLocale } from '../../context/LocaleContext';
+import { publicApi } from '../../lib/api';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Contact() {
   const { t } = useLocale();
   const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'ok' | 'err'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    alert(t("Thanks for subscribing! I'll be in touch.", 'شكراً لفي اشتراكك! سأتواصل معك قريباً.'));
-    setEmail('');
+    if (!email.trim()) return;
+    try {
+      await publicApi.subscribe(email.trim());
+      setStatus('ok');
+      setEmail('');
+    } catch {
+      setStatus('err');
+    }
   };
 
   return (
@@ -55,6 +62,16 @@ export function Contact() {
                     {t('Submit', 'إرسال')}
                   </button>
                 </div>
+                {status === 'ok' && (
+                  <p className="mt-2 text-xs font-semibold text-emerald-600">
+                    {t('You are on the list! Thanks for subscribing.', 'أنت على القائمة! شكراً لفي اشتراكك.')}
+                  </p>
+                )}
+                {status === 'err' && (
+                  <p className="mt-2 text-xs font-semibold text-red-500">
+                    {t('Something went wrong. Please try again.', 'حدث خطأ. يرجى المحاولة مرة أخرى.')}
+                  </p>
+                )}
               </form>
             </div>
           </div>

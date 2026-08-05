@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
 import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
 import { adminApi } from '../../lib/api';
+import { confirmDelete } from '../../lib/swal';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { usePagination } from '../../hooks/usePagination';
@@ -477,7 +478,8 @@ export function AdminGalleryPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this portfolio item?')) return;
+    const confirmed = await confirmDelete('Delete Portfolio Item?', 'Are you sure you want to delete this item?');
+    if (!confirmed) return;
     await adminApi.deleteGalleryItem(id);
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
