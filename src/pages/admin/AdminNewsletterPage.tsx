@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { Mail, User, Users, Trash2, TrendingUp, Clock, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mail, User, Users, Trash2, TrendingUp, Clock, Download, Loader2 } from 'lucide-react';
 import { AdminPagination } from '../../components/admin/AdminPagination';
 import { usePagination } from '../../hooks/usePagination';
+import { adminApi } from '../../lib/api';
+import { confirmDelete } from '../../lib/swal';
 
 const NEWSLETTER_PAGE_SIZE = 5;
 
@@ -19,33 +21,73 @@ interface SubscriberItem {
   email: string;
   date: string;
   status: string;
+  locale?: string;
+  createdAt?: string;
+  confirmedAt?: string | null;
 }
 
-const initialSubscribers: SubscriberItem[] = [
+const fallbackSubscribers: SubscriberItem[] = [
   { id: '1', email: 'david.chen@enterprise-tech.io', date: '2026-07-28', status: 'Active Subscribed' },
   { id: '2', email: 'sarah.jenkins@cloudscale.net', date: '2026-07-26', status: 'Active Subscribed' },
   { id: '3', email: 'michael.ross@fintechlabs.co', date: '2026-07-24', status: 'Active Subscribed' },
-  { id: '4', email: 'a.kumar@techglobal.de', date: '2026-07-22', status: 'Active Subscribed' },
-  { id: '5', email: 'elena.vladimirov@cybernet.ch', date: '2026-07-19', status: 'Active Subscribed' },
-  { id: '6', email: 'jason.m@startuphub.sg', date: '2026-07-15', status: 'Active Subscribed' },
-  { id: '7', email: 'olivia.brown@retailventures.com', date: '2026-07-12', status: 'Active Subscribed' },
-  { id: '8', email: 'noah.williams@saasgrowth.io', date: '2026-07-10', status: 'Active Subscribed' },
-  { id: '9', email: 'priya.sharma@healthtech.in', date: '2026-07-08', status: 'Active Subscribed' },
-  { id: '10', email: 'lucas.martin@euroscale.fr', date: '2026-07-05', status: 'Active Subscribed' },
-  { id: '11', email: 'emma.taylor@consulting.co.uk', date: '2026-07-02', status: 'Active Subscribed' },
-  { id: '12', email: 'daniel.kim@mobiledesign.kr', date: '2026-06-28', status: 'Active Subscribed' },
 ];
 
 export function AdminNewsletterPage() {
-  const [subscribers, setSubscribers] = useState<SubscriberItem[]>(initialSubscribers);
+  const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchSubscribers() {
+      try {
+        const res = await adminApi.getSubscribers();
+        const rawList = res.data?.data || (Array.isArray(res.data) ? res.data : null);
+        if (Array.isArray(rawList) && isMounted) {
+          const formatted: SubscriberItem[] = rawList.map((item: any) => ({
+            id: item.id || item._id || String(Math.random()),
+            email: item.email,
+            date: item.date || (item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : 'N/A'),
+            status: item.confirmedAt ? 'Confirmed' : 'Active Subscribed',
+            locale: item.locale || 'en',
+            createdAt: item.createdAt,
+            confirmedAt: item.confirmedAt,
+          }));
+          setSubscribers(formatted);
+        } else if (isMounted) {
+          setSubscribers(fallbackSubscribers);
+        }
+      } catch (err) {
+        console.error('Failed to fetch subscribers:', err);
+        if (isMounted) {
+          setSubscribers(fallbackSubscribers);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    fetchSubscribers();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const { page, setPage, totalPages, paginatedItems, totalItems, pageSize } = usePagination(
     subscribers,
     NEWSLETTER_PAGE_SIZE,
   );
 
-  function handleDelete(id: string) {
-    if (confirm('Delete subscriber from list?')) {
-      setSubscribers(subscribers.filter((s) => s.id !== id));
+  async function handleDelete(id: string) {
+    const confirmed = await confirmDelete(
+      'Delete Subscriber?',
+      'Are you sure you want to remove this email from your newsletter list?'
+    );
+    if (confirmed) {
+      try {
+        await adminApi.deleteSubscriber(id);
+      } catch (err) {
+        console.error('Failed to delete subscriber:', err);
+      }
+      setSubscribers((prev) => prev.filter((s) => s.id !== id));
     }
   }
 
@@ -113,9 +155,9 @@ export function AdminNewsletterPage() {
               NEW THIS MONTH
             </span>
             <span className="text-[32px] font-bold text-slate-900 leading-none block mb-2">
-              +{subscribers.length > 5 ? subscribers.length - 2 : subscribers.length}
+              +{subscribers.length}
             </span>
-            <span className="text-[12px] font-medium text-slate-400">July 2026 Cohort</span>
+            <span className="text-[12px] font-medium text-slate-400">Total Audience</span>
           </div>
           <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
             <Users className="w-5 h-5" />
@@ -133,7 +175,7 @@ export function AdminNewsletterPage() {
             </span>
             <span className="text-[12px] text-slate-400 flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              {subscribers[0]?.date || '2026-07-28'}
+              {subscribers[0]?.date || 'N/A'}
             </span>
           </div>
           <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">

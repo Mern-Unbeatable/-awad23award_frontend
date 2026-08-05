@@ -11,7 +11,7 @@ export function HomeNewsletter() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      await publicApi.subscribe(email, locale);
+      await publicApi.subscribe(email);
       setStatus('ok');
       setEmail('');
     } catch {

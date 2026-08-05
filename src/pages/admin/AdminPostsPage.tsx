@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useLayoutEffect, useRef } from 'react';
 import { useNavigate, useParams, useMatch, useOutletContext } from 'react-router-dom';
 import { Edit3, Trash2 } from 'lucide-react';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
@@ -7,6 +7,7 @@ import { BlogEditor } from '../../components/admin/BlogEditor';
 import { BlogArticlePreview } from '../../components/admin/BlogArticlePreview';
 import { BlogFormHeaderBar } from '../../components/admin/BlogFormHeaderBar';
 import { usePagination } from '../../hooks/usePagination';
+import { confirmDelete } from '../../lib/swal';
 import {
   ADMIN_ROUTES,
   ADMIN_BLOG_NEW,
@@ -207,8 +208,9 @@ export function AdminPostsPage() {
     navigate(ADMIN_ROUTES.blogs);
   }
 
-  function handleDelete(id: string) {
-    if (confirm('Are you sure you want to delete this blog post?')) {
+  async function handleDelete(id: string) {
+    const confirmed = await confirmDelete('Delete Blog Post?', 'Are you sure you want to delete this blog post?');
+    if (confirmed) {
       setBlogs(blogs.filter((b) => b.id !== id));
     }
   }

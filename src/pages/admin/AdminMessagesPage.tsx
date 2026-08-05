@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { adminApi } from '../../lib/api';
+import { confirmDelete } from '../../lib/swal';
 
 interface Message {
   id: string;
@@ -30,7 +31,8 @@ export function AdminMessagesPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete message?')) return;
+    const confirmed = await confirmDelete('Delete Message?', 'Are you sure you want to delete this message?');
+    if (!confirmed) return;
     await adminApi.deleteMessage(id);
     await load();
   }

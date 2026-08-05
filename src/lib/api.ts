@@ -26,15 +26,11 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = getAccessToken();
-  if (token) {
+  if (token && token !== 'undefined' && token !== 'null') {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
-
-interface RefreshResponse {
-  data: { accessToken: string; refreshToken: string };
-}
 
 let isRefreshing = false;
 let pendingRequests: Array<(token: string) => void> = [];
@@ -44,15 +40,25 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    if (error.response?.status !== 401 || original._retried) {
+    if (
+      !error.response ||
+      error.response.status !== 401 ||
+      original._retried ||
+      original.url?.includes('/auth/login') ||
+      original.url?.includes('/auth/refresh')
+    ) {
       return Promise.reject(error);
     }
 
     original._retried = true;
 
     if (isRefreshing) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         pendingRequests.push((newToken) => {
+          if (!newToken) {
+            reject(error);
+            return;
+          }
           original.headers.Authorization = `Bearer ${newToken}`;
           resolve(api(original));
         });
@@ -63,22 +69,32 @@ api.interceptors.response.use(
 
     try {
       const refreshToken = getRefreshToken();
-      if (!refreshToken) throw new Error('No refresh token');
+      if (!refreshToken) throw new Error('No refresh token available');
 
-      const { data } = await api.post<RefreshResponse>('/auth/refresh', { refreshToken });
-      const { accessToken, refreshToken: newRefreshToken } = data.data;
+      const res = await api.post('/auth/refresh', { refreshToken });
+      const body = res.data;
+      const payload = body?.data || body;
 
-      updateTokens(accessToken, newRefreshToken);
+      const newAccessToken = payload?.accessToken || payload?.token || body?.accessToken || body?.token;
+      const newRefreshToken = payload?.refreshToken || body?.refreshToken || refreshToken;
 
-      pendingRequests.forEach((cb) => cb(accessToken));
+      if (!newAccessToken) throw new Error('Refresh failed to return token');
+
+      updateTokens(newAccessToken, newRefreshToken);
+
+      pendingRequests.forEach((cb) => cb(newAccessToken));
       pendingRequests = [];
 
-      original.headers.Authorization = `Bearer ${accessToken}`;
+      original.headers.Authorization = `Bearer ${newAccessToken}`;
       return api(original);
-    } catch {
+    } catch (refreshErr) {
+      pendingRequests.forEach((cb) => cb(''));
+      pendingRequests = [];
       clearSession();
-      window.location.href = '/admin/login';
-      return Promise.reject(error);
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin/login')) {
+        window.location.href = '/admin/login';
+      }
+      return Promise.reject(refreshErr);
     } finally {
       isRefreshing = false;
     }
@@ -142,8 +158,8 @@ export const publicApi = {
       async () => (await api.get<Testimonial[]>('/testimonials')).data,
       fallbackTestimonials
     ),
-  subscribe: (email: string, locale: string) =>
-    api.post('/newsletter/subscribe', { email, locale, website: '' }),
+  subscribe: (email: string) =>
+    api.post('/newsletter/subscribe', { email }),
   contact: (payload: {
     name: string;
     email: string;
@@ -153,29 +169,29 @@ export const publicApi = {
 };
 
 
-interface LoginResponse {
-  token: string;        
-  accessToken: string;  
-  refreshToken: string; 
-  admin: {
-    id: string;
-    email: string;
-    name: string;
-  };
-}
 
 export const adminApi = {
 
   login: async (email: string, password: string) => {
-    const { data } = await api.post<LoginResponse>('/auth/login', { email, password });
+    const res = await api.post('/auth/login', { email, password });
+    const body = res.data;
+    const payload = body?.data || body;
+
+    const token = payload?.accessToken || payload?.token || body?.accessToken || body?.token;
+    const refreshToken = payload?.refreshToken || body?.refreshToken || token;
+    const adminData = payload?.admin || payload?.user || body?.admin || body?.user || { id: '1', email, name: 'Admin' };
+
+    if (!token || typeof token !== 'string') {
+      throw new Error('No valid access token received from backend server.');
+    }
 
     saveSession({
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-      admin: data.admin,
+      accessToken: token,
+      refreshToken: refreshToken,
+      admin: adminData,
     });
 
-    return data;
+    return body;
   },
   me: () => api.get('/auth/me'),
 
@@ -218,6 +234,7 @@ export const adminApi = {
   addMediaUrl: (url: string, type: 'image' | 'video' = 'image') =>
     api.post('/media/url', { url, type }),
   getSubscribers: () => api.get('/newsletter'),
+  deleteSubscriber: (id: string) => api.delete(`/newsletter/${id}`),
   exportSubscribers: () =>
     api.get('/newsletter/export', { responseType: 'blob' }),
   getMessages: () => api.get('/contact'),

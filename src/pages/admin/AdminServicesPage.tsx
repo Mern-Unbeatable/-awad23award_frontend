@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { adminApi } from '../../lib/api';
+import { confirmDelete } from '../../lib/swal';
 import { ImagePicker } from '../../components/admin/ImagePicker';
 import type { Service } from '../../types';
 
@@ -70,7 +71,8 @@ export function AdminServicesPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete this service?')) return;
+    const confirmed = await confirmDelete('Delete Service?', 'Are you sure you want to delete this service?');
+    if (!confirmed) return;
     await adminApi.deleteService(id);
     await load();
   }
