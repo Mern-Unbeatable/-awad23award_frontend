@@ -591,10 +591,18 @@ export function AdminGalleryPage() {
         <div className="flex items-center gap-3 pt-1">
           <button
             type="button"
+            role="switch"
+            aria-checked={form.published}
             onClick={() => setField('published', !form.published)}
-            className={`relative w-10 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${form.published ? 'bg-[#38BDF8]' : 'bg-slate-200'}`}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer ${
+              form.published ? 'bg-[#38BDF8]' : 'bg-slate-200'
+            }`}
           >
-            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.published ? 'translate-x-5' : 'translate-x-1'}`} />
+            <span
+              className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                form.published ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
           </button>
           <span className="text-[13px] font-medium text-slate-700">
             {form.published ? 'Published — visible on site' : 'Draft — hidden from site'}
