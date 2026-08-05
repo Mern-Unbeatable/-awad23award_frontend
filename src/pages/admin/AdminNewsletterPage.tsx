@@ -1,5 +1,18 @@
 import { useState } from 'react';
 import { Mail, User, Users, Trash2, TrendingUp, Clock, Download } from 'lucide-react';
+import { AdminPagination } from '../../components/admin/AdminPagination';
+import { usePagination } from '../../hooks/usePagination';
+
+const NEWSLETTER_PAGE_SIZE = 5;
+
+function SubscriberStatusBadge({ status }: { status: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+      {status}
+    </span>
+  );
+}
 
 interface SubscriberItem {
   id: string;
@@ -16,10 +29,19 @@ const initialSubscribers: SubscriberItem[] = [
   { id: '5', email: 'elena.vladimirov@cybernet.ch', date: '2026-07-19', status: 'Active Subscribed' },
   { id: '6', email: 'jason.m@startuphub.sg', date: '2026-07-15', status: 'Active Subscribed' },
   { id: '7', email: 'olivia.brown@retailventures.com', date: '2026-07-12', status: 'Active Subscribed' },
+  { id: '8', email: 'noah.williams@saasgrowth.io', date: '2026-07-10', status: 'Active Subscribed' },
+  { id: '9', email: 'priya.sharma@healthtech.in', date: '2026-07-08', status: 'Active Subscribed' },
+  { id: '10', email: 'lucas.martin@euroscale.fr', date: '2026-07-05', status: 'Active Subscribed' },
+  { id: '11', email: 'emma.taylor@consulting.co.uk', date: '2026-07-02', status: 'Active Subscribed' },
+  { id: '12', email: 'daniel.kim@mobiledesign.kr', date: '2026-06-28', status: 'Active Subscribed' },
 ];
 
 export function AdminNewsletterPage() {
   const [subscribers, setSubscribers] = useState<SubscriberItem[]>(initialSubscribers);
+  const { page, setPage, totalPages, paginatedItems, totalItems, pageSize } = usePagination(
+    subscribers,
+    NEWSLETTER_PAGE_SIZE,
+  );
 
   function handleDelete(id: string) {
     if (confirm('Delete subscriber from list?')) {
@@ -44,18 +66,13 @@ export function AdminNewsletterPage() {
     <div className="space-y-8">
       {/* HEADER TITLE BAR MATCHING SCREENSHOT 5 */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#38BDF8] text-white flex items-center justify-center shadow-xs">
-            <Mail className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-[32px] font-extrabold text-slate-900 tracking-tight">
-              Newsletter Subscribers
-            </h1>
-            <p className="text-[14px] text-slate-500 mt-1">
-              Manage everyone who subscribed through your website.
-            </p>
-          </div>
+        <div>
+          <h1 className="text-[26px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight">
+            Newsletter Subscribers
+          </h1>
+          <p className="text-[14px] text-slate-500 mt-1">
+            Manage everyone who subscribed through your website.
+          </p>
         </div>
 
         <button
@@ -125,9 +142,46 @@ export function AdminNewsletterPage() {
         </div>
       </div>
 
-      {/* SUBSCRIBERS TABLE MATCHING SCREENSHOT 5 */}
+      {/* Subscribers — cards on mobile, table on md+ */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {paginatedItems.map((s) => (
+            <article key={s.id} className="p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Email address
+                  </p>
+                  <p className="text-[14px] font-medium text-slate-800 break-all leading-snug">{s.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(s.id)}
+                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                  title="Delete subscriber"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Date subscribed
+                  </p>
+                  <p className="text-[13px] text-slate-500 font-mono">{s.date}</p>
+                </div>
+                <SubscriberStatusBadge status={s.status} />
+              </div>
+            </article>
+          ))}
+          {subscribers.length === 0 && (
+            <p className="py-10 px-4 text-center text-slate-400 text-[14px]">No subscribers found.</p>
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-start border-collapse">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
@@ -138,18 +192,17 @@ export function AdminNewsletterPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-[14px]">
-              {subscribers.map((s) => (
+              {paginatedItems.map((s) => (
                 <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="py-4 px-6 font-medium text-slate-800 flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span>{s.email}</span>
+                  <td className="py-4 px-6 font-medium text-slate-800">
+                    <span className="inline-flex items-center gap-3">
+                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span>{s.email}</span>
+                    </span>
                   </td>
                   <td className="py-4 px-6 text-slate-500 font-mono text-[13px]">{s.date}</td>
                   <td className="py-4 px-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      {s.status}
-                    </span>
+                    <SubscriberStatusBadge status={s.status} />
                   </td>
                   <td className="py-4 px-6 text-end">
                     <button
@@ -172,6 +225,17 @@ export function AdminNewsletterPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="px-3 sm:px-6 py-3.5 sm:py-4 border-t border-slate-100 bg-slate-50/30">
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            itemLabel="subscribers"
+          />
         </div>
       </div>
     </div>

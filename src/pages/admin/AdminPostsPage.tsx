@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { Edit3, Trash2, Type, Bold, Underline, AlignLeft, AlignCenter, AlignRight, Link2 } from 'lucide-react';
+import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
+import { usePagination } from '../../hooks/usePagination';
+
+const BLOGS_PAGE_SIZE = 4;
 
 interface BlogPostItem {
   id: string;
@@ -43,12 +47,32 @@ const initialBlogs: BlogPostItem[] = [
     author: 'Ahmed Ibrahim',
     img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
   },
+  {
+    id: '5',
+    title: 'Scaling Teams Without Losing Velocity',
+    excerpt: 'Practical frameworks for growing engineering and product teams while keeping delivery predictable.',
+    readTime: '8 Minutes',
+    author: 'Ahmed Ibrahim',
+    img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: '6',
+    title: 'From Strategy Decks to Shipped Products',
+    excerpt: 'How to close the gap between executive vision and the systems your teams actually build.',
+    readTime: '12 Minutes',
+    author: 'Ahmed Ibrahim',
+    img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80',
+  },
 ];
 
 export function AdminPostsPage() {
   const [blogs, setBlogs] = useState<BlogPostItem[]>(initialBlogs);
   const [isCreating, setIsCreating] = useState(false);
   const [editingBlog, setEditingBlog] = useState<BlogPostItem | null>(null);
+  const { page, setPage, totalPages, paginatedItems, totalItems, pageSize } = usePagination(
+    blogs,
+    BLOGS_PAGE_SIZE,
+  );
 
   // Form State
   const [title, setTitle] = useState('');
@@ -215,7 +239,7 @@ export function AdminPostsPage() {
 
       {/* 4-COLUMN GRID MATCHING SCREENSHOT 1 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {blogs.map((b) => (
+        {paginatedItems.map((b) => (
           <div
             key={b.id}
             className="bg-white rounded-sm p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow"
@@ -268,6 +292,15 @@ export function AdminPostsPage() {
           </div>
         ))}
       </div>
+
+      <AdminPaginationBar
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        itemLabel="posts"
+      />
     </div>
   );
 }
