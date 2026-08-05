@@ -45,16 +45,16 @@ export function AdminLoginPage() {
         </Link>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-2xl p-8 md:p-10 shadow-xl border border-slate-200/90 space-y-6">
+      <div className="w-full max-w-md bg-white rounded-lg p-8 md:p-10 shadow-xl border border-slate-200/90 space-y-6">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-xl bg-[#38BDF8] text-white flex items-center justify-center mx-auto mb-4 shadow-md font-bold text-[16px]">
+          <div className="w-12 h-12 rounded-xl bg-[#38BDF8] text-white flex items-center justify-center mx-auto mb-3 shadow-md font-bold text-[16px]">
             AI
           </div>
           <span className="inline-flex items-center gap-1.5 text-[#38BDF8] font-semibold text-[11px] uppercase tracking-wider mb-1">
             <ShieldCheck className="w-3.5 h-3.5" />
             ADMIN PORTAL
           </span>
-          <h1 className="text-[28px] font-serif font-bold text-[#0F2E25] tracking-tight">
+          <h1 className="text-[20px] lg:text-[28px] font-serif font-bold text-[#0F2E25] tracking-tight">
             Sign In to Dashboard
           </h1>
           <p className="text-[13.5px] text-slate-500 mt-1">
@@ -74,7 +74,7 @@ export function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-800 font-medium focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[14px] text-slate-800 font-medium focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all"
                 placeholder="admin@awadofficial.com"
               />
             </div>
@@ -91,7 +91,7 @@ export function AdminLoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-800 font-medium focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all"
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[14px] text-slate-800 font-medium focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all"
                 placeholder="••••••••"
               />
               <button
@@ -110,7 +110,7 @@ export function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#38BDF8] hover:bg-[#20B0F0] text-white font-semibold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-[14px] cursor-pointer mt-2"
+            className="w-full bg-[#38BDF8] hover:bg-[#20B0F0] text-white font-semibold py-3 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-[14px] cursor-pointer mt-2 disabled:opacity-70"
           >
             <span>{loading ? 'Signing in…' : 'Sign in to Dashboard'}</span>
             <ArrowRight className="w-4 h-4" />

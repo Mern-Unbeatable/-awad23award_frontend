@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Edit3, Trash2, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
+import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
 import { adminApi } from '../../lib/api';
+import { AdminContentCard } from '../../components/admin/AdminContentCard';
+import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
+import { usePagination } from '../../hooks/usePagination';
 import type {
   GalleryItem,
   ChallengeItem,
@@ -399,6 +402,8 @@ const textareaCls = `${inputCls} resize-none`;
 
 const TABS = ['Overview', 'Challenge', 'Approach', 'Leadership', 'Solution', 'Outcome', 'Skills'];
 
+const PORTFOLIO_PAGE_SIZE = 4;
+
 
 
 export function AdminGalleryPage() {
@@ -410,6 +415,11 @@ export function AdminGalleryPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [form, setForm] = useState<PortfolioForm>(EMPTY_FORM);
   const [error, setError] = useState('');
+
+  const { page, setPage, totalPages, paginatedItems, totalItems, pageSize } = usePagination(
+    items,
+    PORTFOLIO_PAGE_SIZE,
+  );
 
   useEffect(() => {
     adminApi.getGallery()
@@ -1023,7 +1033,7 @@ export function AdminGalleryPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-white rounded-xl p-4 border border-slate-200 animate-pulse">
               <div className="bg-slate-100 rounded-xl aspect-video mb-4" />
@@ -1046,44 +1056,50 @@ export function AdminGalleryPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {items.map((item) => {
-            const cover = item.heroImageUrl || item.media?.url;
-            return (
-              <div key={item.id} className="bg-white rounded-xl p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-sm transition-shadow">
-                <div>
-                  <div className="relative overflow-hidden rounded-xl bg-slate-100 aspect-video mb-4">
-                    {cover
-                      ? <img src={cover} alt={item.titleEn} className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-8 h-8 text-slate-300" /></div>
-                    }
-                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white text-slate-800 shadow-xs">
-                      {item.tag || 'Portfolio'}
-                    </span>
-                    {!item.published && (
-                      <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-slate-300">
-                        Draft
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {paginatedItems.map((item) => {
+              const cover = item.heroImageUrl || item.media?.url;
+              return (
+                <AdminContentCard
+                  key={item.id}
+                  title={item.titleEn || 'Untitled'}
+                  description={item.excerptEn}
+                  imageUrl={cover}
+                  imageAlt={item.titleEn || 'Portfolio item'}
+                  imageAspectClass="aspect-video"
+                  imageFallback={
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-slate-300" />
+                    </div>
+                  }
+                  imageOverlay={
+                    <>
+                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white text-slate-800 shadow-xs">
+                        {item.tag || 'Portfolio'}
                       </span>
-                    )}
-                  </div>
-                  <h3 className="font-serif font-bold text-[17px] text-slate-900 leading-snug mb-1 line-clamp-2">
-                    {item.titleEn || 'Untitled'}
-                  </h3>
-                  <p className="text-[12.5px] text-slate-500 mb-4 line-clamp-2">{item.excerptEn}</p>
-                </div>
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-                  <button type="button" onClick={() => openEdit(item)}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold py-2 rounded-lg transition-colors cursor-pointer">
-                    <Edit3 className="w-3.5 h-3.5" /> Edit
-                  </button>
-                  <button type="button" onClick={() => handleDelete(item.id)}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-[13px] font-semibold py-2 rounded-lg transition-colors cursor-pointer">
-                    <Trash2 className="w-3.5 h-3.5" /> Delete
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+                      {!item.published && (
+                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-slate-300">
+                          Draft
+                        </span>
+                      )}
+                    </>
+                  }
+                  onEdit={() => openEdit(item)}
+                  onDelete={() => handleDelete(item.id)}
+                />
+              );
+            })}
+          </div>
+
+          <AdminPaginationBar
+            page={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            itemLabel="portfolio items"
+          />
         </div>
       )}
     </div>
