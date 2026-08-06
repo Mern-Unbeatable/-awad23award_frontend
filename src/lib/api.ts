@@ -220,8 +220,9 @@ export const adminApi = {
   getGallery: () => api.get<GalleryItem[]>('/gallery?all=1'),
   createGalleryItem: (data: { mediaId: string; titleEn?: string; titleAr?: string }) =>
     api.post('/gallery', data),
-  createPortfolioItem: (data: Partial<GalleryItem>) => api.post('/gallery', data),
-  updatePortfolioItem: (id: string, data: Partial<GalleryItem>) => api.put(`/gallery/${id}`, data),
+  createPortfolioItem: (data: Record<string, unknown>) => api.post('/gallery', data),
+  updatePortfolioItem: (id: string, data: Record<string, unknown>) =>
+    api.put(`/gallery/${id}`, data),
   deleteGalleryItem: (id: string) => api.delete(`/gallery/${id}`),
   getMedia: () => api.get('/media'),
   uploadMedia: (file: File, altEn = '', altAr = '') => {
@@ -229,7 +230,12 @@ export const adminApi = {
     form.append('file', file);
     form.append('altEn', altEn);
     form.append('altAr', altAr);
-    return api.post('/media/upload', form);
+    return api.post('/media/upload', form, {
+      timeout: 120_000,
+      _uploadFile: file,
+      _altEn: altEn,
+      _altAr: altAr,
+    } as Record<string, unknown>);
   },
   addMediaUrl: (url: string, type: 'image' | 'video' = 'image') =>
     api.post('/media/url', { url, type }),
@@ -255,3 +261,79 @@ export const adminApi = {
 };
 
 export default api;
+
+/** Extract persisted media URL from upload API response (wrapped or flat). */
+export function extractUploadedUrl(response: { data?: unknown }): string | undefined {
+  const body = response.data;
+  if (!body || typeof body !== 'object') return undefined;
+  const record = body as Record<string, unknown>;
+  if (record.data && typeof record.data === 'object' && record.data !== null) {
+    const inner = record.data as Record<string, unknown>;
+    if (typeof inner.url === 'string') return inner.url;
+  }
+  if (typeof record.url === 'string') return record.url;
+  return undefined;
+}
+
+export function isBlobUrl(url: string): boolean {
+  return url.startsWith('blob:');
+}
+
+/**
+ * Rewrite backend absolute upload URLs to same-origin paths so images load
+ * through the Vite `/uploads` proxy during local development.
+ */
+export function resolveMediaUrl(url: string): string {
+  if (!url || isBlobUrl(url) || url.startsWith('data:')) return url;
+  if (url.startsWith('/uploads/')) return url;
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.startsWith('/uploads/')) {
+      return parsed.pathname;
+    }
+  } catch {
+    // not a valid absolute URL — return as-is
+  }
+  return url;
+}
+
+/** Unwrap `{ success, data }` API responses or return payload as-is. */
+export function unwrapApiData<T>(body: unknown): T {
+  if (body && typeof body === 'object' && 'data' in body) {
+    const record = body as Record<string, unknown>;
+    if (record.success !== undefined && record.data !== undefined) {
+      return record.data as T;
+    }
+  }
+  return body as T;
+}
+
+/** Human-readable message from an Axios or unknown error (includes status + validation errors). */
+export function formatApiError(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const status = err.response?.status;
+    const data = err.response?.data;
+    const record =
+      data && typeof data === 'object' ? (data as Record<string, unknown>) : null;
+    const message =
+      (typeof record?.message === 'string' && record.message) || err.message;
+    const fieldErrors = Array.isArray(record?.errors)
+      ? record.errors.filter((e): e is string => typeof e === 'string').join('; ')
+      : '';
+    const parts = [
+      status ? `HTTP ${status}` : '',
+      message,
+      fieldErrors,
+    ].filter(Boolean);
+    return parts.join(' — ');
+  }
+  return err instanceof Error ? err.message : 'Request failed';
+}
+
+/** Upload a file via Media API and return its persisted URL. */
+export async function uploadImageFile(file: File, altEn = '', altAr = ''): Promise<string> {
+  const response = await adminApi.uploadMedia(file, altEn, altAr);
+  const url = extractUploadedUrl(response);
+  if (!url) throw new Error('Upload succeeded but no URL was returned');
+  return url;
+}
