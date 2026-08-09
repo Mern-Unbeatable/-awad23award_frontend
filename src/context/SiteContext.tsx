@@ -8,7 +8,6 @@ import {
   type ReactNode,
 } from 'react';
 import { publicApi } from '../lib/api';
-import { normalizeGalleryList } from '../lib/portfolio';
 import type { GalleryItem, HomeSection, Post, Product, Service, SiteSettings, Testimonial } from '../types';
 import {
   fallbackGallery,
@@ -115,18 +114,16 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     );
     setPosts(p.length ? p : fallbackPosts);
     setGallery(
-      normalizeGalleryList(g.length ? g : fallbackGallery).map((item, index) => {
+      (g.length ? g : fallbackGallery).map((item, index) => {
         const byTitle = fallbackGallery.find(
           (f) => f.titleEn.toLowerCase() === (item.titleEn || '').toLowerCase()
         );
         const byOrder = fallbackGallery[index];
         const fallback = byTitle || byOrder;
-        const coverUrl = item.heroImageUrl || item.media?.url || '';
         const broken =
-          !coverUrl ||
-          coverUrl.includes('photo-1611746872915-64342b5c553a') ||
-          coverUrl.includes('photo-1611606063065-ee7946f0787a');
-        const resolvedUrl = broken ? fallback?.media.url || coverUrl : coverUrl;
+          !item.media?.url ||
+          item.media.url.includes('photo-1611746872915-64342b5c553a') ||
+          item.media.url.includes('photo-1611606063065-ee7946f0787a');
         return {
           ...item,
           slug: item.slug || fallback?.slug || slugify(item.titleEn || `work-${index + 1}`),
@@ -134,10 +131,9 @@ export function SiteProvider({ children }: { children: ReactNode }) {
           excerptAr: item.excerptAr || fallback?.excerptAr || '',
           bodyEn: item.bodyEn || fallback?.bodyEn || '',
           bodyAr: item.bodyAr || fallback?.bodyAr || '',
-          heroImageUrl: resolvedUrl,
           media: {
             ...item.media,
-            url: resolvedUrl,
+            url: broken ? fallback?.media.url || item.media.url : item.media.url,
           },
         };
       })
