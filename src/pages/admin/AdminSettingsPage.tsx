@@ -1,239 +1,443 @@
-import { type FormEvent, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { adminApi, publicApi } from '../../lib/api';
-import { ImagePicker } from '../../components/admin/ImagePicker';
-import type { SiteSettings } from '../../types';
-import { fallbackSettings } from '../../data/fallback';
+import React, { useState, useEffect } from 'react';
 
-export function AdminSettingsPage() {
-  const [form, setForm] = useState<Partial<SiteSettings>>(fallbackSettings);
-  const [msg, setMsg] = useState('');
-  const [calendlyConnected, setCalendlyConnected] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+interface SchedulingSettings {
+  id?: string;
+  platform: 'calendly' | 'calcom' | 'savvycal' | 'acuity' | 'custom';
+  isEnabled: boolean;
+  calendlyUrl?: string;
+  calComUsername?: string;
+  savvyCalUsername?: string;
+  acuityUserId?: string;
+  customLink?: string;
+  buttonText: string;
+  buttonColor?: string;
+}
 
+export const AdminSettingsPage = () => {
+  const [settings, setSettings] = useState<SchedulingSettings>({
+    platform: 'calendly',
+    isEnabled: true,
+    buttonText: 'Book Now',
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+
+  // Fetch existing settings on load
   useEffect(() => {
-    publicApi.getSettings().then((s) => setForm(s));
-    adminApi
-      .getCalendlyStatus()
-      .then((r) => setCalendlyConnected(r.data.connected))
-      .catch(() => undefined);
+    fetchSettings();
   }, []);
 
-  useEffect(() => {
-    const status = searchParams.get('calendly');
-    if (!status) return;
-    if (status === 'connected') {
-      setMsg('Calendly connected. Your scheduling link was updated.');
-      publicApi.getSettings().then((s) => setForm(s));
-      setCalendlyConnected(true);
-    } else if (status === 'error') {
-      setMsg('Calendly connection failed. Check redirect URI in Calendly app settings.');
-    } else if (status === 'expired') {
-      setMsg('Calendly session expired. Please try connecting again.');
-    }
-    searchParams.delete('calendly');
-    setSearchParams(searchParams, { replace: true });
-  }, [searchParams, setSearchParams]);
-
-  async function connectCalendly() {
+  const fetchSettings = async () => {
     try {
-      const { data } = await adminApi.getCalendlyAuthUrl();
-      window.location.href = data.url;
-    } catch {
-      setMsg('Could not start Calendly OAuth. Check server env vars.');
+      const response = await fetch('/api/admin/scheduling');
+      if (response.ok) {
+        const data = await response.json();
+        if (data && Object.keys(data).length > 0) {
+          setSettings(data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  async function syncCalendly() {
+  const handleSave = async () => {
     try {
-      const { data } = await adminApi.syncCalendly();
-      setForm((f) => ({ ...f, calendlyUrl: data.calendlyUrl, calendlyConnectedAt: data.calendlyConnectedAt }));
-      setCalendlyConnected(true);
-      setMsg('Calendly link synced.');
-    } catch {
-      setCalendlyConnected(false);
-      setMsg('Calendly session expired. Click Connect Calendly again (redirect URI must match exactly).');
-    }
-  }
+      setSaving(true);
+      setMessage(null);
 
-  async function disconnectCalendly() {
-    try {
-      await adminApi.disconnectCalendly();
-      setCalendlyConnected(false);
-      setMsg('Calendly disconnected. You can still use a manual URL below.');
-    } catch {
-      setMsg('Could not disconnect Calendly.');
-    }
-  }
+      const response = await fetch('/api/admin/scheduling', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
 
-  function set<K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) {
-    setForm((f) => ({ ...f, [key]: value }));
-  }
+      if (!response.ok) throw new Error('Failed to save settings');
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    try {
-      await adminApi.updateSettings(form);
-      setMsg('Settings saved.');
-    } catch {
-      setMsg('Failed to save. Check API connection.');
+      setMessage({ type: 'success', text: 'Settings saved successfully!' });
+
+      // Refresh settings after save
+      await fetchSettings();
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: 'Failed to save settings. Please try again.',
+      });
+      console.error(error);
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const handlePlatformChange = (platform: SchedulingSettings['platform']) => {
+    setSettings({
+      ...settings,
+      platform,
+      // Clear platform-specific fields when switching
+      calendlyUrl: undefined,
+      calComUsername: undefined,
+      savvyCalUsername: undefined,
+      acuityUserId: undefined,
+      customLink: undefined,
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className='flex justify-center items-center h-64'>
+        <div className='text-gray-500'>Loading settings...</div>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <h1 className="font-display text-3xl font-bold mb-8">Settings</h1>
-      <form onSubmit={onSubmit} className="space-y-8 max-w-4xl">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="field">
-            <label>Brand name</label>
-            <input value={form.brandName || ''} onChange={(e) => set('brandName', e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Contact email</label>
-            <input value={form.contactEmail || ''} onChange={(e) => set('contactEmail', e.target.value)} />
-          </div>
-          <div className="field md:col-span-2 border border-[#333] p-4 space-y-3">
-            <label>Calendly integration</label>
-            <p className="text-[#888] text-sm">
-              Connect once with OAuth. Your real scheduling link auto-fills on Contact and booking buttons.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" className="btn btn-accent" onClick={connectCalendly}>
-                {calendlyConnected ? 'Reconnect Calendly' : 'Connect Calendly'}
-              </button>
-              {calendlyConnected && (
-                <>
-                  <button type="button" className="btn btn-outline" onClick={syncCalendly}>
-                    Sync link
-                  </button>
-                  <button type="button" className="btn btn-outline" onClick={disconnectCalendly}>
-                    Disconnect
-                  </button>
-                </>
-              )}
+    <div className='max-w-3xl mx-auto p-6'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold text-gray-900'>
+          Scheduling Settings
+        </h1>
+        <p className='text-gray-600 mt-2'>
+          Configure your booking platform and scheduling preferences.
+        </p>
+      </div>
+
+      {message && (
+        <div
+          className={`p-4 mb-6 rounded-lg ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
+      <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6'>
+        <div className='space-y-6'>
+          {/* Enable/Disable Toggle */}
+          <div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg'>
+            <div>
+              <h3 className='font-medium text-gray-900'>Enable Scheduling</h3>
+              <p className='text-sm text-gray-500'>
+                Turn booking functionality on or off
+              </p>
             </div>
-            {calendlyConnected && (
-              <p className="text-accent text-xs">Connected — scheduling URL is managed by Calendly.</p>
+            <button
+              onClick={() =>
+                setSettings({ ...settings, isEnabled: !settings.isEnabled })
+              }
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                settings.isEnabled ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  settings.isEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Platform Selection */}
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Booking Platform
+            </label>
+            <select
+              value={settings.platform}
+              onChange={(e) =>
+                handlePlatformChange(
+                  e.target.value as SchedulingSettings['platform'],
+                )
+              }
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            >
+              <option value='calendly'>Calendly</option>
+              <option value='calcom'>Cal.com</option>
+              <option value='savvycal'>SavvyCal</option>
+              <option value='acuity'>Acuity Scheduling</option>
+              <option value='custom'>Custom Link</option>
+            </select>
+          </div>
+
+          {/* Platform-specific Configuration */}
+          <div className='space-y-4'>
+            {settings.platform === 'calendly' && (
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Calendly URL
+                </label>
+                <input
+                  type='url'
+                  value={settings.calendlyUrl || ''}
+                  onChange={(e) =>
+                    setSettings({ ...settings, calendlyUrl: e.target.value })
+                  }
+                  placeholder='https://calendly.com/your-username'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                />
+                <p className='mt-1 text-sm text-gray-500'>
+                  Your Calendly booking page URL
+                </p>
+              </div>
             )}
-            <p className="text-[#888] text-xs font-mono break-all">
-              In Calendly Developer → Redirect URI, use exactly:{' '}
-              <span className="text-accent">http://localhost:5000/api/calendly/callback</span>
-              {' '}(local) or your live API URL + /api/calendly/callback
-            </p>
+
+            {settings.platform === 'calcom' && (
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Cal.com Username
+                </label>
+                <input
+                  type='text'
+                  value={settings.calComUsername || ''}
+                  onChange={(e) =>
+                    setSettings({ ...settings, calComUsername: e.target.value })
+                  }
+                  placeholder='your-username'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                />
+                <p className='mt-1 text-sm text-gray-500'>
+                  Your Cal.com username (e.g., &quot;john&quot; for
+                  cal.com/john)
+                </p>
+              </div>
+            )}
+
+            {settings.platform === 'savvycal' && (
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  SavvyCal Username
+                </label>
+                <input
+                  type='text'
+                  value={settings.savvyCalUsername || ''}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      savvyCalUsername: e.target.value,
+                    })
+                  }
+                  placeholder='your-username'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                />
+                <p className='mt-1 text-sm text-gray-500'>
+                  Your SavvyCal username (e.g., &quot;john&quot; for
+                  savvycal.com/john)
+                </p>
+              </div>
+            )}
+
+            {settings.platform === 'acuity' && (
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Acuity User ID
+                </label>
+                <input
+                  type='text'
+                  value={settings.acuityUserId || ''}
+                  onChange={(e) =>
+                    setSettings({ ...settings, acuityUserId: e.target.value })
+                  }
+                  placeholder='your-user-id'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                />
+                <p className='mt-1 text-sm text-gray-500'>
+                  Your Acuity Scheduling user ID
+                </p>
+              </div>
+            )}
+
+            {settings.platform === 'custom' && (
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Custom Booking Link
+                </label>
+                <input
+                  type='url'
+                  value={settings.customLink || ''}
+                  onChange={(e) =>
+                    setSettings({ ...settings, customLink: e.target.value })
+                  }
+                  placeholder='https://example.com/book-appointment'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                />
+                <p className='mt-1 text-sm text-gray-500'>
+                  Enter a custom URL for your booking page
+                </p>
+              </div>
+            )}
           </div>
-          <div className="field md:col-span-2">
-            <label>Calendly URL (manual override)</label>
-            <input
-              value={form.calendlyUrl || ''}
-              onChange={(e) => set('calendlyUrl', e.target.value)}
-              placeholder="https://calendly.com/your-link"
-            />
+
+          {/* Button Customization */}
+          <div className='border-t border-gray-200 pt-6'>
+            <h3 className='text-sm font-medium text-gray-900 mb-4'>
+              Button Customization
+            </h3>
+
+            <div className='space-y-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Button Text
+                </label>
+                <input
+                  type='text'
+                  value={settings.buttonText}
+                  onChange={(e) =>
+                    setSettings({ ...settings, buttonText: e.target.value })
+                  }
+                  placeholder='Book Now'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Button Color (Optional)
+                </label>
+                <div className='flex items-center space-x-3'>
+                  <input
+                    type='color'
+                    value={settings.buttonColor || '#2563eb'}
+                    onChange={(e) =>
+                      setSettings({ ...settings, buttonColor: e.target.value })
+                    }
+                    className='w-12 h-12 p-1 border border-gray-300 rounded-lg cursor-pointer'
+                  />
+                  <input
+                    type='text'
+                    value={settings.buttonColor || ''}
+                    onChange={(e) =>
+                      setSettings({ ...settings, buttonColor: e.target.value })
+                    }
+                    placeholder='#2563eb'
+                    className='flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                  />
+                </div>
+                <p className='mt-1 text-sm text-gray-500'>
+                  Enter a hex color code or use the color picker
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="md:col-span-2">
-            <ImagePicker
-              label="Logo"
-              value={form.logoUrl || null}
-              onChange={(url) => set('logoUrl', url)}
-            />
+
+          {/* Preview Section */}
+          <div className='border-t border-gray-200 pt-6'>
+            <h3 className='text-sm font-medium text-gray-900 mb-4'>Preview</h3>
+            <div className='p-4 bg-gray-50 rounded-lg'>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <p className='text-sm text-gray-600'>
+                    Platform:{' '}
+                    <span className='font-medium capitalize'>
+                      {settings.platform}
+                    </span>
+                  </p>
+                  <p className='text-sm text-gray-600'>
+                    Status:{' '}
+                    <span
+                      className={
+                        settings.isEnabled ? 'text-green-600' : 'text-red-600'
+                      }
+                    >
+                      {settings.isEnabled ? 'Active' : 'Disabled'}
+                    </span>
+                  </p>
+                </div>
+                <button
+                  className='px-4 py-2 text-white rounded-lg transition-colors'
+                  style={{
+                    backgroundColor: settings.buttonColor || '#2563eb',
+                    opacity: settings.isEnabled ? 1 : 0.5,
+                    cursor: settings.isEnabled ? 'pointer' : 'not-allowed',
+                  }}
+                  disabled={!settings.isEnabled}
+                  onClick={() => {
+                    // Test the URL in preview
+                    const url = getSchedulingUrl(settings);
+                    if (url) window.open(url, '_blank');
+                  }}
+                >
+                  {settings.buttonText || 'Book Now'}
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="md:col-span-2">
-            <ImagePicker
-              label="About image"
-              value={form.aboutImageUrl || null}
-              onChange={(url) => set('aboutImageUrl', url)}
-            />
-          </div>
-          <div className="field">
-            <label>Showreel embed URL</label>
-            <input value={form.showreelUrl || ''} onChange={(e) => set('showreelUrl', e.target.value)} />
-          </div>
-          <div className="md:col-span-2">
-            <ImagePicker
-              label="Showreel poster"
-              value={form.showreelPoster || null}
-              onChange={(url) => set('showreelPoster', url)}
-            />
+
+          {/* Save Button */}
+          <div className='pt-4'>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className={`w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-lg transition-colors ${
+                saving
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-blue-700 focus:ring-4 focus:ring-blue-300'
+              }`}
+            >
+              {saving ? (
+                <span className='flex items-center justify-center'>
+                  <svg
+                    className='animate-spin -ml-1 mr-3 h-5 w-5 text-white'
+                    xmlns='http://www.w3.org/2000/svg'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                  >
+                    <circle
+                      className='opacity-25'
+                      cx='12'
+                      cy='12'
+                      r='10'
+                      stroke='currentColor'
+                      strokeWidth='4'
+                    ></circle>
+                    <path
+                      className='opacity-75'
+                      fill='currentColor'
+                      d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                    ></path>
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                'Save Settings'
+              )}
+            </button>
           </div>
         </div>
-
-        <div className="grid md:grid-cols-2 gap-6 border border-[#333] p-5">
-          <div className="space-y-3">
-            <p className="text-accent text-xs tracking-widest uppercase">English</p>
-            <div className="field">
-              <label>Tagline EN</label>
-              <input value={form.taglineEn || ''} onChange={(e) => set('taglineEn', e.target.value)} />
-            </div>
-            <div className="field">
-              <label>SEO title EN</label>
-              <input value={form.seoTitleEn || ''} onChange={(e) => set('seoTitleEn', e.target.value)} />
-            </div>
-            <div className="field">
-              <label>SEO description EN</label>
-              <textarea
-                rows={3}
-                value={form.seoDescriptionEn || ''}
-                onChange={(e) => set('seoDescriptionEn', e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="space-y-3" dir="rtl">
-            <p className="text-accent text-xs tracking-widest uppercase">العربية</p>
-            <div className="field">
-              <label>الشعار</label>
-              <input value={form.taglineAr || ''} onChange={(e) => set('taglineAr', e.target.value)} />
-            </div>
-            <div className="field">
-              <label>عنوان SEO</label>
-              <input value={form.seoTitleAr || ''} onChange={(e) => set('seoTitleAr', e.target.value)} />
-            </div>
-            <div className="field">
-              <label>وصف SEO</label>
-              <textarea
-                rows={3}
-                value={form.seoDescriptionAr || ''}
-                onChange={(e) => set('seoDescriptionAr', e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="field">
-            <label>Instagram</label>
-            <input
-              value={form.socialInstagram || ''}
-              onChange={(e) => set('socialInstagram', e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label>LinkedIn</label>
-            <input
-              value={form.socialLinkedin || ''}
-              onChange={(e) => set('socialLinkedin', e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label>YouTube</label>
-            <input
-              value={form.socialYoutube || ''}
-              onChange={(e) => set('socialYoutube', e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label>Twitter / X</label>
-            <input
-              value={form.socialTwitter || ''}
-              onChange={(e) => set('socialTwitter', e.target.value)}
-            />
-          </div>
-        </div>
-
-        <button type="submit" className="btn btn-accent">
-          Save settings
-        </button>
-        {msg && <p className="text-sm text-accent">{msg}</p>}
-      </form>
+      </div>
     </div>
   );
+};
+
+// Helper function to get scheduling URL
+function getSchedulingUrl(settings: SchedulingSettings): string | null {
+  if (!settings.isEnabled) return null;
+
+  switch (settings.platform) {
+    case 'calendly':
+      return settings.calendlyUrl || null;
+    case 'calcom':
+      return settings.calComUsername
+        ? `https://cal.com/${settings.calComUsername}`
+        : null;
+    case 'savvycal':
+      return settings.savvyCalUsername
+        ? `https://savvycal.com/${settings.savvyCalUsername}`
+        : null;
+    case 'acuity':
+      return settings.acuityUserId
+        ? `https://acuityscheduling.com/schedule.php?owner=${settings.acuityUserId}`
+        : null;
+    case 'custom':
+      return settings.customLink || null;
+    default:
+      return null;
+  }
 }

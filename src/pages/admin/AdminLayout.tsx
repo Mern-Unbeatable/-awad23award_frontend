@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { NavLink, Outlet, Navigate, useNavigate, Link } from 'react-router-dom';
-import { FileText, Briefcase, Mail, LogOut, Menu, X, Home } from 'lucide-react';
+import { FileText, Briefcase, Mail, LogOut, Menu, X, Home, Settings } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { isLoggedIn } from '../../lib/auth';
 import { ADMIN_ROUTES } from './adminRoutes';
@@ -10,6 +10,7 @@ const navItems = [
   { to: ADMIN_ROUTES.blogs, label: 'Blogs', icon: FileText },
   { to: ADMIN_ROUTES.portfolio, label: 'Portfolio', icon: Briefcase },
   { to: ADMIN_ROUTES.newsletter, label: 'Newsletter', icon: Mail },
+  { to: ADMIN_ROUTES.settings, label: 'Settings', icon: Settings },
 ];
 
 export function AdminLayout() {
