@@ -7,9 +7,16 @@ import {
   updateTokens,
 } from './auth';
 import { API_BASE } from './env';
+import {
+  normalizePortfolioList,
+  tabbedToGalleryItem,
+  type PortfolioTabbedPayload,
+} from './portfolioMappers';
 import type {
   GalleryItem,
   HomeSection,
+  NewsletterStats,
+  NewsletterSubscriber,
   Post,
   Product,
   SchedulingSettings,
@@ -129,6 +136,20 @@ async function withFallback<T>(
   }
 }
 
+/** Unwrap `{ success, data }` responses from admin newsletter endpoints */
+function unwrapSuccessBody<T>(body: unknown): T {
+  if (
+    body &&
+    typeof body === 'object' &&
+    'success' in body &&
+    (body as { success: boolean }).success &&
+    'data' in body
+  ) {
+    return (body as { data: T }).data;
+  }
+  return body as T;
+}
+
 export const publicApi = {
   getSettings: () =>
     withFallback(
@@ -184,7 +205,7 @@ export const publicApi = {
   },
   getGallery: () =>
     withFallback(
-      async () => (await api.get<GalleryItem[]>('/gallery')).data,
+      async () => normalizePortfolioList((await api.get('/gallery')).data),
       fallbackGallery,
     ),
   getTestimonials: () =>
@@ -260,21 +281,47 @@ export const adminApi = {
     api.put(`/services/${id}`, data),
   deleteService: (id: string) => api.delete(`/services/${id}`),
   getPosts: () => api.get<Post[]>('/posts?all=1'),
-  createPost: (data: Partial<Post>) => api.post('/posts', data),
-  updatePost: (id: string, data: Partial<Post>) =>
-    api.put(`/posts/${id}`, data),
+  listPostsAdmin: async (): Promise<Post[]> => {
+    const res = await api.get('/posts?all=1');
+    const unwrapped = unwrapSuccessBody<Post[]>(res.data);
+    if (Array.isArray(unwrapped)) return unwrapped;
+    return Array.isArray(res.data) ? (res.data as Post[]) : [];
+  },
+  createPost: async (data: Partial<Post> | Record<string, unknown>): Promise<Post> => {
+    const res = await api.post('/posts', data);
+    return unwrapSuccessBody<Post>(res.data);
+  },
+  updatePost: async (id: string, data: Partial<Post> | Record<string, unknown>): Promise<Post> => {
+    const res = await api.put(`/posts/${id}`, data);
+    return unwrapSuccessBody<Post>(res.data);
+  },
   deletePost: (id: string) => api.delete(`/posts/${id}`),
-  getGallery: () => api.get<GalleryItem[]>('/gallery?all=1'),
-  createGalleryItem: (data: {
-    mediaId: string;
-    titleEn?: string;
-    titleAr?: string;
-  }) => api.post('/gallery', data),
-  createPortfolioItem: (data: Partial<GalleryItem>) =>
-    api.post('/gallery', data),
-  updatePortfolioItem: (id: string, data: Partial<GalleryItem>) =>
-    api.put(`/gallery/${id}`, data),
-  deleteGalleryItem: (id: string) => api.delete(`/gallery/${id}`),
+  /** Admin: list all portfolio items (tab-grouped API → flat GalleryItem) */
+  listPortfolioAdmin: async (): Promise<GalleryItem[]> => {
+    const res = await api.get('/gallery?all=1');
+    return normalizePortfolioList(res.data);
+  },
+  /** Admin: get one item by slug (includes unpublished when all=1) */
+  getPortfolioBySlug: async (slug: string): Promise<GalleryItem> => {
+    const res = await api.get(`/gallery/${encodeURIComponent(slug)}`, {
+      params: { all: '1' },
+    });
+    return tabbedToGalleryItem(res.data);
+  },
+  /** Admin: create via tab-grouped POST /gallery (Postman canonical) */
+  createPortfolioItem: async (payload: PortfolioTabbedPayload): Promise<GalleryItem> => {
+    const res = await api.post('/gallery', payload);
+    return tabbedToGalleryItem(res.data);
+  },
+  /** Admin: partial or full tab-grouped PUT /gallery/:id */
+  updatePortfolioItem: async (
+    id: string,
+    payload: PortfolioTabbedPayload,
+  ): Promise<GalleryItem> => {
+    const res = await api.put(`/gallery/${id}`, payload);
+    return tabbedToGalleryItem(res.data);
+  },
+  deletePortfolioItem: (id: string) => api.delete(`/gallery/${id}`),
   getMedia: () => api.get('/media'),
   uploadMedia: (file: File, altEn = '', altAr = '') => {
     const form = new FormData();
@@ -285,10 +332,20 @@ export const adminApi = {
   },
   addMediaUrl: (url: string, type: 'image' | 'video' = 'image') =>
     api.post('/media/url', { url, type }),
-  getSubscribers: () => api.get('/newsletter'),
+  listSubscribers: async (): Promise<NewsletterSubscriber[]> => {
+    const res = await api.get('/newsletter');
+    const data = unwrapSuccessBody<NewsletterSubscriber[]>(res.data);
+    return Array.isArray(data) ? data : [];
+  },
+  getNewsletterStats: async (): Promise<NewsletterStats> => {
+    const res = await api.get('/newsletter/stats');
+    return unwrapSuccessBody<NewsletterStats>(res.data);
+  },
   deleteSubscriber: (id: string) => api.delete(`/newsletter/${id}`),
-  exportSubscribers: () =>
-    api.get('/newsletter/export', { responseType: 'blob' }),
+  exportSubscribersCsv: async (): Promise<Blob> => {
+    const res = await api.get('/newsletter/export', { responseType: 'blob' });
+    return res.data;
+  },
   getMessages: () => api.get('/contact'),
   markRead: (id: string) => api.patch(`/contact/${id}/read`),
   deleteMessage: (id: string) => api.delete(`/contact/${id}`),

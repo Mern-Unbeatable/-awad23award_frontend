@@ -1,71 +1,101 @@
 import { useState, useEffect } from 'react';
 import { Mail, User, Users, Trash2, TrendingUp, Clock, Download, Loader2 } from 'lucide-react';
+import { isAxiosError } from 'axios';
 import { AdminPagination } from '../../components/admin/AdminPagination';
 import { usePagination } from '../../hooks/usePagination';
 import { adminApi } from '../../lib/api';
 import { confirmDelete } from '../../lib/swal';
+import {
+  formatNewsletterStatus,
+  type NewsletterSubscriber,
+  type NewsletterSubscriberStatus,
+  type NewsletterStats,
+} from '../../types';
 
 const NEWSLETTER_PAGE_SIZE = 5;
 
-function SubscriberStatusBadge({ status }: { status: string }) {
+const EMPTY_STATS: NewsletterStats = {
+  totalSubscribers: 0,
+  newThisMonth: 0,
+  latestSubscription: null,
+};
+
+function SubscriberStatusBadge({ status }: { status: NewsletterSubscriberStatus }) {
+  const label = formatNewsletterStatus(status);
+  const styles =
+    status === 'ACTIVE'
+      ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+      : status === 'PENDING'
+        ? 'bg-amber-50 text-amber-700 border-amber-200/60'
+        : status === 'BOUNCED'
+          ? 'bg-red-50 text-red-700 border-red-200/60'
+          : 'bg-slate-100 text-slate-600 border-slate-200/60';
+
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-      {status}
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium border ${styles}`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+          status === 'ACTIVE'
+            ? 'bg-emerald-500'
+            : status === 'PENDING'
+              ? 'bg-amber-500'
+              : status === 'BOUNCED'
+                ? 'bg-red-500'
+                : 'bg-slate-400'
+        }`}
+      />
+      {label}
     </span>
   );
 }
 
-interface SubscriberItem {
-  id: string;
-  email: string;
-  date: string;
-  status: string;
-  locale?: string;
-  createdAt?: string;
-  confirmedAt?: string | null;
+function getApiErrorMessage(error: unknown, fallback: string) {
+  if (isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    if (message) return String(message);
+    if (!error.response) return 'Unable to reach the server. Check that the API is running.';
+  }
+  return fallback;
 }
 
-const fallbackSubscribers: SubscriberItem[] = [
-  { id: '1', email: 'david.chen@enterprise-tech.io', date: '2026-07-28', status: 'Active Subscribed' },
-  { id: '2', email: 'sarah.jenkins@cloudscale.net', date: '2026-07-26', status: 'Active Subscribed' },
-  { id: '3', email: 'michael.ross@fintechlabs.co', date: '2026-07-24', status: 'Active Subscribed' },
-];
-
 export function AdminNewsletterPage() {
-  const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
+  const [stats, setStats] = useState<NewsletterStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    async function fetchSubscribers() {
+
+    async function loadNewsletterData() {
+      setLoading(true);
+      setLoadError(null);
       try {
-        const res = await adminApi.getSubscribers();
-        const rawList = res.data?.data || (Array.isArray(res.data) ? res.data : null);
-        if (Array.isArray(rawList) && isMounted) {
-          const formatted: SubscriberItem[] = rawList.map((item: any) => ({
-            id: item.id || item._id || String(Math.random()),
-            email: item.email,
-            date: item.date || (item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : 'N/A'),
-            status: item.confirmedAt ? 'Confirmed' : 'Active Subscribed',
-            locale: item.locale || 'en',
-            createdAt: item.createdAt,
-            confirmedAt: item.confirmedAt,
-          }));
-          setSubscribers(formatted);
-        } else if (isMounted) {
-          setSubscribers(fallbackSubscribers);
+        const [list, newsletterStats] = await Promise.all([
+          adminApi.listSubscribers(),
+          adminApi.getNewsletterStats(),
+        ]);
+        if (isMounted) {
+          setSubscribers(list);
+          setStats(newsletterStats);
         }
       } catch (err) {
-        console.error('Failed to fetch subscribers:', err);
+        console.error('Failed to fetch newsletter data:', err);
         if (isMounted) {
-          setSubscribers(fallbackSubscribers);
+          setSubscribers([]);
+          setStats(EMPTY_STATS);
+          setLoadError(getApiErrorMessage(err, 'Failed to load newsletter subscribers.'));
         }
       } finally {
         if (isMounted) setLoading(false);
       }
     }
-    fetchSubscribers();
+
+    void loadNewsletterData();
     return () => {
       isMounted = false;
     };
@@ -76,37 +106,59 @@ export function AdminNewsletterPage() {
     NEWSLETTER_PAGE_SIZE,
   );
 
-  async function handleDelete(id: string) {
-    const confirmed = await confirmDelete(
-      'Delete Subscriber?',
-      'Are you sure you want to remove this email from your newsletter list?'
-    );
-    if (confirmed) {
-      try {
-        await adminApi.deleteSubscriber(id);
-      } catch (err) {
-        console.error('Failed to delete subscriber:', err);
-      }
-      setSubscribers((prev) => prev.filter((s) => s.id !== id));
+  async function refreshStats() {
+    try {
+      const newsletterStats = await adminApi.getNewsletterStats();
+      setStats(newsletterStats);
+    } catch (err) {
+      console.error('Failed to refresh newsletter stats:', err);
     }
   }
 
-  function handleExportCsv() {
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      ['Email,Date Subscribed,Status', ...subscribers.map((s) => `${s.email},${s.date},${s.status}`)].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'newsletter_subscribers.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  async function handleDelete(id: string) {
+    const confirmed = await confirmDelete(
+      'Delete Subscriber?',
+      'Are you sure you want to remove this email from your newsletter list?',
+    );
+    if (!confirmed) return;
+
+    setActionError(null);
+    try {
+      await adminApi.deleteSubscriber(id);
+      setSubscribers((prev) => prev.filter((s) => s.id !== id));
+      await refreshStats();
+    } catch (err) {
+      console.error('Failed to delete subscriber:', err);
+      setActionError(getApiErrorMessage(err, 'Failed to delete subscriber.'));
+    }
   }
+
+  async function handleExportCsv() {
+    setActionError(null);
+    setExporting(true);
+    try {
+      const blob = await adminApi.exportSubscribersCsv();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'newsletter_subscribers.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export subscribers:', err);
+      setActionError(getApiErrorMessage(err, 'Failed to export subscribers.'));
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  const latestEmail = stats.latestSubscription?.email ?? 'None';
+  const latestDate = stats.latestSubscription?.date ?? 'N/A';
 
   return (
     <div className="space-y-8">
-      {/* HEADER TITLE BAR MATCHING SCREENSHOT 5 */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-[26px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight">
@@ -119,24 +171,39 @@ export function AdminNewsletterPage() {
 
         <button
           type="button"
-          onClick={handleExportCsv}
-          className="inline-flex items-center gap-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-lg px-4 py-2.5 text-[13.5px] font-semibold transition-colors shadow-2xs self-start sm:self-auto cursor-pointer"
+          onClick={() => void handleExportCsv()}
+          disabled={exporting || loading}
+          className="inline-flex items-center gap-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-lg px-4 py-2.5 text-[13.5px] font-semibold transition-colors shadow-2xs self-start sm:self-auto cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <Download className="w-4 h-4 text-slate-500" />
-          <span>Export CSV</span>
+          {exporting ? (
+            <Loader2 className="w-4 h-4 text-slate-500 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4 text-slate-500" />
+          )}
+          <span>{exporting ? 'Exporting…' : 'Export CSV'}</span>
         </button>
       </div>
 
-      {/* 3 METRIC CARDS MATCHING SCREENSHOT 5 */}
+      {loadError && (
+        <div className="p-4 rounded-lg border border-red-200 bg-red-50 text-red-800 text-[14px]">
+          {loadError}
+        </div>
+      )}
+
+      {actionError && (
+        <div className="p-4 rounded-lg border border-red-200 bg-red-50 text-red-800 text-[14px]">
+          {actionError}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* CARD 1: TOTAL SUBSCRIBERS */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
               TOTAL SUBSCRIBERS
             </span>
             <span className="text-[32px] font-bold text-slate-900 leading-none block mb-2">
-              {subscribers.length}
+              {loading ? '—' : stats.totalSubscribers}
             </span>
             <span className="text-[12px] font-semibold text-emerald-600 flex items-center gap-1">
               <TrendingUp className="w-3.5 h-3.5" />
@@ -148,34 +215,32 @@ export function AdminNewsletterPage() {
           </div>
         </div>
 
-        {/* CARD 2: NEW THIS MONTH */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
               NEW THIS MONTH
             </span>
             <span className="text-[32px] font-bold text-slate-900 leading-none block mb-2">
-              +{subscribers.length}
+              {loading ? '—' : `+${stats.newThisMonth}`}
             </span>
-            <span className="text-[12px] font-medium text-slate-400">Total Audience</span>
+            <span className="text-[12px] font-medium text-slate-400">Subscribers this month</span>
           </div>
           <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
             <Users className="w-5 h-5" />
           </div>
         </div>
 
-        {/* CARD 3: LATEST SUBSCRIPTION */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs flex items-center justify-between">
           <div className="min-w-0">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
               LATEST SUBSCRIPTION
             </span>
             <span className="text-[14px] font-bold text-slate-900 truncate block mb-2 max-w-45">
-              {subscribers[0]?.email || 'None'}
+              {loading ? '—' : latestEmail}
             </span>
             <span className="text-[12px] text-slate-400 flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              {subscribers[0]?.date || 'N/A'}
+              {loading ? '—' : latestDate}
             </span>
           </div>
           <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
@@ -184,9 +249,7 @@ export function AdminNewsletterPage() {
         </div>
       </div>
 
-      {/* Subscribers — cards on mobile, table on md+ */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-        {/* Mobile cards */}
         <div className="md:hidden divide-y divide-slate-100">
           {loading ? (
             <div className="py-10 text-center text-slate-400 flex items-center justify-center gap-2">
@@ -194,7 +257,9 @@ export function AdminNewsletterPage() {
               <span className="text-[14px]">Loading subscribers...</span>
             </div>
           ) : subscribers.length === 0 ? (
-            <p className="py-10 px-4 text-center text-slate-400 text-[14px]">No subscribers found.</p>
+            <p className="py-10 px-4 text-center text-slate-400 text-[14px]">
+              {loadError ? 'Could not load subscribers.' : 'No subscribers found.'}
+            </p>
           ) : (
             paginatedItems.map((s) => (
               <article key={s.id} className="p-4 space-y-3">
@@ -207,7 +272,7 @@ export function AdminNewsletterPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleDelete(s.id)}
+                    onClick={() => void handleDelete(s.id)}
                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
                     title="Delete subscriber"
                   >
@@ -228,7 +293,6 @@ export function AdminNewsletterPage() {
           )}
         </div>
 
-        {/* Desktop table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-start border-collapse">
             <thead>
@@ -252,7 +316,7 @@ export function AdminNewsletterPage() {
               ) : subscribers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-slate-400 text-[14px]">
-                    No subscribers found.
+                    {loadError ? 'Could not load subscribers.' : 'No subscribers found.'}
                   </td>
                 </tr>
               ) : (
@@ -271,7 +335,7 @@ export function AdminNewsletterPage() {
                     <td className="py-4 px-6 text-end">
                       <button
                         type="button"
-                        onClick={() => handleDelete(s.id)}
+                        onClick={() => void handleDelete(s.id)}
                         className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                         title="Delete subscriber"
                       >

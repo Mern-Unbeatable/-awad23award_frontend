@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo, useLayoutEffect, useRef } from 'react';
 import { useNavigate, useParams, useMatch, useOutletContext } from 'react-router-dom';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Edit3, Trash2, Loader2, ImageIcon } from 'lucide-react';
+import { isAxiosError } from 'axios';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { AdminImageUpload } from '../../components/admin/AdminImageUpload';
 import { BlogEditor } from '../../components/admin/BlogEditor';
 import { BlogArticlePreview } from '../../components/admin/BlogArticlePreview';
 import { BlogFormHeaderBar } from '../../components/admin/BlogFormHeaderBar';
 import { usePagination } from '../../hooks/usePagination';
+import { adminApi } from '../../lib/api';
+import { blogFormToPostPayload, postToBlogItem, type BlogPostItem } from '../../lib/blogMappers';
 import { confirmDelete } from '../../lib/swal';
 import {
   ADMIN_ROUTES,
@@ -30,96 +33,8 @@ function estimateReadTime(html: string) {
 }
 
 const BLOGS_PAGE_SIZE = 4;
-const DEFAULT_COVER =
+const PLACEHOLDER_COVER =
   'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80';
-
-interface BlogPostItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  excerpt: string;
-  body: string;
-  category: string;
-  readTime: string;
-  author: string;
-  img: string;
-}
-
-const initialBlogs: BlogPostItem[] = [
-  {
-    id: '1',
-    title: 'Building Smarter Businesses with AI Strategy',
-    subtitle:
-      'How Artificial Intelligence Is Helping Businesses Work Smarter, Faster, and More Efficiently',
-    excerpt:
-      'Discover practical ways AI can streamline operations, improve decision-making, and create long-term business value.',
-    body: '<h2>Why AI Strategy Matters</h2><p>Many organisations invest in AI tools without a clear roadmap, often leading to unnecessary costs and limited results.</p><p>A successful AI strategy starts by identifying areas where technology can solve real business challenges.</p>',
-    category: 'AI Strategy & Digital Transformation',
-    readTime: '5 min read',
-    author: 'Ahmed Ibrahim',
-    img: DEFAULT_COVER,
-  },
-  {
-    id: '2',
-    title: 'The Future of Business Automation',
-    subtitle: 'How intelligent systems reshape workflows without adding complexity',
-    excerpt:
-      'See how intelligent automation is reshaping workflows, increasing productivity, and improving customer experiences.',
-    body: '<p>See how intelligent automation is reshaping workflows, increasing productivity, and improving customer experiences.</p>',
-    category: 'Automation',
-    readTime: '10 min read',
-    author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    id: '3',
-    title: 'Leading Through Change and Innovation',
-    subtitle: 'Leadership patterns that keep teams focused during transformation',
-    excerpt:
-      'Explore leadership strategies that help businesses embrace technology while staying focused on sustainable growth.',
-    body: '<p>Explore leadership strategies that help businesses embrace technology while staying focused on sustainable growth.</p>',
-    category: 'Leadership',
-    readTime: '10 min read',
-    author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    id: '4',
-    title: 'Digital Transformation That Actually Works',
-    subtitle: 'Modernize processes without expensive, unused technology',
-    excerpt:
-      'Learn how organizations can modernize processes without unnecessary complexity or expensive technology investments.',
-    body: '<p>Learn how organizations can modernize processes without unnecessary complexity or expensive technology investments.</p>',
-    category: 'Digital Transformation',
-    readTime: '10 min read',
-    author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    id: '5',
-    title: 'Scaling Teams Without Losing Velocity',
-    subtitle: 'Practical frameworks for growing product and engineering teams',
-    excerpt:
-      'Practical frameworks for growing engineering and product teams while keeping delivery predictable.',
-    body: '<p>Practical frameworks for growing engineering and product teams while keeping delivery predictable.</p>',
-    category: 'Teams & Delivery',
-    readTime: '8 min read',
-    author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    id: '6',
-    title: 'From Strategy Decks to Shipped Products',
-    subtitle: 'Closing the gap between executive vision and real systems',
-    excerpt:
-      'How to close the gap between executive vision and the systems your teams actually build.',
-    body: '<p>How to close the gap between executive vision and the systems your teams actually build.</p>',
-    category: 'Product Strategy',
-    readTime: '12 min read',
-    author: 'Ahmed Ibrahim',
-    img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80',
-  },
-];
 
 function todayLabel() {
   return new Date().toLocaleDateString('en-US', {
@@ -129,6 +44,15 @@ function todayLabel() {
   });
 }
 
+function getApiErrorMessage(error: unknown, fallback: string) {
+  if (isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    if (message) return String(message);
+    if (!error.response) return 'Unable to reach the server. Check that the API is running.';
+  }
+  return fallback;
+}
+
 export function AdminPostsPage() {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
@@ -136,8 +60,12 @@ export function AdminPostsPage() {
   const isEditPage = Boolean(useMatch({ path: '/admin/blogs/:postId/edit', end: true }));
   const isFormMode = isNewPage || isEditPage;
 
-  const [blogs, setBlogs] = useState<BlogPostItem[]>(initialBlogs);
+  const [blogs, setBlogs] = useState<BlogPostItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [editingBlog, setEditingBlog] = useState<BlogPostItem | null>(null);
+
   const { page, setPage, totalPages, paginatedItems, totalItems, pageSize } = usePagination(
     blogs,
     BLOGS_PAGE_SIZE,
@@ -162,6 +90,30 @@ export function AdminPostsPage() {
   const { setHeaderExtension } = useOutletContext<AdminLayoutContextValue>();
 
   useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    setLoadError(null);
+    adminApi
+      .listPostsAdmin()
+      .then((posts) => {
+        if (isMounted) setBlogs(posts.map(postToBlogItem));
+      })
+      .catch((err) => {
+        console.error('Failed to load blog posts:', err);
+        if (isMounted) {
+          setBlogs([]);
+          setLoadError(getApiErrorMessage(err, 'Failed to load blog posts.'));
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (isNewPage) {
       setTitle('');
       setSubtitle('');
@@ -176,7 +128,7 @@ export function AdminPostsPage() {
       setMode('write');
       return;
     }
-    if (isEditPage && postId) {
+    if (isEditPage && postId && !loading) {
       const blog = blogs.find((b) => b.id === postId);
       if (blog) {
         setTitle(blog.title);
@@ -190,11 +142,11 @@ export function AdminPostsPage() {
         setEditingBlog(blog);
         setError('');
         setMode('write');
-      } else {
+      } else if (!loadError) {
         navigate(ADMIN_ROUTES.blogs, { replace: true });
       }
     }
-  }, [isNewPage, isEditPage, postId, blogs, navigate]);
+  }, [isNewPage, isEditPage, postId, blogs, loading, loadError, navigate]);
 
   function openCreate() {
     navigate(ADMIN_BLOG_NEW);
@@ -209,13 +161,22 @@ export function AdminPostsPage() {
   }
 
   async function handleDelete(id: string) {
-    const confirmed = await confirmDelete('Delete Blog Post?', 'Are you sure you want to delete this blog post?');
-    if (confirmed) {
-      setBlogs(blogs.filter((b) => b.id !== id));
+    const confirmed = await confirmDelete(
+      'Delete Blog Post?',
+      'Are you sure you want to delete this blog post?',
+    );
+    if (!confirmed) return;
+
+    try {
+      await adminApi.deletePost(id);
+      setBlogs((prev) => prev.filter((b) => b.id !== id));
+    } catch (err) {
+      console.error('Failed to delete blog post:', err);
+      setLoadError(getApiErrorMessage(err, 'Failed to delete blog post.'));
     }
   }
 
-  function handleSave(e?: React.FormEvent) {
+  async function handleSave(e?: React.FormEvent) {
     e?.preventDefault();
     if (!title.trim()) {
       setError('Add a title — it becomes the headline on the public article page.');
@@ -226,37 +187,39 @@ export function AdminPostsPage() {
       return;
     }
     setError('');
+    setSaving(true);
 
-    const nextExcerpt =
-      excerpt.trim() ||
-      subtitle.trim() ||
-      body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) ||
-      title;
+    try {
+      const payload = blogFormToPostPayload({
+        title,
+        subtitle,
+        excerpt,
+        body,
+        category,
+        readTime,
+        readTimeTouched,
+        autoReadTime,
+        img,
+        author: editingBlog?.author,
+        status: editingBlog?.status,
+      });
 
-    const payload = {
-      title: title.trim(),
-      subtitle: subtitle.trim(),
-      excerpt: nextExcerpt,
-      body,
-      category: category.trim() || 'Insights',
-      readTime: (readTimeTouched ? readTime.trim() : autoReadTime) || '5 min read',
-      img: img || DEFAULT_COVER,
-    };
-
-    if (editingBlog) {
-      setBlogs(blogs.map((b) => (b.id === editingBlog.id ? { ...b, ...payload } : b)));
-    } else {
-      setBlogs([
-        {
-          id: String(Date.now()),
-          author: 'Ahmed Ibrahim',
-          ...payload,
-        },
-        ...blogs,
-      ]);
+      if (editingBlog) {
+        const updated = await adminApi.updatePost(editingBlog.id, payload);
+        const item = postToBlogItem(updated);
+        setBlogs((prev) => prev.map((b) => (b.id === editingBlog.id ? item : b)));
+      } else {
+        const created = await adminApi.createPost(payload);
+        const item = postToBlogItem(created);
+        setBlogs((prev) => [item, ...prev]);
+      }
+      navigate(ADMIN_ROUTES.blogs);
+    } catch (err) {
+      console.error('Failed to save blog post:', err);
+      setError(getApiErrorMessage(err, 'Failed to save blog post.'));
+    } finally {
+      setSaving(false);
     }
-
-    navigate(ADMIN_ROUTES.blogs);
   }
 
   const closeFormRef = useRef(closeForm);
@@ -289,6 +252,7 @@ export function AdminPostsPage() {
     const labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2';
     const fieldCls =
       'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition';
+    const previewCover = img || PLACEHOLDER_COVER;
 
     return (
       <div className="pb-6">
@@ -305,7 +269,7 @@ export function AdminPostsPage() {
               subtitle={subtitle}
               category={category}
               readTime={effectiveReadTime}
-              coverImage={img || DEFAULT_COVER}
+              coverImage={previewCover}
               bodyHtml={body}
               publishedLabel={publishedLabel}
             />
@@ -315,7 +279,7 @@ export function AdminPostsPage() {
           </div>
         ) : (
           <form
-            onSubmit={handleSave}
+            onSubmit={(e) => void handleSave(e)}
             className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start"
           >
             <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-7">
@@ -397,15 +361,17 @@ export function AdminPostsPage() {
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13px] font-semibold cursor-pointer"
+                  disabled={saving}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors text-[13px] font-semibold cursor-pointer"
+                  disabled={saving}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60"
                 >
-                  {editingBlog ? 'Save' : 'Publish'}
+                  {saving ? 'Saving…' : editingBlog ? 'Save' : 'Publish'}
                 </button>
               </div>
             </aside>
@@ -434,65 +400,98 @@ export function AdminPostsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {paginatedItems.map((b) => (
-          <div
-            key={b.id}
-            className="bg-white rounded-sm p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow"
-          >
-            <div>
-              <div className="aspect-16/10 overflow-hidden rounded-sm bg-slate-100 mb-4">
-                <img src={b.img} alt={b.title} className="w-full h-full object-cover" />
+      {loadError && (
+        <div className="p-4 rounded-lg border border-red-200 bg-red-50 text-red-800 text-[14px]">
+          {loadError}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="py-16 flex items-center justify-center gap-2 text-slate-400">
+          <Loader2 className="w-5 h-5 animate-spin text-[#38BDF8]" />
+          <span className="text-[14px]">Loading blog posts…</span>
+        </div>
+      ) : blogs.length === 0 ? (
+        <div className="py-16 text-center text-slate-400 text-[14px]">
+          {loadError ? 'Could not load blog posts.' : 'No blog posts yet. Create your first article.'}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {paginatedItems.map((b) => (
+            <div
+              key={b.id}
+              className="bg-white rounded-sm p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow"
+            >
+              <div>
+                <div className="aspect-16/10 overflow-hidden rounded-sm bg-slate-100 mb-4">
+                  {b.img ? (
+                    <img src={b.img} alt={b.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-slate-300" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 mb-2">
+                  {b.status === 'draft' && (
+                    <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded bg-amber-100 text-amber-700">
+                      Draft
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="font-serif font-bold text-[18px] text-slate-900 mb-2.5 min-h-12 line-clamp-2">
+                  {b.title}
+                </h3>
+
+                <p className="text-[14px] text-slate-500 line-clamp-3 mb-4 font-sans font-normal min-h-13.5">
+                  {b.excerpt}
+                </p>
               </div>
 
-              <h3 className="font-serif font-bold text-[18px] text-slate-900 mb-2.5 min-h-12 line-clamp-2">
-                {b.title}
-              </h3>
+              <div>
+                <div className="text-[11px] font-medium text-slate-400 mb-3 flex items-center gap-2 font-sans">
+                  <span>{b.readTime}</span>
+                  <span>—</span>
+                  <span>{b.author}</span>
+                </div>
 
-              <p className="text-[14px] text-slate-500 line-clamp-3 mb-4 font-sans font-normal min-h-13.5">
-                {b.excerpt}
-              </p>
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => openEdit(b)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold py-2 rounded-sm transition-colors cursor-pointer font-sans"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete(b.id)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] font-semibold py-2 rounded-sm transition-colors cursor-pointer font-sans"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            <div>
-              <div className="text-[11px] font-medium text-slate-400 mb-3 flex items-center gap-2 font-sans">
-                <span>{b.readTime}</span>
-                <span>—</span>
-                <span>{b.author}</span>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => openEdit(b)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold py-2 rounded-sm transition-colors cursor-pointer font-sans"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>Edit</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDelete(b.id)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] font-semibold py-2 rounded-sm transition-colors cursor-pointer font-sans"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <AdminPaginationBar
-        page={page}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        itemLabel="posts"
-      />
+      {!loading && blogs.length > 0 && (
+        <AdminPaginationBar
+          page={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          itemLabel="posts"
+        />
+      )}
     </div>
   );
 }

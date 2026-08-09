@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
 import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
 import { adminApi } from '../../lib/api';
+import { portfolioFormToTabbedPayload } from '../../lib/portfolioMappers';
 import { confirmDelete } from '../../lib/swal';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
@@ -422,6 +423,7 @@ export function AdminGalleryPage() {
 
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -434,10 +436,27 @@ export function AdminGalleryPage() {
   );
 
   useEffect(() => {
-    adminApi.getGallery()
-      .then((res) => setItems(res.data as GalleryItem[]))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    let isMounted = true;
+    setLoading(true);
+    setLoadError(null);
+    adminApi
+      .listPortfolioAdmin()
+      .then((list) => {
+        if (isMounted) setItems(list);
+      })
+      .catch((err) => {
+        console.error('Failed to load portfolio items:', err);
+        if (isMounted) {
+          setItems([]);
+          setLoadError('Failed to load portfolio items from the API.');
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -480,8 +499,13 @@ export function AdminGalleryPage() {
   async function handleDelete(id: string) {
     const confirmed = await confirmDelete('Delete Portfolio Item?', 'Are you sure you want to delete this item?');
     if (!confirmed) return;
-    await adminApi.deleteGalleryItem(id);
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    try {
+      await adminApi.deletePortfolioItem(id);
+      setItems((prev) => prev.filter((i) => i.id !== id));
+    } catch (err) {
+      console.error('Failed to delete portfolio item:', err);
+      setLoadError('Failed to delete portfolio item.');
+    }
   }
 
   async function handleSave() {
@@ -493,17 +517,18 @@ export function AdminGalleryPage() {
     setSaving(true);
     setError('');
     try {
-      const payload = form as Partial<GalleryItem>;
+      const payload = portfolioFormToTabbedPayload(form);
       if (editingId) {
-        await adminApi.updatePortfolioItem(editingId, payload);
-        setItems((prev) => prev.map((i) => i.id === editingId ? { ...i, ...form } : i));
+        const updated = await adminApi.updatePortfolioItem(editingId, payload);
+        setItems((prev) => prev.map((i) => (i.id === editingId ? updated : i)));
       } else {
-        const res = await adminApi.createPortfolioItem(payload);
-        setItems((prev) => [res.data as GalleryItem, ...prev]);
+        const created = await adminApi.createPortfolioItem(payload);
+        setItems((prev) => [created, ...prev]);
       }
       navigate(ADMIN_ROUTES.portfolio);
-    } catch {
-      setError('Failed to save. Please try again.');
+    } catch (err) {
+      console.error('Failed to save portfolio item:', err);
+      setError('Failed to save. Check required fields and that the API is running.');
     } finally {
       setSaving(false);
     }
@@ -1069,6 +1094,12 @@ export function AdminGalleryPage() {
           New Item
         </button>
       </div>
+
+      {loadError && (
+        <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-[13px] font-medium">
+          {loadError}
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
