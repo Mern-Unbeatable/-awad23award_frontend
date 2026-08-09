@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
 import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
 import { adminApi } from '../../lib/api';
-import { portfolioFormToTabbedPayload } from '../../lib/portfolioMappers';
-import { confirmDelete } from '../../lib/swal';
+import { portfolioFormToTabbedPayload, tabbedToGalleryItem } from '../../lib/portfolioMappers';
+import { confirmDelete, showSuccessToast } from '../../lib/swal';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
-import { AdminImageUpload } from '../../components/admin/AdminImageUpload';
-import { AdminMultiImageUpload } from '../../components/admin/AdminMultiImageUpload';
+
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { usePagination } from '../../hooks/usePagination';
 import {
@@ -525,6 +524,18 @@ const TABS = [
 
 const PORTFOLIO_PAGE_SIZE = 8;
 
+/** Returns true if any image field still holds a local blob URL (upload in progress). */
+function portfolioHasPendingUploads(form: PortfolioForm): boolean {
+  const isBlobUrl = (u: string) => u.startsWith('blob:');
+  return (
+    isBlobUrl(form.heroImageUrl) ||
+    isBlobUrl(form.challengeImageUrl) ||
+    isBlobUrl(form.solutionArchImageUrl) ||
+    isBlobUrl(form.recognitionImageUrl) ||
+    form.screenshots.some(isBlobUrl)
+  );
+}
+
 export function AdminGalleryPage() {
   const navigate = useNavigate();
   const { itemId } = useParams<{ itemId: string }>();
@@ -553,7 +564,13 @@ export function AdminGalleryPage() {
     setLoading(true);
     setLoadError(null);
     adminApi
-      .listPortfolioAdmin()
+      .getGallery()
+      .then((res) => {
+        const list = Array.isArray(res.data)
+          ? res.data.map((item: unknown) => tabbedToGalleryItem(item))
+          : [];
+        return list;
+      })
       .then((list) => {
         if (isMounted) setItems(list);
       })
@@ -619,7 +636,7 @@ export function AdminGalleryPage() {
     );
     if (!confirmed) return;
     try {
-      await adminApi.deletePortfolioItem(id);
+      await adminApi.deleteGalleryItem(id);
       setItems((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
       console.error('Failed to delete portfolio item:', err);
@@ -642,10 +659,12 @@ export function AdminGalleryPage() {
     try {
       const payload = portfolioFormToTabbedPayload(form);
       if (editingId) {
-        const updated = await adminApi.updatePortfolioItem(editingId, payload);
+        const res = await adminApi.updatePortfolioItem(editingId, payload as unknown as Record<string, unknown>);
+        const updated = tabbedToGalleryItem(res.data);
         setItems((prev) => prev.map((i) => (i.id === editingId ? updated : i)));
       } else {
-        const created = await adminApi.createPortfolioItem(payload);
+        const res = await adminApi.createPortfolioItem(payload as unknown as Record<string, unknown>);
+        const created = tabbedToGalleryItem(res.data);
         setItems((prev) => [created, ...prev]);
       }
       void showSuccessToast(

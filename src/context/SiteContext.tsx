@@ -78,6 +78,19 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       publicApi.getGallery(),
       publicApi.getTestimonials(),
     ]);
+
+    const s = settingsResult.status === 'fulfilled' ? settingsResult.value : fallbackSettings;
+    const sec = sectionsResult.status === 'fulfilled' ? sectionsResult.value : fallbackSections;
+    const svc = servicesResult.status === 'fulfilled' ? servicesResult.value : fallbackServices;
+    const prod = productsResult.status === 'fulfilled' ? productsResult.value : fallbackProducts;
+    const p = postsResult.status === 'fulfilled' ? postsResult.value : fallbackPosts;
+    const g = galleryResult.status === 'fulfilled' ? galleryResult.value : fallbackGallery;
+    const t = testimonialsResult.status === 'fulfilled' ? testimonialsResult.value : fallbackTestimonials;
+
+    if (schedulingResult.status === 'fulfilled') {
+      setScheduling(schedulingResult.value);
+    }
+
     // Sanitise: backend may still carry the old "Awad" brand — normalise to Ibrahim everywhere
     const rawBrand = s.brandName || fallbackSettings.brandName;
     const brand = rawBrand.replace(/Awad/gi, 'Ibrahim').replace(/عوض/g, 'إبراهيم').replace(/official/gi, '').trim();
