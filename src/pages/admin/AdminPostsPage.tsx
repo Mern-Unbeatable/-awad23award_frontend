@@ -13,7 +13,7 @@ import { BlogEditor } from '../../components/admin/BlogEditor';
 import { BlogArticlePreview } from '../../components/admin/BlogArticlePreview';
 import { BlogFormHeaderBar } from '../../components/admin/BlogFormHeaderBar';
 import { usePagination } from '../../hooks/usePagination';
-import { adminApi } from '../../lib/api';
+import { adminApi, isBlobUrl, resolveMediaUrl } from '../../lib/api';
 import {
   blogFormToPostPayload,
   postToBlogItem,
@@ -197,6 +197,10 @@ export function AdminPostsPage() {
       setError('Add article content before publishing.');
       return;
     }
+    if (img && isBlobUrl(img)) {
+      setError('Cover image is still uploading. Please wait and try again.');
+      return;
+    }
     setError('');
     setSaving(true);
 
@@ -266,7 +270,10 @@ export function AdminPostsPage() {
       'block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2';
     const fieldCls =
       'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition';
-    const previewCover = img || PLACEHOLDER_COVER;
+    const previewCover =
+      img && !isBlobUrl(img)
+        ? resolveMediaUrl(img) || img
+        : PLACEHOLDER_COVER;
 
     return (
       <div className='pb-6'>
@@ -453,11 +460,14 @@ export function AdminPostsPage() {
             >
               <div>
                 <div className='aspect-16/10 overflow-hidden rounded-sm bg-slate-100 mb-4'>
-                  {b.img ? (
+                  {b.img && !isBlobUrl(b.img) ? (
                     <img
-                      src={b.img}
+                      src={resolveMediaUrl(b.img) || b.img}
                       alt={b.title}
                       className='w-full h-full object-cover'
+                      onError={(e) => {
+                        e.currentTarget.src = PLACEHOLDER_COVER;
+                      }}
                     />
                   ) : (
                     <div className='w-full h-full flex items-center justify-center'>

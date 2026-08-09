@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Edit3, Trash2 } from 'lucide-react';
+import { isBlobUrl, resolveMediaUrl } from '../../lib/api';
 
 export interface AdminContentCardProps {
   title: string;
@@ -31,14 +32,29 @@ export function AdminContentCard({
   editLabel = 'Edit',
   deleteLabel = 'Delete',
 }: AdminContentCardProps) {
+  const resolvedUrl =
+    imageUrl && !isBlobUrl(imageUrl) ? resolveMediaUrl(imageUrl) : '';
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [resolvedUrl]);
+
+  const showImage = resolvedUrl && !imgFailed;
+
   return (
     <article className="bg-white rounded-sm p-4 border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
       <div>
         <div
           className={`relative ${imageAspectClass} overflow-hidden rounded-sm bg-slate-100 mb-4`}
         >
-          {imageUrl ? (
-            <img src={imageUrl} alt={imageAlt} className="w-full h-full object-cover" />
+          {showImage ? (
+            <img
+              src={resolvedUrl}
+              alt={imageAlt}
+              className="w-full h-full object-cover"
+              onError={() => setImgFailed(true)}
+            />
           ) : (
             imageFallback
           )}

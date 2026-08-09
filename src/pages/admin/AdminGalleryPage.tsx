@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
 import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
-import { adminApi } from '../../lib/api';
-import { portfolioFormToTabbedPayload, tabbedToGalleryItem } from '../../lib/portfolioMappers';
+import { adminApi, extractUploadedUrl, resolveMediaUrl, isBlobUrl } from '../../lib/api';
+import { portfolioFormToTabbedPayload } from '../../lib/portfolioMappers';
 import { confirmDelete, showSuccessToast } from '../../lib/swal';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
 
@@ -55,9 +55,11 @@ function ImageUpload({
     setPreview(localUrl);
     setUploading(true);
     try {
-      const { data } = await adminApi.uploadMedia(file);
-      const uploaded: string = data?.url ?? localUrl;
-      setPreview(uploaded);
+      const response = await adminApi.uploadMedia(file);
+      const uploaded = extractUploadedUrl(response) ?? '';
+      if (!uploaded) throw new Error('Upload succeeded but no URL was returned');
+      const persisted = resolveMediaUrl(uploaded);
+      setPreview(persisted || uploaded);
       onChange(uploaded);
     } catch {
       setError('Upload failed. Please try again.');
@@ -91,7 +93,11 @@ function ImageUpload({
         <div
           className={`relative group rounded-xl overflow-hidden border border-slate-200 ${height} w-full bg-slate-100`}
         >
-          <img src={preview} alt='' className='w-full h-full object-cover' />
+          <img
+            src={isBlobUrl(preview) ? preview : resolveMediaUrl(preview)}
+            alt=''
+            className='w-full h-full object-cover'
+          />
 
           {uploading && (
             <div className='absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-2'>
@@ -232,6 +238,7 @@ function MultiImageUpload({
     setUploading(true);
 
     // Show local previews immediately while uploading in parallel
+    const startCount = values.length;
     const localUrls = fileArray.map((f) => URL.createObjectURL(f));
     onChange([...values, ...localUrls]);
 
@@ -239,17 +246,21 @@ function MultiImageUpload({
       fileArray.map((file) => adminApi.uploadMedia(file)),
     );
 
-    const serverUrls = results.map((r, idx) =>
-      r.status === 'fulfilled'
-        ? (r.value.data?.url ?? localUrls[idx])
-        : localUrls[idx],
-    );
+    const serverUrls: string[] = [];
+    let hadError = false;
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        const url = extractUploadedUrl(result.value);
+        if (url) serverUrls.push(url);
+        else hadError = true;
+      } else {
+        hadError = true;
+      }
+    }
 
-    const hadError = results.some((r) => r.status === 'rejected');
     if (hadError) setError('Some images could not be uploaded.');
 
-    // Replace local blob URLs with server URLs
-    onChange([...values, ...serverUrls]);
+    onChange([...values.slice(0, startCount), ...serverUrls]);
     setUploading(false);
   }
 
@@ -289,7 +300,7 @@ function MultiImageUpload({
             className='relative group h-24 rounded-xl overflow-hidden border border-slate-200 bg-slate-100'
           >
             <img
-              src={url}
+              src={isBlobUrl(url) ? url : resolveMediaUrl(url)}
               alt={`Screenshot ${idx + 1}`}
               className='w-full h-full object-cover'
             />
@@ -564,13 +575,7 @@ export function AdminGalleryPage() {
     setLoading(true);
     setLoadError(null);
     adminApi
-      .getGallery()
-      .then((res) => {
-        const list = Array.isArray(res.data)
-          ? res.data.map((item: unknown) => tabbedToGalleryItem(item))
-          : [];
-        return list;
-      })
+      .listPortfolioAdmin()
       .then((list) => {
         if (isMounted) setItems(list);
       })
@@ -659,12 +664,15 @@ export function AdminGalleryPage() {
     try {
       const payload = portfolioFormToTabbedPayload(form);
       if (editingId) {
-        const res = await adminApi.updatePortfolioItem(editingId, payload as unknown as Record<string, unknown>);
-        const updated = tabbedToGalleryItem(res.data);
+        const updated = await adminApi.updatePortfolioItem(
+          editingId,
+          payload as unknown as Record<string, unknown>,
+        );
         setItems((prev) => prev.map((i) => (i.id === editingId ? updated : i)));
       } else {
-        const res = await adminApi.createPortfolioItem(payload as unknown as Record<string, unknown>);
-        const created = tabbedToGalleryItem(res.data);
+        const created = await adminApi.createPortfolioItem(
+          payload as unknown as Record<string, unknown>,
+        );
         setItems((prev) => [created, ...prev]);
       }
       void showSuccessToast(

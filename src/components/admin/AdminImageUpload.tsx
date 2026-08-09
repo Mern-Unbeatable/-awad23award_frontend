@@ -82,7 +82,11 @@ export function AdminImageUpload({
         <div
           className={`relative group rounded-xl overflow-hidden border border-slate-200 ${height} w-full bg-slate-100`}
         >
-          <img src={resolveMediaUrl(preview)} alt='' className='w-full h-full object-cover' />
+          <img
+            src={isBlobUrl(preview) ? preview : resolveMediaUrl(preview) || preview}
+            alt=''
+            className='w-full h-full object-cover'
+          />
 
           {uploading && (
             <div className='absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-2'>

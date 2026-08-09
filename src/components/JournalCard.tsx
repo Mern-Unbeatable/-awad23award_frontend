@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useLocale } from '../context/LocaleContext';
+import { isBlobUrl, resolveMediaUrl } from '../lib/api';
 import { pick, type Post } from '../types';
 
 interface JournalCardProps {
@@ -8,11 +9,17 @@ interface JournalCardProps {
   compact?: boolean;
 }
 
+function postCoverSrc(coverImage?: string | null): string {
+  if (!coverImage || isBlobUrl(coverImage)) return '';
+  return resolveMediaUrl(coverImage) || coverImage;
+}
+
 export function JournalCard({ post, featured = false, compact = false }: JournalCardProps) {
   const { locale, pathFor, t } = useLocale();
   const title = pick(post, locale, 'title');
   const excerpt = pick(post, locale, 'excerpt');
   const category = pick(post, locale, 'category');
+  const coverSrc = postCoverSrc(post.coverImage);
   const dateLabel = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString(locale === 'ar' ? 'ar' : 'en', {
         year: 'numeric',
@@ -25,8 +32,8 @@ export function JournalCard({ post, featured = false, compact = false }: Journal
     return (
       <Link to={pathFor(`/journal/${post.slug}`)} className="journal-featured group">
         <div className="journal-featured-media">
-          {post.coverImage ? (
-            <img src={post.coverImage} alt={title} />
+          {coverSrc ? (
+            <img src={coverSrc} alt={title} />
           ) : (
             <div className="journal-media-fallback" />
           )}
@@ -54,8 +61,8 @@ export function JournalCard({ post, featured = false, compact = false }: Journal
       className={`journal-card group${compact ? ' is-compact' : ''}`}
     >
       <div className="journal-card-media">
-        {post.coverImage ? (
-          <img src={post.coverImage} alt={title} />
+        {coverSrc ? (
+          <img src={coverSrc} alt={title} />
         ) : (
           <div className="journal-media-fallback" />
         )}

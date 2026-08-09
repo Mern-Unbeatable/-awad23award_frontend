@@ -7,7 +7,11 @@ import {
   updateTokens,
 } from './auth';
 import { API_BASE } from './env';
-import { normalizePortfolioList } from './portfolioMappers';
+import {
+  normalizePortfolioList,
+  tabbedToGalleryItem,
+  type PortfolioTabbedPayload,
+} from './portfolioMappers';
 import type {
   GalleryItem,
   HomeSection,
@@ -146,7 +150,13 @@ export const publicApi = {
   getPost: (slug: string) =>
     api.get<Post>(`/posts/${slug}`).then((res) => res.data),
   getGallery: () =>
-    api.get('/gallery').then((res) => normalizePortfolioList(res.data)),
+    api.get('/gallery').then((res) =>
+      normalizePortfolioList(res.data).map(resolveGalleryItem),
+    ),
+  getGalleryItem: (slug: string) =>
+    api
+      .get(`/gallery/${encodeURIComponent(slug)}`)
+      .then((res) => resolveGalleryItem(tabbedToGalleryItem(res.data))),
   getTestimonials: () =>
     api.get<Testimonial[]>('/testimonials').then((res) => res.data),
   subscribe: (email: string) => api.post('/newsletter/subscribe', { email }),
@@ -240,12 +250,34 @@ export const adminApi = {
     return unwrapSuccessBody<Post>(res.data);
   },
   deletePost: (id: string) => api.delete(`/posts/${id}`),
-  getGallery: () => api.get<GalleryItem[]>('/gallery?all=1'),
-  createGalleryItem: (data: { mediaId: string; titleEn?: string; titleAr?: string }) =>
-    api.post('/gallery', data),
-  createPortfolioItem: (data: Record<string, unknown>) => api.post('/gallery', data),
-  updatePortfolioItem: (id: string, data: Record<string, unknown>) =>
-    api.put(`/gallery/${id}`, data),
+  listPortfolioAdmin: async (): Promise<GalleryItem[]> => {
+    const res = await api.get('/gallery?all=1');
+    return normalizePortfolioList(res.data).map(resolveGalleryItem);
+  },
+  /** Alias for listPortfolioAdmin (legacy admin page calls) */
+  getGallery: async (): Promise<GalleryItem[]> => {
+    const res = await api.get('/gallery?all=1');
+    return normalizePortfolioList(res.data).map(resolveGalleryItem);
+  },
+  getPortfolioBySlug: async (slug: string): Promise<GalleryItem> => {
+    const res = await api.get(`/gallery/${encodeURIComponent(slug)}`, {
+      params: { all: '1' },
+    });
+    return resolveGalleryItem(tabbedToGalleryItem(res.data));
+  },
+  createPortfolioItem: async (
+    payload: PortfolioTabbedPayload | Record<string, unknown>,
+  ): Promise<GalleryItem> => {
+    const res = await api.post('/gallery', payload);
+    return resolveGalleryItem(tabbedToGalleryItem(res.data));
+  },
+  updatePortfolioItem: async (
+    id: string,
+    payload: PortfolioTabbedPayload | Record<string, unknown>,
+  ): Promise<GalleryItem> => {
+    const res = await api.put(`/gallery/${id}`, payload);
+    return resolveGalleryItem(tabbedToGalleryItem(res.data));
+  },
   deleteGalleryItem: (id: string) => api.delete(`/gallery/${id}`),
   getMedia: () => api.get('/media'),
   uploadMedia: (file: File, altEn = '', altAr = '') => {
@@ -316,21 +348,58 @@ export function isBlobUrl(url: string): boolean {
 }
 
 /**
- * Rewrite backend absolute upload URLs to same-origin paths so images load
- * through the Vite `/uploads` proxy during local development.
+ * Rewrite backend upload URLs to same-origin `/uploads/...` paths (Vite proxy in dev).
+ * Returns empty string for blob/data URLs (not persistable).
  */
 export function resolveMediaUrl(url: string): string {
-  if (!url || isBlobUrl(url) || url.startsWith('data:')) return url;
-  if (url.startsWith('/uploads/')) return url;
+  if (!url || isBlobUrl(url) || url.startsWith('data:')) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+
+  if (trimmed.startsWith('/uploads/')) return trimmed;
+  if (trimmed.startsWith('uploads/')) return `/${trimmed}`;
+
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(trimmed);
     if (parsed.pathname.startsWith('/uploads/')) {
       return parsed.pathname;
     }
+    // External URLs (unsplash, etc.)
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return trimmed;
+    }
   } catch {
-    // not a valid absolute URL — return as-is
+    // bare filename, e.g. uuid.png stored without path
+    if (/^[a-f0-9-]+\.(png|jpe?g|webp|gif)$/i.test(trimmed)) {
+      return `/uploads/${trimmed}`;
+    }
   }
-  return url;
+
+  return trimmed;
+}
+
+function resolveGalleryItem(item: GalleryItem): GalleryItem {
+  const hero = resolveMediaUrl(item.heroImageUrl || item.media?.url || '');
+  return {
+    ...item,
+    heroImageUrl: hero,
+    media: {
+      ...item.media,
+      url: hero || resolveMediaUrl(item.media?.url || ''),
+    },
+    screenshots: (item.screenshots || [])
+      .map((u) => resolveMediaUrl(u))
+      .filter(Boolean),
+    challengeImageUrl: item.challengeImageUrl
+      ? resolveMediaUrl(item.challengeImageUrl)
+      : undefined,
+    solutionArchImageUrl: item.solutionArchImageUrl
+      ? resolveMediaUrl(item.solutionArchImageUrl)
+      : undefined,
+    recognitionImageUrl: item.recognitionImageUrl
+      ? resolveMediaUrl(item.recognitionImageUrl)
+      : undefined,
+  };
 }
 
 /** Unwrap `{ success, data }` API responses or return payload as-is. */

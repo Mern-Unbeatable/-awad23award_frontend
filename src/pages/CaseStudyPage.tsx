@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import {
   Sparkles,
   Building2,
@@ -18,6 +18,7 @@ import {
   Layers,
   Database,
   Cpu,
+  Loader2,
   type LucideIcon,
 } from 'lucide-react';
 import { Seo } from '../components/Seo';
@@ -25,8 +26,8 @@ import { useLocale } from '../context/LocaleContext';
 import { useSite } from '../context/SiteContext';
 import { SiteFooter } from '../components/site/SiteFooter';
 import { pick } from '../types';
-import { resolveMediaUrl, isBlobUrl } from '../lib/api';
-import type { ChallengeItem, ApproachCard, LeadershipCard, SolutionCard, OutcomeItem, SkillCard } from '../types';
+import { resolveMediaUrl, isBlobUrl, publicApi, formatApiError } from '../lib/api';
+import type { SolutionCard, OutcomeItem, GalleryItem } from '../types';
 
 // ─── Icon resolver ────────────────────────────────────────────────────────────
 // Converts a stored icon name string into a Lucide component.
@@ -39,53 +40,6 @@ function getIcon(name: string): LucideIcon {
   return ICON_MAP[name] ?? AlertTriangle;
 }
 
-// ─── Default fallback data ────────────────────────────────────────────────────
-// Used when a portfolio item doesn't yet have a specific field set.
-
-const DEFAULT_CHALLENGE_ITEMS: ChallengeItem[] = [
-  { iconName: 'Users', title: 'Previous implementation partner exited', body: 'The incoming consulting phase began abruptly after the departure of the former vendor team.' },
-  { iconName: 'AlertTriangle', title: 'No proper handover', body: 'Zero structured transition protocols, knowledge transfer sessions, or operation manuals were provided.' },
-  { iconName: 'FileText', title: 'Limited documentation', body: 'System specifications, business rules, and technical architecture blueprints were missing or obsolete.' },
-  { iconName: 'Code2', title: 'Fragmented source code', body: 'Custom code artifacts were scattered across unindexed repositories, sandbox environments, and servers.' },
-  { iconName: 'BookOpen', title: 'Little institutional knowledge', body: 'Internal teams had minimal clarity on underlying CRM workflows, plugins, and custom entities.' },
-];
-
-const DEFAULT_APPROACH_CARDS: ApproachCard[] = [
-  { title: 'Technical Archaeology', bullets: ['Investigated scattered source code across different environments.', 'Reviewed old configuration files and deployment artifacts.', 'Watched archived tutorial videos created by previous team members.'] },
-  { title: 'Process Synthesis', bullets: ['Collected undocumented notes from multiple stakeholders.', 'Reverse-engineered key business processes and customizations.'] },
-];
-
-const DEFAULT_LEADERSHIP_CARDS: LeadershipCard[] = [
-  { iconName: 'Users', title: 'Offshore Team Orchestration', body: 'Led daily standups, sprint planning sessions, and cross-timezone code reviews with offshore developers.' },
-  { iconName: 'Cpu', title: 'Technical Direction & Architecture', body: 'Defined system roadmap, development standards, and code refactoring guidelines for Dynamics CRM 2.0.' },
-  { iconName: 'GitBranch', title: 'Version Control & Governance', body: 'Established standardized Git branching, deployment pipelines, and environment promotion practices.' },
-  { iconName: 'ShieldCheck', title: 'Quality Assurance & Handover', body: 'Implemented strict testing benchmarks to ensure flawless deployment into REDF enterprise infrastructure.' },
-];
-
-const DEFAULT_SOLUTION_CARDS: SolutionCard[] = [
-  { color: 'green', tag: 'Financial Sync', title: 'Credit Bureau integration.', body: 'Automated real-time credit score checks and financial eligibility validation directly within customer case records.' },
-  { color: 'blue', tag: 'Gov System API', title: 'Ministry of Housing synchronization.', body: 'Bi-directional synchronization with official government housing registries to verify land ownership and eligibility status.' },
-  { color: 'orange', tag: 'Enterprise Batch Jobs', title: 'Oracle Database integration for bill payments through scheduled batch jobs.', body: 'High-volume batch integration transferring billing and transaction logs between Microsoft Dynamics CRM and core Oracle DB systems.' },
-  { color: 'purple', tag: 'UX & Workflow', title: 'Multiple usability improvements and workflow enhancements across the Case Management System.', body: 'Comprehensive UI overhaul simplifying case queue views, auto-populating form fields, and refining approval routing.' },
-];
-
-const DEFAULT_OUTCOME_ITEMS: OutcomeItem[] = [
-  { color: 'emerald', text: 'The CRM 2.0 release successfully modernized the platform and increased user adoption by providing functionality that better aligned with business processes.' },
-  { color: 'purple', text: 'Despite joining a project with almost no documentation or handover, the implementation was delivered successfully through structured investigation, technical leadership, and close coordination with the offshore delivery team.' },
-  { color: 'amber', text: 'At the end of my six-month engagement, REDF recognized my contribution with a formal letter of appreciation.' },
-];
-
-const DEFAULT_SKILL_CARDS: SkillCard[] = [
-  { num: '1', category: 'CORE DOMAIN', title: 'Enterprise Case Management', body: 'Architecting end-to-end case workflows, dynamic ticketing queues, and agent routing.' },
-  { num: '2', category: 'TEAM GOVERNANCE', title: 'Technical Leadership', body: 'Directing offshore development teams, code review standards, and sprint deliveries.' },
-  { num: '3', category: 'ARCHITECTURE', title: 'Legacy System Reverse Engineering', body: 'Deconstructing undocumented Dynamics CRM assemblies, configuration files, and plugins.' },
-  { num: '4', category: 'STRATEGY', title: 'Vendor Transition Management', body: 'Stabilizing platform continuity and taking over operations after exit of previous partner.' },
-  { num: '5', category: 'DATA ENGINEERING', title: 'Oracle Database Integration', body: 'Designing scheduled batch ETL syncs for bill payments and accounting reconciliation.' },
-  { num: '6', category: 'PUBLIC SECTOR API', title: 'Gov Systems Integration', body: 'Synchronizing CRM cases with Ministry of Housing and Credit Bureau registry services.' },
-  { num: '7', category: 'PROCESS DESIGN', title: 'Business Process Analysis', body: 'Mapping stakeholder requirements to Dynamics CRM custom entities and workflow rules.' },
-];
-
-// ─── Solution card color maps ─────────────────────────────────────────────────
 const SOLUTION_COLORS = {
   green:  { card: 'bg-[#F2FAF6] border-emerald-200/90', icon: 'bg-emerald-100 text-emerald-600', badge: 'bg-emerald-100 text-emerald-700', divider: 'border-emerald-200/60' },
   blue:   { card: 'bg-[#F0F7FF] border-sky-200/90',     icon: 'bg-sky-100 text-sky-600',         badge: 'bg-sky-100 text-sky-700',         divider: 'border-sky-200/60' },
@@ -97,7 +51,6 @@ const SOLUTION_ICONS: Record<SolutionCard['color'], LucideIcon> = {
   green: ShieldCheck, blue: Building2, orange: Database, purple: Layers,
 };
 
-// ─── Outcome color maps ───────────────────────────────────────────────────────
 const OUTCOME_COLORS = {
   emerald: 'bg-emerald-950/80 text-emerald-400 border-emerald-700/60',
   purple:  'bg-purple-950/80 text-purple-400 border-purple-700/60',
@@ -112,79 +65,168 @@ const OUTCOME_ICONS: Record<OutcomeItem['color'], LucideIcon> = {
 export function CaseStudyPage() {
   const { slug = '' } = useParams();
   const { locale, pathFor, t } = useLocale();
-  const { settings, gallery } = useSite();
+  const { settings } = useSite();
+  const [item, setItem] = useState<GalleryItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    if (!slug) {
+      setLoading(false);
+      setItem(null);
+      return;
+    }
+
+    let mounted = true;
+    setLoading(true);
+    setLoadError(null);
+
+    publicApi
+      .getGalleryItem(slug)
+      .then((data) => {
+        if (mounted) setItem(data);
+      })
+      .catch((err) => {
+        console.error('Failed to load portfolio item:', err);
+        if (mounted) {
+          setItem(null);
+          setLoadError(formatApiError(err));
+        }
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, [slug]);
 
-  const item = gallery.find((g) => g.slug === slug);
-
-  // Core fields
-  const title = item
-    ? pick(item, locale, 'title') || (locale === 'ar' ? item.titleAr : item.titleEn) || (item as unknown as Record<string, string>).title || 'Project Case Study'
-    : t("Modernizing REDF's Microsoft Dynamics CRM Platform", "تحديث منصة مايكروسوفت ديناميكس CRM لمؤسسة REDF");
-
-  const excerpt = item
-    ? pick(item, locale, 'excerpt') || (locale === 'ar' ? item.excerptAr : item.excerptEn) || (item as unknown as Record<string, string>).excerpt || ''
-    : t("How a legacy CRM system was reverse-engineered, modernized, and scaled into an enterprise-wide Case Management System.", "كيف تم تفكيك وإعادة تحديث نظام إدارة علاقات العملاء CRM وتوسيع نطاقه إلى نظام إدارة حالات مؤسسي.");
-
-  const bodyHtml = item
-    ? pick(item, locale, 'body') || (locale === 'ar' ? item.bodyAr : item.bodyEn) || (item as unknown as Record<string, string>).body || ''
-    : '';
-
-  // Hero
-  let heroImage = item?.heroImageUrl || item?.media?.url;
-  if (!heroImage || isBlobUrl(heroImage)) {
-    heroImage = 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=80';
-  } else {
-    heroImage = resolveMediaUrl(heroImage);
+  if (loading) {
+    return (
+      <div className="bg-white pt-28 pb-16 min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#36BFFB] animate-spin" />
+      </div>
+    );
   }
 
-  const client = (item && (pick(item, locale, 'client') || item.client)) || (item ? '' : 'Real Estate Development Fund (REDF)');
-  const role = (item && (pick(item, locale, 'role') || item.role)) || (item ? '' : 'CRM Consultant & Technical Lead');
-  const duration = item?.duration || (item ? '' : '6-Month Engagement • CRM 2.0 Delivery');
+  if (loadError || !item) {
+    return (
+      <div className="bg-white pt-28 pb-16 min-h-screen text-slate-800">
+        <div className="container mx-auto px-6 max-w-3xl text-center">
+          <h1 className="text-2xl font-bold text-slate-900 mb-3">
+            {t('Case study not found', 'دراسة الحالة غير موجودة')}
+          </h1>
+          <p className="text-slate-500 text-[15px] mb-6">
+            {loadError ||
+              t(
+                'This portfolio project could not be loaded or is not published.',
+                'تعذر تحميل هذا المشروع أو أنه غير منشور.',
+              )}
+          </p>
+          <Link
+            to={pathFor('/work')}
+            className="inline-flex items-center gap-2 text-[#36BFFB] font-semibold text-[14px]"
+          >
+            {t('Back to portfolio', 'العودة إلى المعرض')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const title =
+    pick(item, locale, 'title') ||
+    (locale === 'ar' ? item.titleAr : item.titleEn) ||
+    t('Project Case Study', 'دراسة حالة');
+
+  const excerpt =
+    pick(item, locale, 'excerpt') ||
+    (locale === 'ar' ? item.excerptAr : item.excerptEn) ||
+    '';
+
+  const bodyHtml =
+    pick(item, locale, 'body') ||
+    (locale === 'ar' ? item.bodyAr : item.bodyEn) ||
+    '';
+
+  let heroImage = item.heroImageUrl || item.media?.url || '';
+  if (heroImage && !isBlobUrl(heroImage)) {
+    heroImage = resolveMediaUrl(heroImage);
+  } else {
+    heroImage = '';
+  }
+
+  const client = pick(item, locale, 'client') || item.client || '';
+  const role = pick(item, locale, 'role') || item.role || '';
+  const duration = item.duration || '';
 
   const hasCustomCaseStudyData = Boolean(
-    item &&
-      (item.challengeItems?.length ||
-        item.approachCards?.length ||
-        item.leadershipCards?.length ||
-        item.solutionCards?.length ||
-        item.outcomeItems?.length ||
-        item.skillCards?.length)
+    item.challengeItems?.length ||
+      item.approachCards?.length ||
+      item.leadershipCards?.length ||
+      item.solutionCards?.length ||
+      item.outcomeItems?.length ||
+      item.skillCards?.length ||
+      item.challengeBodyEn ||
+      item.challengeBodyAr ||
+      item.approachBodyEn ||
+      item.approachBodyAr ||
+      item.leadershipBodyEn ||
+      item.leadershipBodyAr ||
+      item.solutionBodyEn ||
+      item.solutionBodyAr
   );
 
-  // Sections (only used if hasCustomCaseStudyData or default fallback item)
-  const challengeHeading = locale === 'ar' ? (item?.challengeHeadingAr || 'التحدي') : (item?.challengeHeadingEn || 'The Challenge');
-  const challengeBody = locale === 'ar' ? (item?.challengeBodyAr || t('Before any improvements could be made, the first challenge was understanding how the existing platform actually worked.', 'قبل إجراء أي تحسينات، كان التحدي الأول هو فهم كيفية عمل المنصة الحالية بالفعل.')) : (item?.challengeBodyEn || 'Before any improvements could be made, the first challenge was understanding how the existing platform actually worked.');
-  const challengeItems = item?.challengeItems?.length ? item.challengeItems : DEFAULT_CHALLENGE_ITEMS;
-  let challengeImage = item?.challengeImageUrl || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1000&q=80';
-  if (challengeImage) challengeImage = resolveMediaUrl(challengeImage);
-  const challengeCaption = item?.challengeCaption || 'System reverse-engineering was required to stitch together fragmented custom plugins, workflow rules, and missing database schemas.';
-  const challengeBadge = item?.challengeBadgeLabel || 'CRITICAL GPA';
+  const challengeHeading =
+    locale === 'ar'
+      ? item.challengeHeadingAr || t('The Challenge', 'التحدي')
+      : item.challengeHeadingEn || 'The Challenge';
+  const challengeBody =
+    locale === 'ar' ? item.challengeBodyAr || '' : item.challengeBodyEn || '';
+  const challengeItems = item.challengeItems ?? [];
+  let challengeImage = item.challengeImageUrl || '';
+  if (challengeImage && !isBlobUrl(challengeImage)) {
+    challengeImage = resolveMediaUrl(challengeImage);
+  } else {
+    challengeImage = '';
+  }
+  const challengeCaption = item.challengeCaption || '';
+  const challengeBadge = item.challengeBadgeLabel || 'CRITICAL';
 
-  const approachBody = locale === 'ar' ? (item?.approachBodyAr || '') : (item?.approachBodyEn || 'To rebuild the missing knowledge, I:');
-  const approachCards = item?.approachCards?.length ? item.approachCards : DEFAULT_APPROACH_CARDS;
-  const approachInsight = item?.approachInsight || 'During this phase, I gained a deep understanding of Microsoft Dynamics CRM architecture and concepts such as Round Robin case assignment, which became essential for improving workload distribution.';
+  const approachBody =
+    locale === 'ar' ? item.approachBodyAr || '' : item.approachBodyEn || '';
+  const approachCards = item.approachCards ?? [];
+  const approachInsight = item.approachInsight || '';
 
-  const leadershipBody = locale === 'ar' ? (item?.leadershipBodyAr || '') : (item?.leadershipBodyEn || 'Once the platform was understood, I directed an offshore development team responsible for implementing the next version of the system.');
-  const leadershipCards = item?.leadershipCards?.length ? item.leadershipCards : DEFAULT_LEADERSHIP_CARDS;
-  const leadershipStat = item?.leadershipBannerStat || '100% On Schedule';
+  const leadershipBody =
+    locale === 'ar' ? item.leadershipBodyAr || '' : item.leadershipBodyEn || '';
+  const leadershipCards = item.leadershipCards ?? [];
+  const leadershipStat = item.leadershipBannerStat || '';
 
-  const solutionBody = locale === 'ar' ? (item?.solutionBodyAr || '') : (item?.solutionBodyEn || "I led the successful deployment of CRM 2.0, introducing several enhancements that significantly improved the platform's capabilities.");
-  const solutionCards = item?.solutionCards?.length ? item.solutionCards : DEFAULT_SOLUTION_CARDS;
-  let solutionArchImg = item?.solutionArchImageUrl || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80';
-  if (solutionArchImg) solutionArchImg = resolveMediaUrl(solutionArchImg);
-  const solutionArchTitle = item?.solutionArchTitle || 'Microsoft Dynamics CRM 2.0 Architecture';
-  const solutionArchBody = item?.solutionArchBody || 'The deployed release turned a siloed CRM into an interconnected enterprise hub, directly communicating with government databases, banking bureaus, and legacy Oracle data warehouses.';
+  const solutionBody =
+    locale === 'ar' ? item.solutionBodyAr || '' : item.solutionBodyEn || '';
+  const solutionCards = item.solutionCards ?? [];
+  let solutionArchImg = item.solutionArchImageUrl || '';
+  if (solutionArchImg && !isBlobUrl(solutionArchImg)) {
+    solutionArchImg = resolveMediaUrl(solutionArchImg);
+  } else {
+    solutionArchImg = '';
+  }
+  const solutionArchTitle = item.solutionArchTitle || '';
+  const solutionArchBody = item.solutionArchBody || '';
 
-  const outcomeItems = item?.outcomeItems?.length ? item.outcomeItems : DEFAULT_OUTCOME_ITEMS;
-  let recognitionImage = item?.recognitionImageUrl || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80';
-  if (recognitionImage) recognitionImage = resolveMediaUrl(recognitionImage);
-  const recognitionLabel = item?.recognitionLabel || 'Formal Letter of Recognition';
+  const outcomeItems = item.outcomeItems ?? [];
+  let recognitionImage = item.recognitionImageUrl || '';
+  if (recognitionImage && !isBlobUrl(recognitionImage)) {
+    recognitionImage = resolveMediaUrl(recognitionImage);
+  } else {
+    recognitionImage = '';
+  }
+  const recognitionLabel = item.recognitionLabel || '';
 
-  const skillCards = item?.skillCards?.length ? item.skillCards : DEFAULT_SKILL_CARDS;
+  const skillCards = item.skillCards ?? [];
 
   return (
     <>
@@ -235,10 +277,11 @@ export function CaseStudyPage() {
             </div>
           </div>
 
-          {/* Hero Image */}
-          <div className="rounded-lg overflow-hidden bg-[#181C20] p-4 md:p-8 shadow-xl mb-12 border border-slate-200/80">
-            <img src={heroImage} alt={title} className="w-full h-auto rounded-lg object-cover max-h-140" />
-          </div>
+          {heroImage && (
+            <div className="rounded-lg overflow-hidden bg-[#181C20] p-4 md:p-8 shadow-xl mb-12 border border-slate-200/80">
+              <img src={heroImage} alt={title} className="w-full h-auto rounded-lg object-cover max-h-140" />
+            </div>
+          )}
 
           {/* Intro Text & CTA */}
           <div className="max-w-3xl mx-auto text-center space-y-4 mb-20">
@@ -315,14 +358,17 @@ export function CaseStudyPage() {
                     })}
                   </div>
 
-                  {/* Right: Challenge Image */}
-                  <div className="lg:col-span-6 rounded-lg overflow-hidden bg-[#0A121D] p-6 text-white flex flex-col justify-between relative shadow-lg">
-                    <img src={challengeImage} alt="Legacy Audit Analytics" className="w-full h-90 object-cover rounded-lg mb-6 opacity-85" />
-                    <div className="p-4 bg-white/5 backdrop-blur-md rounded-lg border border-white/10">
-                      <h4 className="text-[20px] font-serif font-bold text-white mb-2">Legacy Architecture Audit Required</h4>
-                      <p className="text-[13.5px] text-slate-300 leading-relaxed">{challengeCaption}</p>
+                  {challengeImage && (
+                    <div className="lg:col-span-6 rounded-lg overflow-hidden bg-[#0A121D] p-6 text-white flex flex-col justify-between relative shadow-lg">
+                      <img src={challengeImage} alt="Challenge" className="w-full h-90 object-cover rounded-lg mb-6 opacity-85" />
+                      {challengeCaption && (
+                        <div className="p-4 bg-white/5 backdrop-blur-md rounded-lg border border-white/10">
+                          <h4 className="text-[20px] font-serif font-bold text-white mb-2">Legacy Architecture Audit Required</h4>
+                          <p className="text-[13.5px] text-slate-300 leading-relaxed">{challengeCaption}</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -466,17 +512,24 @@ export function CaseStudyPage() {
                   })}
                 </div>
 
-                {/* Architecture Card */}
+                {(solutionArchTitle || solutionArchBody || solutionArchImg) && (
                 <div className="bg-[#EBEBEF] rounded-lg p-6 md:p-8 grid lg:grid-cols-12 gap-8 items-center border border-slate-300/80 mb-16">
                   <div className="lg:col-span-5 space-y-4">
                     <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">🛡 ENTERPRISE ECOSYSTEM INTEGRATION</span>
-                    <h3 className="text-[26px] md:text-[30px] font-serif font-bold text-slate-900 leading-snug">{solutionArchTitle}</h3>
-                    <p className="text-[14px] text-slate-600 leading-relaxed">{solutionArchBody}</p>
+                    {solutionArchTitle && (
+                      <h3 className="text-[26px] md:text-[30px] font-serif font-bold text-slate-900 leading-snug">{solutionArchTitle}</h3>
+                    )}
+                    {solutionArchBody && (
+                      <p className="text-[14px] text-slate-600 leading-relaxed">{solutionArchBody}</p>
+                    )}
                   </div>
-                  <div className="lg:col-span-7 bg-[#0A121D] rounded-lg p-4 border border-slate-800 shadow-xl">
-                    <img src={solutionArchImg} alt="Enterprise Architecture" className="rounded-lg w-full h-70 object-cover" />
-                  </div>
+                  {solutionArchImg && (
+                    <div className="lg:col-span-7 bg-[#0A121D] rounded-lg p-4 border border-slate-800 shadow-xl">
+                      <img src={solutionArchImg} alt="Enterprise Architecture" className="rounded-lg w-full h-70 object-cover" />
+                    </div>
+                  )}
                 </div>
+                )}
 
                 {/* ── SECTION 6: OUTCOME ──────────────────────────────── */}
                 <div className="pt-12 pb-20 border-t border-slate-200/80">
@@ -503,18 +556,30 @@ export function CaseStudyPage() {
                       })}
                     </div>
 
+                    {(recognitionImage || recognitionLabel) && (
                     <div className="lg:col-span-6 rounded-lg bg-[#0A121D] text-white p-6 shadow-xl border border-slate-800 flex flex-col justify-between">
-                      <div className="relative rounded-lg overflow-hidden mb-4 border border-slate-800">
-                        <img src={recognitionImage} alt={recognitionLabel} className="w-full h-70 object-cover opacity-90" />
-                        <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[11px] text-amber-300">
-                          ★ {client}
+                      {recognitionImage && (
+                        <div className="relative rounded-lg overflow-hidden mb-4 border border-slate-800">
+                          <img src={recognitionImage} alt={recognitionLabel} className="w-full h-70 object-cover opacity-90" />
+                          {client && (
+                            <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[11px] text-amber-300">
+                              ★ {client}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      <div className="p-2">
-                        <h5 className="font-serif font-bold text-amber-400 text-[16px] mb-0.5">★ {client}</h5>
-                        <p className="text-[13px] text-slate-400">{recognitionLabel}</p>
-                      </div>
+                      )}
+                      {(client || recognitionLabel) && (
+                        <div className="p-2">
+                          {client && (
+                            <h5 className="font-serif font-bold text-amber-400 text-[16px] mb-0.5">★ {client}</h5>
+                          )}
+                          {recognitionLabel && (
+                            <p className="text-[13px] text-slate-400">{recognitionLabel}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
+                    )}
                   </div>
                 </div>
 

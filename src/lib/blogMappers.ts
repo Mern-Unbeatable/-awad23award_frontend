@@ -1,4 +1,5 @@
 import type { Post } from '../types';
+import { isBlobUrl } from './api';
 
 /** Admin blog list/editor shape (English-first UI) */
 export interface BlogPostItem {
@@ -54,7 +55,7 @@ export function postToBlogItem(post: Post): BlogPostItem {
     category: post.categoryEn || 'Insights',
     readTime: formatReadTime(post.readTimeMinutes, post.bodyEn || ''),
     author: post.authorName || 'Author',
-    img: post.coverImage || '',
+    img: post.coverImage && !isBlobUrl(post.coverImage) ? post.coverImage : '',
     status: post.status || 'draft',
   };
 }
@@ -71,6 +72,8 @@ export function blogFormToPostPayload(form: BlogFormInput): Record<string, unkno
     : parseReadTimeMinutes(form.autoReadTime);
 
   const coverImage = form.img.trim();
+  const safeCover =
+    coverImage && !isBlobUrl(coverImage) ? coverImage : null;
   const status = form.status === 'draft' ? 'draft' : 'published';
 
   return {
@@ -84,7 +87,7 @@ export function blogFormToPostPayload(form: BlogFormInput): Record<string, unkno
     categoryAr: form.category.trim() || 'Insights',
     seoDescriptionEn: form.subtitle.trim() || null,
     seoDescriptionAr: form.subtitle.trim() || null,
-    coverImage: coverImage || null,
+    coverImage: safeCover,
     readTimeMinutes,
     authorName: form.author?.trim() || null,
     status,

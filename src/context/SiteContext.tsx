@@ -8,10 +8,8 @@ import {
   type ReactNode,
 } from 'react';
 import { publicApi } from '../lib/api';
-import { normalizeGalleryList } from '../lib/portfolio';
 import type { GalleryItem, HomeSection, Post, Product, SchedulingSettings, Service, SiteSettings, Testimonial } from '../types';
 import {
-  fallbackGallery,
   fallbackPosts,
   fallbackProducts,
   fallbackScheduling,
@@ -20,14 +18,6 @@ import {
   fallbackSettings,
   fallbackTestimonials,
 } from '../data/fallback';
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
 
 interface SiteContextValue {
   settings: SiteSettings;
@@ -53,7 +43,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const [services, setServices] = useState<Service[]>(fallbackServices);
   const [products, setProducts] = useState<Product[]>(fallbackProducts);
   const [posts, setPosts] = useState<Post[]>(fallbackPosts);
-  const [gallery, setGallery] = useState<GalleryItem[]>(fallbackGallery);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>(fallbackTestimonials);
   const [loading, setLoading] = useState(true);
 
@@ -84,7 +74,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     const svc = servicesResult.status === 'fulfilled' ? servicesResult.value : fallbackServices;
     const prod = productsResult.status === 'fulfilled' ? productsResult.value : fallbackProducts;
     const p = postsResult.status === 'fulfilled' ? postsResult.value : fallbackPosts;
-    const g = galleryResult.status === 'fulfilled' ? galleryResult.value : fallbackGallery;
+    const g =
+      galleryResult.status === 'fulfilled' ? galleryResult.value : [];
     const t = testimonialsResult.status === 'fulfilled' ? testimonialsResult.value : fallbackTestimonials;
 
     if (schedulingResult.status === 'fulfilled') {
@@ -141,34 +132,9 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       })
     );
     setPosts(p.length ? p : fallbackPosts);
-    setGallery(
-      normalizeGalleryList(g.length ? g : fallbackGallery).map((item, index) => {
-        const byTitle = fallbackGallery.find(
-          (f) => f.titleEn.toLowerCase() === (item.titleEn || '').toLowerCase()
-        );
-        const byOrder = fallbackGallery[index];
-        const fallback = byTitle || byOrder;
-        const coverUrl = item.heroImageUrl || item.media?.url || '';
-        const broken =
-          !coverUrl ||
-          coverUrl.includes('photo-1611746872915-64342b5c553a') ||
-          coverUrl.includes('photo-1611606063065-ee7946f0787a');
-        const resolvedUrl = broken ? fallback?.media.url || coverUrl : coverUrl;
-        return {
-          ...item,
-          slug: item.slug || fallback?.slug || slugify(item.titleEn || `work-${index + 1}`),
-          excerptEn: item.excerptEn || fallback?.excerptEn || '',
-          excerptAr: item.excerptAr || fallback?.excerptAr || '',
-          bodyEn: item.bodyEn || fallback?.bodyEn || '',
-          bodyAr: item.bodyAr || fallback?.bodyAr || '',
-          heroImageUrl: resolvedUrl,
-          media: {
-            ...item.media,
-            url: resolvedUrl,
-          },
-        };
-      })
-    );
+    if (galleryResult.status === 'fulfilled') {
+      setGallery(g);
+    }
     setTestimonials(t.length ? t : fallbackTestimonials);
     setLoading(false);
   }, []);

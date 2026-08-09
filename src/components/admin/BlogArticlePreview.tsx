@@ -1,5 +1,11 @@
 import { Sparkles, Clock, Calendar } from 'lucide-react';
+import { isBlobUrl, resolveMediaUrl } from '../../lib/api';
 import profileImg from '../../assets/award.png';
+
+function coverDisplaySrc(coverImage: string): string {
+  if (!coverImage || isBlobUrl(coverImage)) return '';
+  return resolveMediaUrl(coverImage) || coverImage;
+}
 
 interface BlogArticlePreviewProps {
   title: string;
@@ -21,6 +27,8 @@ export function BlogArticlePreview({
   bodyHtml,
   publishedLabel,
 }: BlogArticlePreviewProps) {
+  const coverSrc = coverDisplaySrc(coverImage);
+
   return (
     <article className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
       <div className="px-5 sm:px-10 md:px-14 py-9 sm:py-12 max-w-3xl mx-auto">
@@ -73,9 +81,9 @@ export function BlogArticlePreview({
         </div>
 
         {/* Cover */}
-        {coverImage ? (
+        {coverSrc ? (
           <div className="rounded-3xl overflow-hidden mb-12 shadow-sm border border-slate-100">
-            <img src={coverImage} alt={title} className="w-full h-auto max-h-125 object-cover" />
+            <img src={coverSrc} alt={title} className="w-full h-auto max-h-125 object-cover" />
           </div>
         ) : null}
 
