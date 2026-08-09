@@ -9,11 +9,12 @@ import {
 } from 'react';
 import { publicApi } from '../lib/api';
 import { normalizeGalleryList } from '../lib/portfolio';
-import type { GalleryItem, HomeSection, Post, Product, Service, SiteSettings, Testimonial } from '../types';
+import type { GalleryItem, HomeSection, Post, Product, SchedulingSettings, Service, SiteSettings, Testimonial } from '../types';
 import {
   fallbackGallery,
   fallbackPosts,
   fallbackProducts,
+  fallbackScheduling,
   fallbackSections,
   fallbackServices,
   fallbackSettings,
@@ -30,6 +31,7 @@ function slugify(value: string) {
 
 interface SiteContextValue {
   settings: SiteSettings;
+  scheduling: SchedulingSettings;
   sections: HomeSection[];
   services: Service[];
   products: Product[];
@@ -38,6 +40,7 @@ interface SiteContextValue {
   testimonials: Testimonial[];
   loading: boolean;
   refresh: () => Promise<void>;
+  applyScheduling: (data: SchedulingSettings) => void;
   sectionByKey: (key: string) => HomeSection | undefined;
 }
 
@@ -45,6 +48,7 @@ const SiteContext = createContext<SiteContextValue | null>(null);
 
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings>(fallbackSettings);
+  const [scheduling, setScheduling] = useState<SchedulingSettings>(fallbackScheduling);
   const [sections, setSections] = useState<HomeSection[]>(fallbackSections);
   const [services, setServices] = useState<Service[]>(fallbackServices);
   const [products, setProducts] = useState<Product[]>(fallbackProducts);
@@ -55,8 +59,18 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [s, sec, svc, prod, p, g, t] = await Promise.all([
+    const [
+      settingsResult,
+      schedulingResult,
+      sectionsResult,
+      servicesResult,
+      productsResult,
+      postsResult,
+      galleryResult,
+      testimonialsResult,
+    ] = await Promise.allSettled([
       publicApi.getSettings(),
+      publicApi.getScheduling(),
       publicApi.getSections(),
       publicApi.getServices(),
       publicApi.getProducts(),
@@ -146,6 +160,14 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  const applyScheduling = useCallback((data: SchedulingSettings) => {
+    setScheduling(data);
+    setSettings((prev) => ({
+      ...prev,
+      calendlyUrl: data.bookingUrl || prev.calendlyUrl,
+    }));
+  }, []);
+
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -158,6 +180,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       settings,
+      scheduling,
       sections,
       services,
       products,
@@ -166,9 +189,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       testimonials,
       loading,
       refresh,
+      applyScheduling,
       sectionByKey,
     }),
-    [settings, sections, services, products, posts, gallery, testimonials, loading, refresh, sectionByKey]
+    [settings, scheduling, sections, services, products, posts, gallery, testimonials, loading, refresh, applyScheduling, sectionByKey]
   );
 
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;

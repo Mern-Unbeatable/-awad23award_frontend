@@ -137,11 +137,11 @@ export function Navbar() {
           </button>
 
           <ConnectButton
+            useSchedulingConfig
             variant="cyan"
-            className="inline-flex! items-center! justify-center! px-5! py-2.5! rounded-lg! bg-[#35BFFB]! hover:bg-[#22aaeb]! text-[#064738]! font-bold! text-xs! md:text-sm! shadow-md shadow-[#35BFFB]/25 transition-all hover:scale-[1.02]"
-          >
-            {t('Book a Consultation', 'احجز استشارة')}
-          </ConnectButton>
+            className="inline-flex! items-center! justify-center! px-5! py-2.5! rounded-lg! text-white! font-bold! text-xs! md:text-sm! shadow-md transition-all hover:scale-[1.02] hover:brightness-110"
+            fallbackTo="/book"
+          />
         </nav>
 
         <button
@@ -208,9 +208,12 @@ export function Navbar() {
             <button type="button" onClick={toggleLocale} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-colors cursor-pointer">
               {locale === 'en' ? 'Switch to العربية' : 'Switch to English'}
             </button>
-            <ConnectButton variant="blue" className="w-full justify-center rounded-xl! bg-[#35BFFB]! py-3.5! text-base! font-semibold! text-[#064738]!" fallbackTo="/book">
-              {t("Let's Connect", 'تواصل معي')}
-            </ConnectButton>
+            <ConnectButton
+              useSchedulingConfig
+              variant="blue"
+              className="w-full justify-center rounded-xl! py-3.5! text-base! font-semibold! text-white!"
+              fallbackTo="/book"
+            />
           </div>
         </div>
       )}

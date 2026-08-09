@@ -31,6 +31,19 @@ export function resolveCalendlyUrl(raw: string) {
   return bookingUrl(normalizeCalendlyUrl(raw));
 }
 
+/** Non-Calendly http(s) booking links stored in the same settings field. */
+export function resolveExternalBookingUrl(raw: string) {
+  const trimmed = (raw || '').trim();
+  if (!trimmed || normalizeCalendlyUrl(trimmed)) return '';
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol === 'http:' || u.protocol === 'https:') return trimmed;
+  } catch {
+    /* invalid URL */
+  }
+  return '';
+}
+
 export function loadCalendlyAssets() {
   return new Promise<void>((resolve) => {
     if (window.Calendly) {

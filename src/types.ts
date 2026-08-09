@@ -23,6 +23,22 @@ export interface SiteSettings {
   showreelPoster?: string | null;
 }
 
+export type SchedulingPlatform = 'calendly' | 'calcom' | 'savvycal' | 'acuity' | 'custom';
+
+export interface SchedulingSettings {
+  id: string;
+  platform: SchedulingPlatform;
+  isEnabled: boolean;
+  calendlyUrl?: string;
+  calComUsername?: string;
+  savvyCalUsername?: string;
+  acuityUserId?: string;
+  customLink?: string;
+  buttonText: string;
+  buttonColor?: string | null;
+  bookingUrl: string;
+}
+
 export interface HomeSection {
   id: string;
   key: string;
@@ -80,6 +96,10 @@ export interface Post {
   publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  readTimeMinutes?: number | null;
+  authorName?: string | null;
+  authorRole?: string | null;
+  featured?: boolean;
 }
 
 export interface Product {
@@ -219,6 +239,39 @@ export interface Testimonial {
   quoteAr: string;
   avatarUrl?: string | null;
   order: number;
+}
+
+export type NewsletterSubscriberStatus = 'PENDING' | 'ACTIVE' | 'UNSUBSCRIBED' | 'BOUNCED';
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  locale: string;
+  status: NewsletterSubscriberStatus;
+  date: string;
+  createdAt: string;
+  confirmedAt: string | null;
+}
+
+export interface NewsletterStats {
+  totalSubscribers: number;
+  newThisMonth: number;
+  latestSubscription: { email: string; date: string } | null;
+}
+
+export function formatNewsletterStatus(status: NewsletterSubscriberStatus): string {
+  switch (status) {
+    case 'ACTIVE':
+      return 'Active';
+    case 'PENDING':
+      return 'Pending confirmation';
+    case 'UNSUBSCRIBED':
+      return 'Unsubscribed';
+    case 'BOUNCED':
+      return 'Bounced';
+    default:
+      return status;
+  }
 }
 
 export function pick(

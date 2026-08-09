@@ -1,21 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
-import { ChevronRight, ImageIcon, Plus } from 'lucide-react';
-import axios from 'axios';
-import {
-  adminApi,
-  formatApiError,
-  isBlobUrl,
-  unwrapApiData,
-} from '../../lib/api';
-import {
-  portfolioFormToPayload,
-  portfolioItemToForm,
-  normalizeGalleryItem,
-  normalizeGalleryList,
-  type PortfolioForm,
-} from '../../lib/portfolio';
-import { confirmDelete, showSuccessToast } from '../../lib/swal';
+import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
+import { adminApi } from '../../lib/api';
+import { portfolioFormToTabbedPayload } from '../../lib/portfolioMappers';
+import { confirmDelete } from '../../lib/swal';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
 import { AdminImageUpload } from '../../components/admin/AdminImageUpload';
 import { AdminMultiImageUpload } from '../../components/admin/AdminMultiImageUpload';
@@ -36,15 +24,376 @@ import type {
   SkillCard,
 } from '../../types';
 
-function portfolioHasPendingUploads(form: PortfolioForm): boolean {
-  const singles = [
-    form.heroImageUrl,
-    form.challengeImageUrl,
-    form.solutionArchImageUrl,
-    form.recognitionImageUrl,
-  ];
-  if (singles.some(isBlobUrl)) return true;
-  return form.screenshots.some(isBlobUrl);
+function ImageUpload({
+  label,
+  value,
+  onChange,
+  height = 'h-36',
+}: {
+  label?: string;
+  value: string;
+  onChange: (url: string) => void;
+  height?: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(value);
+  const [error, setError] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setPreview(value);
+  }, [value]);
+
+  async function processFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (PNG, JPG, WebP, GIF).');
+      return;
+    }
+    setError('');
+    // Show local preview immediately — no waiting for upload
+    const localUrl = URL.createObjectURL(file);
+    setPreview(localUrl);
+    setUploading(true);
+    try {
+      const { data } = await adminApi.uploadMedia(file);
+      const uploaded: string = data?.url ?? localUrl;
+      setPreview(uploaded);
+      onChange(uploaded);
+    } catch {
+      setError('Upload failed. Please try again.');
+      setPreview(value);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className='w-full'>
+      {label && (
+        <label className='block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5'>
+          {label}
+        </label>
+      )}
+      <input
+        ref={inputRef}
+        type='file'
+        accept='image/*'
+        className='hidden'
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) processFile(f);
+          e.target.value = '';
+        }}
+      />
+
+      {preview ? (
+        /* ── Preview state ── */
+        <div
+          className={`relative group rounded-xl overflow-hidden border border-slate-200 ${height} w-full bg-slate-100`}
+        >
+          <img src={preview} alt='' className='w-full h-full object-cover' />
+
+          {uploading && (
+            <div className='absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-2'>
+              <div className='w-9 h-9 border-[3px] border-white border-t-transparent rounded-full animate-spin' />
+              <span className='text-white text-[12px] font-semibold'>
+                Uploading…
+              </span>
+            </div>
+          )}
+
+          {!uploading && (
+            <>
+              {/* Hover overlay — click anywhere to change */}
+              <div
+                role='button'
+                tabIndex={0}
+                onClick={() => inputRef.current?.click()}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' && inputRef.current?.click()
+                }
+                className='absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-all duration-200 flex items-center justify-center cursor-pointer'
+              >
+                <span className='opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-2 bg-white text-slate-800 text-[12.5px] font-semibold px-4 py-2 rounded-lg shadow-md pointer-events-none'>
+                  <Upload className='w-3.5 h-3.5' />
+                  Change Image
+                </span>
+              </div>
+              {/* Remove button — top-right */}
+              <button
+                type='button'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPreview('');
+                  onChange('');
+                }}
+                className='absolute top-2.5 right-2.5 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md'
+                title='Remove image'
+              >
+                <X className='w-3.5 h-3.5' />
+              </button>
+            </>
+          )}
+        </div>
+      ) : (
+        /* ── Empty / dropzone state ── */
+        <div
+          role='button'
+          tabIndex={0}
+          onClick={() => !uploading && inputRef.current?.click()}
+          onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            setDragging(false);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            const f = e.dataTransfer.files[0];
+            if (f) processFile(f);
+          }}
+          className={`w-full ${height} rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all duration-200 select-none ${
+            uploading
+              ? 'border-[#38BDF8] bg-sky-50/60 cursor-wait'
+              : dragging
+                ? 'border-[#38BDF8] bg-sky-50 scale-[1.005]'
+                : 'border-slate-200 bg-slate-50 hover:border-[#38BDF8] hover:bg-sky-50/30 cursor-pointer'
+          }`}
+        >
+          {uploading ? (
+            <div className='flex flex-col items-center gap-3'>
+              <div className='w-9 h-9 border-[3px] border-[#38BDF8] border-t-transparent rounded-full animate-spin' />
+              <p className='text-[12px] text-[#38BDF8] font-semibold'>
+                Uploading…
+              </p>
+            </div>
+          ) : (
+            <div className='flex flex-col items-center gap-2.5 px-4 text-center pointer-events-none'>
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${dragging ? 'bg-sky-100' : 'bg-slate-100'}`}
+              >
+                {dragging ? (
+                  <ImageIcon className='w-6 h-6 text-[#38BDF8]' />
+                ) : (
+                  <Upload className='w-5 h-5 text-slate-400' />
+                )}
+              </div>
+              <div>
+                <p className='text-[13px] font-semibold text-slate-600'>
+                  {dragging
+                    ? 'Drop to upload'
+                    : 'Click to upload or drag & drop'}
+                </p>
+                <p className='text-[11px] text-slate-400 mt-0.5'>
+                  PNG, JPG, WebP, GIF · max 10 MB
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <p className='text-[11.5px] text-red-500 mt-1.5 font-medium'>{error}</p>
+      )}
+    </div>
+  );
+}
+
+function MultiImageUpload({
+  label,
+  values,
+  onChange,
+  max = 8,
+}: {
+  label?: string;
+  values: string[];
+  onChange: (urls: string[]) => void;
+  max?: number;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [draggingAdd, setDraggingAdd] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function processFiles(files: FileList) {
+    const remaining = max - values.length;
+    if (remaining <= 0) return;
+    const fileArray = Array.from(files)
+      .filter((f) => f.type.startsWith('image/'))
+      .slice(0, remaining);
+    if (!fileArray.length) return;
+
+    setError('');
+    setUploading(true);
+
+    // Show local previews immediately while uploading in parallel
+    const localUrls = fileArray.map((f) => URL.createObjectURL(f));
+    onChange([...values, ...localUrls]);
+
+    const results = await Promise.allSettled(
+      fileArray.map((file) => adminApi.uploadMedia(file)),
+    );
+
+    const serverUrls = results.map((r, idx) =>
+      r.status === 'fulfilled'
+        ? (r.value.data?.url ?? localUrls[idx])
+        : localUrls[idx],
+    );
+
+    const hadError = results.some((r) => r.status === 'rejected');
+    if (hadError) setError('Some images could not be uploaded.');
+
+    // Replace local blob URLs with server URLs
+    onChange([...values, ...serverUrls]);
+    setUploading(false);
+  }
+
+  function removeImage(idx: number) {
+    onChange(values.filter((_, i) => i !== idx));
+  }
+
+  const canAdd = values.length < max;
+
+  return (
+    <div className='w-full'>
+      {label && (
+        <label className='block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5'>
+          {label}
+          <span className='ml-2 text-slate-400 font-normal normal-case'>
+            ({values.length}/{max})
+          </span>
+        </label>
+      )}
+
+      <input
+        ref={inputRef}
+        type='file'
+        accept='image/*'
+        multiple
+        className='hidden'
+        onChange={(e) => {
+          if (e.target.files?.length) processFiles(e.target.files);
+          e.target.value = '';
+        }}
+      />
+
+      <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5'>
+        {values.map((url, idx) => (
+          <div
+            key={idx}
+            className='relative group h-24 rounded-xl overflow-hidden border border-slate-200 bg-slate-100'
+          >
+            <img
+              src={url}
+              alt={`Screenshot ${idx + 1}`}
+              className='w-full h-full object-cover'
+            />
+            <div className='absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 pointer-events-none rounded-xl' />
+            <button
+              type='button'
+              onClick={() => removeImage(idx)}
+              className='absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-sm'
+              title='Remove'
+            >
+              <X className='w-2.5 h-2.5' />
+            </button>
+          </div>
+        ))}
+
+        {/* Add button */}
+        {canAdd && (
+          <div
+            role='button'
+            tabIndex={0}
+            onClick={() => !uploading && inputRef.current?.click()}
+            onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDraggingAdd(true);
+            }}
+            onDragLeave={() => setDraggingAdd(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDraggingAdd(false);
+              if (e.dataTransfer.files.length)
+                processFiles(e.dataTransfer.files);
+            }}
+            className={`h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-all duration-200 select-none ${
+              uploading
+                ? 'border-[#38BDF8] bg-sky-50 cursor-wait'
+                : draggingAdd
+                  ? 'border-[#38BDF8] bg-sky-50'
+                  : 'border-slate-200 bg-slate-50 hover:border-[#38BDF8] hover:bg-sky-50/30 cursor-pointer'
+            }`}
+          >
+            {uploading ? (
+              <div className='w-5 h-5 border-2 border-[#38BDF8] border-t-transparent rounded-full animate-spin' />
+            ) : (
+              <>
+                <Plus
+                  className={`w-4 h-4 ${draggingAdd ? 'text-[#38BDF8]' : 'text-slate-400'}`}
+                />
+                <span className='text-[9px] font-semibold text-slate-400'>
+                  {draggingAdd ? 'Drop' : 'Add'}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <p className='text-[11.5px] text-red-500 mt-2 font-medium'>{error}</p>
+      )}
+    </div>
+  );
+}
+
+interface PortfolioForm {
+  titleEn: string;
+  titleAr: string;
+  slug: string;
+  tag: string;
+  published: boolean;
+  excerptEn: string;
+  excerptAr: string;
+  heroImageUrl: string;
+  client: string;
+  role: string;
+  duration: string;
+  screenshots: string[];
+  challengeHeadingEn: string;
+  challengeHeadingAr: string;
+  challengeBodyEn: string;
+  challengeBodyAr: string;
+  challengeItems: ChallengeItem[];
+  challengeImageUrl: string;
+  challengeCaption: string;
+  challengeBadgeLabel: string;
+  approachBodyEn: string;
+  approachBodyAr: string;
+  approachCards: ApproachCard[];
+  approachInsight: string;
+  leadershipBodyEn: string;
+  leadershipBodyAr: string;
+  leadershipCards: LeadershipCard[];
+  leadershipBannerStat: string;
+  solutionBodyEn: string;
+  solutionBodyAr: string;
+  solutionCards: SolutionCard[];
+  solutionArchImageUrl: string;
+  solutionArchTitle: string;
+  solutionArchBody: string;
+  outcomeItems: OutcomeItem[];
+  recognitionImageUrl: string;
+  recognitionLabel: string;
+  skillCards: SkillCard[];
 }
 
 const EMPTY_FORM: PortfolioForm = {
@@ -89,7 +438,58 @@ const EMPTY_FORM: PortfolioForm = {
 };
 
 function formFromItem(item: GalleryItem): PortfolioForm {
-  return portfolioItemToForm(item, EMPTY_FORM);
+  return {
+    titleEn: item.titleEn,
+    titleAr: item.titleAr,
+    slug: item.slug,
+    tag: item.tag || 'Case Study',
+    published: item.published,
+    excerptEn: item.excerptEn,
+    excerptAr: item.excerptAr,
+    heroImageUrl: item.heroImageUrl || '',
+    client: item.client || '',
+    role: item.role || '',
+    duration: item.duration || '',
+    screenshots: item.screenshots || [],
+    challengeHeadingEn: item.challengeHeadingEn || 'The Challenge',
+    challengeHeadingAr: item.challengeHeadingAr || '',
+    challengeBodyEn: item.challengeBodyEn || '',
+    challengeBodyAr: item.challengeBodyAr || '',
+    challengeItems: item.challengeItems?.length
+      ? item.challengeItems
+      : EMPTY_FORM.challengeItems,
+    challengeImageUrl: item.challengeImageUrl || '',
+    challengeCaption: item.challengeCaption || '',
+    challengeBadgeLabel: item.challengeBadgeLabel || 'CRITICAL',
+    approachBodyEn: item.approachBodyEn || '',
+    approachBodyAr: item.approachBodyAr || '',
+    approachCards: item.approachCards?.length
+      ? item.approachCards
+      : EMPTY_FORM.approachCards,
+    approachInsight: item.approachInsight || '',
+    leadershipBodyEn: item.leadershipBodyEn || '',
+    leadershipBodyAr: item.leadershipBodyAr || '',
+    leadershipCards: item.leadershipCards?.length
+      ? item.leadershipCards
+      : EMPTY_FORM.leadershipCards,
+    leadershipBannerStat: item.leadershipBannerStat || '',
+    solutionBodyEn: item.solutionBodyEn || '',
+    solutionBodyAr: item.solutionBodyAr || '',
+    solutionCards: item.solutionCards?.length
+      ? item.solutionCards
+      : EMPTY_FORM.solutionCards,
+    solutionArchImageUrl: item.solutionArchImageUrl || '',
+    solutionArchTitle: item.solutionArchTitle || '',
+    solutionArchBody: item.solutionArchBody || '',
+    outcomeItems: item.outcomeItems?.length
+      ? item.outcomeItems
+      : EMPTY_FORM.outcomeItems,
+    recognitionImageUrl: item.recognitionImageUrl || '',
+    recognitionLabel: item.recognitionLabel || '',
+    skillCards: item.skillCards?.length
+      ? item.skillCards
+      : EMPTY_FORM.skillCards,
+  };
 }
 
 function Field({
@@ -123,7 +523,7 @@ const TABS = [
   'Skills',
 ];
 
-const PORTFOLIO_PAGE_SIZE = 4;
+const PORTFOLIO_PAGE_SIZE = 8;
 
 export function AdminGalleryPage() {
   const navigate = useNavigate();
@@ -138,6 +538,7 @@ export function AdminGalleryPage() {
 
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -148,11 +549,27 @@ export function AdminGalleryPage() {
     usePagination(items, PORTFOLIO_PAGE_SIZE);
 
   useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    setLoadError(null);
     adminApi
-      .getGallery()
-      .then((res) => setItems(normalizeGalleryList(unwrapApiData(res.data))))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .listPortfolioAdmin()
+      .then((list) => {
+        if (isMounted) setItems(list);
+      })
+      .catch((err) => {
+        console.error('Failed to load portfolio items:', err);
+        if (isMounted) {
+          setItems([]);
+          setLoadError('Failed to load portfolio items from the API.');
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -201,8 +618,13 @@ export function AdminGalleryPage() {
       'Are you sure you want to delete this item?',
     );
     if (!confirmed) return;
-    await adminApi.deleteGalleryItem(id);
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    try {
+      await adminApi.deletePortfolioItem(id);
+      setItems((prev) => prev.filter((i) => i.id !== id));
+    } catch (err) {
+      console.error('Failed to delete portfolio item:', err);
+      setLoadError('Failed to delete portfolio item.');
+    }
   }
 
   async function handleSave() {
@@ -218,40 +640,23 @@ export function AdminGalleryPage() {
     setSaving(true);
     setError('');
     try {
-      const payload = portfolioFormToPayload(form) as unknown as Record<string, unknown>;
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId ? `/api/gallery/${editingId}` : '/api/gallery';
-      console.log('[Portfolio] Submit payload:', payload);
-      console.log('[Portfolio] Request:', {
-        method,
-        url,
-        contentType: 'application/json',
-      });
-
+      const payload = portfolioFormToTabbedPayload(form);
       if (editingId) {
-        const res = await adminApi.updatePortfolioItem(editingId, payload);
-        const saved = normalizeGalleryItem(unwrapApiData(res.data));
-        console.log('[Portfolio] Saved:', saved);
-        setItems((prev) => prev.map((i) => (i.id === editingId ? saved : i)));
+        const updated = await adminApi.updatePortfolioItem(editingId, payload);
+        setItems((prev) => prev.map((i) => (i.id === editingId ? updated : i)));
       } else {
-        const res = await adminApi.createPortfolioItem(payload);
-        const saved = normalizeGalleryItem(unwrapApiData(res.data));
-        console.log('[Portfolio] Created:', saved);
-        setItems((prev) => [saved, ...prev]);
+        const created = await adminApi.createPortfolioItem(payload);
+        setItems((prev) => [created, ...prev]);
       }
       void showSuccessToast(
         editingId ? 'Portfolio item updated' : 'Portfolio item created',
       );
       navigate(ADMIN_ROUTES.portfolio);
     } catch (err) {
-      console.error('[Portfolio] Save failed:', err);
-      if (axios.isAxiosError(err)) {
-        console.error('[Portfolio] Response:', {
-          status: err.response?.status,
-          data: err.response?.data,
-        });
-      }
-      setError(formatApiError(err) || 'Failed to save. Please try again.');
+      console.error('Failed to save portfolio item:', err);
+      setError(
+        'Failed to save. Check required fields and that the API is running.',
+      );
     } finally {
       setSaving(false);
     }
@@ -349,7 +754,7 @@ export function AdminGalleryPage() {
         </div>
 
         {/* Hero Image Upload */}
-        <AdminImageUpload
+        <ImageUpload
           label='Hero / Cover Image'
           value={form.heroImageUrl}
           onChange={(url) => setField('heroImageUrl', url)}
@@ -384,7 +789,7 @@ export function AdminGalleryPage() {
         </div>
 
         {/* Screenshots — multi-upload */}
-        <AdminMultiImageUpload
+        <MultiImageUpload
           label='Project Screenshots'
           values={form.screenshots}
           onChange={(urls) => setField('screenshots', urls)}
@@ -547,7 +952,7 @@ export function AdminGalleryPage() {
         </div>
 
         {/* Challenge image upload */}
-        <AdminImageUpload
+        <ImageUpload
           label='Right Column Image'
           value={form.challengeImageUrl}
           onChange={(url) => setField('challengeImageUrl', url)}
@@ -912,7 +1317,7 @@ export function AdminGalleryPage() {
           </p>
           <div className='space-y-4'>
             {/* Architecture diagram image upload */}
-            <AdminImageUpload
+            <ImageUpload
               label='Architecture Diagram Image'
               value={form.solutionArchImageUrl}
               onChange={(url) => setField('solutionArchImageUrl', url)}
@@ -1017,7 +1422,7 @@ export function AdminGalleryPage() {
         </div>
 
         {/* Recognition image upload */}
-        <AdminImageUpload
+        <ImageUpload
           label='Recognition / Award Image'
           value={form.recognitionImageUrl}
           onChange={(url) => setField('recognitionImageUrl', url)}
@@ -1279,9 +1684,15 @@ export function AdminGalleryPage() {
         </button>
       </div>
 
+      {loadError && (
+        <div className='p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-[13px] font-medium'>
+          {loadError}
+        </div>
+      )}
+
       {loading ? (
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className='bg-white rounded-xl p-4 border border-slate-200 animate-pulse'

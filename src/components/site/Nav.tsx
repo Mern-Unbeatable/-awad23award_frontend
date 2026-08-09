@@ -105,11 +105,11 @@ export function Nav({ dark = false }: NavProps) {
           </button>
 
           <ConnectButton
+            useSchedulingConfig
             variant="cyan"
-            className="hidden lg:inline-flex rounded-lg! bg-[#35BFFB]! hover:bg-[#3F7D6E]! px-4! py-2.5! text-base! font-semibold! text-white! transition-all duration-300 cursor-pointer shadow-sm"
-          >
-            {t('Book a Consultation', 'احجز استشارة')}
-          </ConnectButton>
+            className="hidden lg:inline-flex rounded-lg! px-4! py-2.5! text-base! font-semibold! text-white! transition-all duration-300 cursor-pointer shadow-sm hover:brightness-110"
+            fallbackTo="/book"
+          />
 
           <button
             type="button"
@@ -198,11 +198,11 @@ export function Nav({ dark = false }: NavProps) {
             </button>
 
             <ConnectButton
+              useSchedulingConfig
               variant="cyan"
-              className="w-full justify-center rounded-lg! bg-[#35BFFB]! py-3.5! text-base! font-semibold! text-[#064738]!"
-            >
-              {t('Book a Consultation', 'احجز استشارة')}
-            </ConnectButton>
+              className="w-full justify-center rounded-lg! py-3.5! text-base! font-semibold! text-white!"
+              fallbackTo="/book"
+            />
           </div>
         </div>
       )}
