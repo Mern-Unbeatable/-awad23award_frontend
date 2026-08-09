@@ -24,16 +24,6 @@ import type {
   SiteSettings,
   Testimonial,
 } from '../types';
-import {
-  fallbackGallery,
-  fallbackPosts,
-  fallbackProducts,
-  fallbackScheduling,
-  fallbackSections,
-  fallbackServices,
-  fallbackSettings,
-  fallbackTestimonials,
-} from '../data/fallback';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -125,17 +115,6 @@ api.interceptors.response.use(
   },
 );
 
-async function withFallback<T>(
-  request: () => Promise<T>,
-  fallback: T,
-): Promise<T> {
-  try {
-    return await request();
-  } catch {
-    return fallback;
-  }
-}
-
 /** Unwrap `{ success, data }` responses from admin newsletter endpoints */
 function unwrapSuccessBody<T>(body: unknown): T {
   if (
@@ -152,67 +131,28 @@ function unwrapSuccessBody<T>(body: unknown): T {
 
 export const publicApi = {
   getSettings: () =>
-    withFallback(
-      async () => (await api.get<SiteSettings>('/settings')).data,
-      fallbackSettings,
-    ),
+    api.get<SiteSettings>('/settings').then((res) => res.data),
   getScheduling: () =>
-    withFallback(
-      async () =>
-        (await api.get<SchedulingSettings>('/settings/scheduling')).data,
-      fallbackScheduling,
-    ),
+    api
+      .get<SchedulingSettings>('/settings/scheduling')
+      .then((res) => res.data),
   getSections: () =>
-    withFallback(
-      async () => (await api.get<HomeSection[]>('/pages')).data,
-      fallbackSections,
-    ),
+    api.get<HomeSection[]>('/pages').then((res) => res.data),
   getServices: () =>
-    withFallback(
-      async () => (await api.get<Service[]>('/services')).data,
-      fallbackServices,
-    ),
-  getService: async (slug: string) => {
-    try {
-      return (await api.get<Service>(`/services/${slug}`)).data;
-    } catch {
-      return fallbackServices.find((s) => s.slug === slug) || null;
-    }
-  },
+    api.get<Service[]>('/services').then((res) => res.data),
+  getService: (slug: string) =>
+    api.get<Service>(`/services/${slug}`).then((res) => res.data),
   getProducts: () =>
-    withFallback(
-      async () => (await api.get<Product[]>('/products')).data,
-      fallbackProducts,
-    ),
-  getProduct: async (slug: string) => {
-    try {
-      return (await api.get<Product>(`/products/${slug}`)).data;
-    } catch {
-      return fallbackProducts.find((p) => p.slug === slug) || null;
-    }
-  },
-  getPosts: () =>
-    withFallback(
-      async () => (await api.get<Post[]>('/posts')).data,
-      fallbackPosts,
-    ),
-  getPost: async (slug: string) => {
-    try {
-      return (await api.get<Post>(`/posts/${slug}`)).data;
-    } catch {
-      return fallbackPosts.find((p) => p.slug === slug) || null;
-    }
-  },
+    api.get<Product[]>('/products').then((res) => res.data),
+  getProduct: (slug: string) =>
+    api.get<Product>(`/products/${slug}`).then((res) => res.data),
+  getPosts: () => api.get<Post[]>('/posts').then((res) => res.data),
+  getPost: (slug: string) =>
+    api.get<Post>(`/posts/${slug}`).then((res) => res.data),
   getGallery: () =>
-    withFallback(
-      async () => normalizePortfolioList((await api.get('/gallery')).data),
-      fallbackGallery,
-    ),
+    api.get('/gallery').then((res) => normalizePortfolioList(res.data)),
   getTestimonials: () =>
-    withFallback(
-      async () => (await api.get<Testimonial[]>('/testimonials')).data,
-      fallbackTestimonials,
-    ),
+    api.get<Testimonial[]>('/testimonials').then((res) => res.data),
   subscribe: (email: string) => api.post('/newsletter/subscribe', { email }),
   contact: (payload: {
     name: string;

@@ -5,7 +5,7 @@
  * API requests go to {VITE_SERVER_URL}/api
  */
 
-const DEFAULT_SERVER_URL = 'http://localhost:4000';
+const DEFAULT_SERVER_URL = 'https://awad23server.maktechgroup.tech';
 const API_PATH = '/api';
 
 function normalizeOrigin(url: string) {
