@@ -7,11 +7,7 @@ import {
   updateTokens,
 } from './auth';
 import { API_BASE } from './env';
-import {
-  normalizePortfolioList,
-  tabbedToGalleryItem,
-  type PortfolioTabbedPayload,
-} from './portfolioMappers';
+import { normalizePortfolioList } from './portfolioMappers';
 import type {
   GalleryItem,
   HomeSection,
