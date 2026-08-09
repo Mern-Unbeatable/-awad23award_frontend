@@ -58,7 +58,16 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [s, schedulingData, sec, svc, prod, p, g, t] = await Promise.all([
+    const [
+      settingsResult,
+      schedulingResult,
+      sectionsResult,
+      servicesResult,
+      productsResult,
+      postsResult,
+      galleryResult,
+      testimonialsResult,
+    ] = await Promise.allSettled([
       publicApi.getSettings(),
       publicApi.getScheduling(),
       publicApi.getSections(),
@@ -68,92 +77,129 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       publicApi.getGallery(),
       publicApi.getTestimonials(),
     ]);
-    // Sanitise: backend may still carry the old "Awad" brand — normalise to Ibrahim everywhere
-    const rawBrand = s.brandName || fallbackSettings.brandName;
-    const brand = rawBrand.replace(/Awad/gi, 'Ibrahim').replace(/عوض/g, 'إبراهيم').replace(/official/gi, '').trim();
-    const rawSeoEn = s.seoTitleEn || fallbackSettings.seoTitleEn;
-    const rawSeoAr = s.seoTitleAr || fallbackSettings.seoTitleAr;
-    setScheduling(schedulingData);
-    setSettings({
-      ...fallbackSettings,
-      ...s,
-      calendlyUrl: schedulingData.bookingUrl || s.calendlyUrl || '',
-      brandName: brand,
-      seoTitleEn: rawSeoEn.replace(/Awad/gi, 'Ibrahim'),
-      seoTitleAr: rawSeoAr.replace(/عوض/g, 'إبراهيم'),
-      aboutImageUrl: s.aboutImageUrl || fallbackSettings.aboutImageUrl,
-      showreelPoster: s.showreelPoster || fallbackSettings.showreelPoster,
-      showreelUrl: s.showreelUrl || fallbackSettings.showreelUrl,
-      logoUrl: null,
-    });
-    setSections(
-      sec.length
-        ? sec.map((section) =>
-            section.key === 'hero'
-              ? {
-                  ...section,
-                  imageUrl: section.imageUrl || fallbackSections.find((f) => f.key === 'hero')?.imageUrl,
-                  bodyEn: /Personal Brand|Keynote|Mentor/i.test(section.bodyEn)
-                    ? fallbackSections.find((f) => f.key === 'hero')!.bodyEn
-                    : section.bodyEn,
-                  bodyAr: section.bodyAr || fallbackSections.find((f) => f.key === 'hero')!.bodyAr,
-                }
-              : section
-          )
-        : fallbackSections
-    );
-    setServices(
-      (svc.length ? svc : fallbackServices).map((service) => {
-        const broken =
-          !service.imageUrl ||
-          service.imageUrl.includes('photo-1611746872915-64342b5c553a');
-        if (!broken) return service;
-        const fallback = fallbackServices.find((f) => f.slug === service.slug);
-        return { ...service, imageUrl: fallback?.imageUrl || service.imageUrl };
-      })
-    );
-    setProducts(
-      (prod.length ? prod : fallbackProducts).map((product) => {
-        if (product.imageUrl) return product;
-        const fallback = fallbackProducts.find((f) => f.slug === product.slug);
-        return { ...product, imageUrl: fallback?.imageUrl || product.imageUrl };
-      })
-    );
-    setPosts(p.length ? p : fallbackPosts);
-    setGallery(
-      (g.length ? g : fallbackGallery).map((item, index) => {
-        const byTitle = fallbackGallery.find(
-          (f) => f.titleEn.toLowerCase() === (item.titleEn || '').toLowerCase()
-        );
-        const byOrder = fallbackGallery[index];
-        const fallback = byTitle || byOrder;
-        const mediaUrl = item.media?.url ?? '';
-        const broken =
-          !mediaUrl ||
-          mediaUrl.includes('photo-1611746872915-64342b5c553a') ||
-          mediaUrl.includes('photo-1611606063065-ee7946f0787a');
-        const resolvedUrl = broken
-          ? fallback?.media?.url || mediaUrl
-          : mediaUrl || fallback?.media?.url || '';
-        const baseMedia = item.media ?? fallback?.media;
-        return {
-          ...item,
-          slug: item.slug || fallback?.slug || slugify(item.titleEn || `work-${index + 1}`),
-          excerptEn: item.excerptEn || fallback?.excerptEn || '',
-          excerptAr: item.excerptAr || fallback?.excerptAr || '',
-          bodyEn: item.bodyEn || fallback?.bodyEn || '',
-          bodyAr: item.bodyAr || fallback?.bodyAr || '',
-          media: {
-            id: baseMedia?.id || item.id,
-            type: baseMedia?.type || 'image',
-            url: resolvedUrl,
-            altEn: baseMedia?.altEn || item.titleEn || '',
-            altAr: baseMedia?.altAr || item.titleAr || '',
-          },
-        };
-      })
-    );
-    setTestimonials(t.length ? t : fallbackTestimonials);
+
+    const schedulingData =
+      schedulingResult.status === 'fulfilled'
+        ? schedulingResult.value
+        : fallbackScheduling;
+
+    if (schedulingResult.status === 'fulfilled') {
+      setScheduling(schedulingData);
+    }
+
+    if (settingsResult.status === 'fulfilled') {
+      const s = settingsResult.value;
+      // Sanitise: backend may still carry the old "Awad" brand — normalise to Ibrahim everywhere
+      const rawBrand = s.brandName || fallbackSettings.brandName;
+      const brand = rawBrand.replace(/Awad/gi, 'Ibrahim').replace(/عوض/g, 'إبراهيم').replace(/official/gi, '').trim();
+      const rawSeoEn = s.seoTitleEn || fallbackSettings.seoTitleEn;
+      const rawSeoAr = s.seoTitleAr || fallbackSettings.seoTitleAr;
+      setSettings({
+        ...fallbackSettings,
+        ...s,
+        calendlyUrl: schedulingData.bookingUrl || s.calendlyUrl || '',
+        brandName: brand,
+        seoTitleEn: rawSeoEn.replace(/Awad/gi, 'Ibrahim'),
+        seoTitleAr: rawSeoAr.replace(/عوض/g, 'إبراهيم'),
+        aboutImageUrl: s.aboutImageUrl || fallbackSettings.aboutImageUrl,
+        showreelPoster: s.showreelPoster || fallbackSettings.showreelPoster,
+        showreelUrl: s.showreelUrl || fallbackSettings.showreelUrl,
+        logoUrl: null,
+      });
+    }
+
+    if (sectionsResult.status === 'fulfilled') {
+      const sec = sectionsResult.value;
+      setSections(
+        sec.length
+          ? sec.map((section) =>
+              section.key === 'hero'
+                ? {
+                    ...section,
+                    imageUrl: section.imageUrl || fallbackSections.find((f) => f.key === 'hero')?.imageUrl,
+                    bodyEn: /Personal Brand|Keynote|Mentor/i.test(section.bodyEn)
+                      ? fallbackSections.find((f) => f.key === 'hero')!.bodyEn
+                      : section.bodyEn,
+                    bodyAr: section.bodyAr || fallbackSections.find((f) => f.key === 'hero')!.bodyAr,
+                  }
+                : section
+            )
+          : fallbackSections
+      );
+    }
+
+    if (servicesResult.status === 'fulfilled') {
+      const svc = servicesResult.value;
+      setServices(
+        (svc.length ? svc : fallbackServices).map((service) => {
+          const broken =
+            !service.imageUrl ||
+            service.imageUrl.includes('photo-1611746872915-64342b5c553a');
+          if (!broken) return service;
+          const fallback = fallbackServices.find((f) => f.slug === service.slug);
+          return { ...service, imageUrl: fallback?.imageUrl || service.imageUrl };
+        })
+      );
+    }
+
+    if (productsResult.status === 'fulfilled') {
+      const prod = productsResult.value;
+      setProducts(
+        (prod.length ? prod : fallbackProducts).map((product) => {
+          if (product.imageUrl) return product;
+          const fallback = fallbackProducts.find((f) => f.slug === product.slug);
+          return { ...product, imageUrl: fallback?.imageUrl || product.imageUrl };
+        })
+      );
+    }
+
+    if (postsResult.status === 'fulfilled') {
+      const p = postsResult.value;
+      setPosts(p.length ? p : fallbackPosts);
+    }
+
+    if (galleryResult.status === 'fulfilled') {
+      const g = galleryResult.value;
+      setGallery(
+        (g.length ? g : fallbackGallery).map((item, index) => {
+          const byTitle = fallbackGallery.find(
+            (f) => f.titleEn.toLowerCase() === (item.titleEn || '').toLowerCase()
+          );
+          const byOrder = fallbackGallery[index];
+          const fallback = byTitle || byOrder;
+          const mediaUrl = item.media?.url ?? '';
+          const broken =
+            !mediaUrl ||
+            mediaUrl.includes('photo-1611746872915-64342b5c553a') ||
+            mediaUrl.includes('photo-1611606063065-ee7946f0787a');
+          const resolvedUrl = broken
+            ? fallback?.media?.url || mediaUrl
+            : mediaUrl || fallback?.media?.url || '';
+          const baseMedia = item.media ?? fallback?.media;
+          return {
+            ...item,
+            slug: item.slug || fallback?.slug || slugify(item.titleEn || `work-${index + 1}`),
+            excerptEn: item.excerptEn || fallback?.excerptEn || '',
+            excerptAr: item.excerptAr || fallback?.excerptAr || '',
+            bodyEn: item.bodyEn || fallback?.bodyEn || '',
+            bodyAr: item.bodyAr || fallback?.bodyAr || '',
+            media: {
+              id: baseMedia?.id || item.id,
+              type: baseMedia?.type || 'image',
+              url: resolvedUrl,
+              altEn: baseMedia?.altEn || item.titleEn || '',
+              altAr: baseMedia?.altAr || item.titleAr || '',
+            },
+          };
+        })
+      );
+    }
+
+    if (testimonialsResult.status === 'fulfilled') {
+      const t = testimonialsResult.value;
+      setTestimonials(t.length ? t : fallbackTestimonials);
+    }
+
     setLoading(false);
   }, []);
 

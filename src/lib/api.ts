@@ -207,11 +207,19 @@ export const adminApi = {
   getSettings: () => api.get<SiteSettings>('/settings'),
   updateSettings: (data: Partial<SiteSettings>) =>
     api.put<SiteSettings>('/settings', data),
-  getSchedulingSettings: () =>
-    api.get<SchedulingSettings>('/admin/settings/scheduling'),
-  updateSchedulingSettings: (
+  getSchedulingSettings: async (): Promise<SchedulingSettings> => {
+    const res = await api.get<SchedulingSettings>('/admin/settings/scheduling');
+    return res.data;
+  },
+  updateSchedulingSettings: async (
     data: Omit<SchedulingSettings, 'id' | 'bookingUrl'>,
-  ) => api.put<SchedulingSettings>('/admin/settings/scheduling', data),
+  ): Promise<SchedulingSettings> => {
+    const res = await api.put<SchedulingSettings>(
+      '/admin/settings/scheduling',
+      data,
+    );
+    return res.data;
+  },
   getSections: () => api.get<HomeSection[]>('/pages'),
   updateSection: (key: string, data: Partial<HomeSection>) =>
     api.put(`/pages/${key}`, data),

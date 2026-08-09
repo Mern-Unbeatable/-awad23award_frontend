@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CalendarClock, Loader2, Save } from 'lucide-react';
+import { CalendarClock, Loader2, RefreshCw, Save } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { useSite } from '../../context/SiteContext';
 import { isAxiosError } from 'axios';
@@ -28,18 +28,35 @@ function mapSchedulingToForm(data: SchedulingSettings): SchedulingFormState {
   };
 }
 
-function buildSchedulingPayload(settings: SchedulingFormState): Omit<SchedulingSettings, 'id' | 'bookingUrl'> {
+function buildSchedulingPayload(
+  settings: SchedulingFormState,
+): Omit<SchedulingSettings, 'id' | 'bookingUrl'> {
   return {
     platform: settings.platform,
     isEnabled: settings.isEnabled,
     buttonText: settings.buttonText.trim(),
     buttonColor: settings.buttonColor?.trim() || null,
-    calendlyUrl: settings.platform === 'calendly' ? settings.calendlyUrl?.trim() : undefined,
-    calComUsername: settings.platform === 'calcom' ? settings.calComUsername?.trim() : undefined,
-    savvyCalUsername: settings.platform === 'savvycal' ? settings.savvyCalUsername?.trim() : undefined,
-    acuityUserId: settings.platform === 'acuity' ? settings.acuityUserId?.trim() : undefined,
-    customLink: settings.platform === 'custom' ? settings.customLink?.trim() : undefined,
+    calendlyUrl:
+      settings.platform === 'calendly' ? settings.calendlyUrl?.trim() : undefined,
+    calComUsername:
+      settings.platform === 'calcom' ? settings.calComUsername?.trim() : undefined,
+    savvyCalUsername:
+      settings.platform === 'savvycal' ? settings.savvyCalUsername?.trim() : undefined,
+    acuityUserId:
+      settings.platform === 'acuity' ? settings.acuityUserId?.trim() : undefined,
+    customLink:
+      settings.platform === 'custom' ? settings.customLink?.trim() : undefined,
   };
+}
+
+function getApiErrorMessage(error: unknown, fallback: string) {
+  if (isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    if (message) return String(message);
+    if (!error.response)
+      return 'Unable to reach the server. Check that the API is running.';
+  }
+  return fallback;
 }
 
 const inputClass =
@@ -47,19 +64,37 @@ const inputClass =
 const labelClass = 'block text-[13px] font-semibold text-slate-700 mb-1.5';
 
 export const AdminSettingsPage = () => {
-  const { scheduling, loading: siteLoading, applyScheduling } = useSite();
+  const { applyScheduling } = useSite();
   const [settings, setSettings] = useState<SchedulingFormState>(DEFAULT_SETTINGS);
   const [bookingUrl, setBookingUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
   } | null>(null);
 
+  const loadScheduling = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const data = await adminApi.getSchedulingSettings();
+      setSettings(mapSchedulingToForm(data));
+      setBookingUrl(data.bookingUrl || '');
+    } catch (error) {
+      console.error('Failed to load scheduling settings:', error);
+      setLoadError(
+        getApiErrorMessage(error, 'Failed to load scheduling settings.'),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setSettings(mapSchedulingToForm(scheduling));
-    setBookingUrl(scheduling.bookingUrl || '');
-  }, [scheduling]);
+    void loadScheduling();
+  }, []);
 
   const handleSave = async () => {
     const payload = buildSchedulingPayload(settings);
@@ -77,7 +112,7 @@ export const AdminSettingsPage = () => {
       setSaving(true);
       setMessage(null);
 
-      const { data } = await adminApi.updateSchedulingSettings(payload);
+      const data = await adminApi.updateSchedulingSettings(payload);
       applyScheduling(data);
       setSettings(mapSchedulingToForm(data));
       setBookingUrl(data.bookingUrl || '');
@@ -115,10 +150,28 @@ export const AdminSettingsPage = () => {
     });
   };
 
-  if (siteLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="w-6 h-6 text-[#38BDF8] animate-spin" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="w-full max-w-3xl mx-auto space-y-4">
+        <div className="p-4 rounded-sm text-[14px] border bg-red-50 text-red-800 border-red-200">
+          {loadError}
+        </div>
+        <button
+          type="button"
+          onClick={() => void loadScheduling()}
+          className="inline-flex items-center gap-2 px-4 py-2 text-[14px] font-semibold text-slate-700 border border-slate-200 rounded-sm hover:bg-slate-50 cursor-pointer"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Retry
+        </button>
       </div>
     );
   }
