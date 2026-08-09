@@ -5,7 +5,7 @@ import {
   useMatch,
   useOutletContext,
 } from 'react-router-dom';
-import { Edit3, Trash2, Loader2, ImageIcon } from 'lucide-react';
+import { Edit3, Trash2, ImageIcon } from 'lucide-react';
 import { isAxiosError } from 'axios';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { AdminImageUpload } from '../../components/admin/AdminImageUpload';
