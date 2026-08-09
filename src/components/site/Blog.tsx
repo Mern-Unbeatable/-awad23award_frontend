@@ -2,10 +2,16 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
+import { useSite } from '../../context/SiteContext';
+import { pick } from '../../types';
+import { resolveMediaUrl, isBlobUrl } from '../../lib/api';
 import { ScrollReveal } from './ScrollReveal';
 
+const DEFAULT_POST_IMAGE = 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=400&q=80';
+
 export function Blog() {
-  const { t, pathFor } = useLocale();
+  const { locale, t, pathFor } = useLocale();
+  const { posts: sitePosts } = useSite();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -15,74 +21,38 @@ export function Blog() {
     }
   };
 
-  const posts = [
-    {
-      slug: 'building-smarter-businesses-with-ai-strategy',
-      img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=400&q=80',
-      title: t('Building Smarter Businesses with AI Strategy', 'بناء أعمال أكثر ذكاءً باستراتيجية الذكاء الاصطناعي'),
-      excerpt: t(
-        'Discover practical ways AI can streamline operations, improve decision-making, and create long-term business value.',
-        'اكتشف طرقاً عملية يمكن للذكاء الاصطناعي من خلالها تبسيط العمليات وتحسين اتخاذ القرار.'
-      ),
-      readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Ibrahim', 'أحمد عوض'),
-    },
-    {
-      slug: 'leading-through-change-and-innovation',
-      img: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=400&q=80',
-      title: t('Leading Through Change and Innovation', 'القيادة عبر التغيير والابتكار'),
-      excerpt: t(
-        'Explore leadership strategies that help businesses embrace technology while staying focused on sustainable growth.',
-        'استكشف استراتيجيات القيادة التي تساعد الشركات على تبني التكنولوجيا والحفاظ على النمو المستدام.'
-      ),
-      readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Ibrahim', 'أحمد عوض'),
-    },
-    {
-      slug: 'turning-data-into-better-decisions',
-      img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80',
-      title: t('Turning Data into Better Decisions', 'تحويل البيانات إلى قرارات أفضل'),
-      excerpt: t(
-        'Understand how data-driven strategies help businesses identify opportunities and make smarter, faster decisions.',
-        'افهم كيف تساعد الاستراتيجيات القائمة على البيانات الشركات في تحديد الفرص واتخاذ قرارات أسرع.'
-      ),
-      readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Ibrahim', 'أحمد عوض'),
-    },
-    {
-      slug: 'digital-transformation-that-actually-works',
-      img: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=400&q=80',
-      title: t('Digital Transformation That Actually Works', 'التحول الرقمي الذي يعمل بالفعل'),
-      excerpt: t(
-        'Learn how organizations can modernize processes without unnecessary complexity or expensive technology investments.',
-        'تعرف على كيفية تحديث العمليات في المؤسسات دون تعقيد غير ضروري أو استثمارات مكلفة.'
-      ),
-      readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Ibrahim', 'أحمد عوض'),
-    },
-    {
-      slug: 'future-of-business-automation',
-      img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80',
-      title: t('The Future of Business Automation', 'مستقبل أتمتة الأعمال'),
-      excerpt: t(
-        'See how intelligent automation is reshaping workflows, increasing productivity, and improving customer experiences.',
-        'شاهد كيف تعيد الأتمتة الذكية تشكيل مسارات العمل وتزيد الإنتاجية وتحسن تجربة العملاء.'
-      ),
-      readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Ibrahim', 'أحمد عوض'),
-    },
-    {
-      slug: 'technology-trends-every-leader-should-know',
-      img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-      title: t('Technology Trends Every Leader Should Know', 'توجهات التكنولوجيا التي يجب على كل قائد معرفتها'),
-      excerpt: t(
-        'Stay informed about emerging technologies that are transforming industries and creating new business opportunities.',
-        'ابق على اطلاع بالتكنولوجيات الناشئة التي تغير الصناعات وتخلق فرصاً جديدة للأعمال.'
-      ),
-      readTime: t('10 Minutes', '10 دقائق'),
-      author: t('Ahmed Ibrahim', 'أحمد عوض'),
-    },
-  ];
+  const displayPosts = sitePosts.map((post) => {
+    const title =
+      pick(post, locale, 'title') ||
+      (locale === 'ar' ? post.titleAr : post.titleEn) ||
+      ((post as unknown as Record<string, string>).title) ||
+      '';
+    const excerpt =
+      pick(post, locale, 'excerpt') ||
+      (locale === 'ar' ? post.excerptAr : post.excerptEn) ||
+      ((post as unknown as Record<string, string>).excerpt) ||
+      '';
+
+    let img = post.coverImage ? resolveMediaUrl(post.coverImage) : '';
+    if (!img || isBlobUrl(img)) {
+      img = DEFAULT_POST_IMAGE;
+    }
+
+    const readTime = post.readTimeMinutes
+      ? `${post.readTimeMinutes} ${t('Minutes', 'دقائق')}`
+      : t('10 Minutes', '10 دقائق');
+
+    const author = post.authorName || t('Ahmed Ibrahim', 'أحمد عوض');
+
+    return {
+      slug: post.slug,
+      img,
+      title,
+      excerpt,
+      readTime,
+      author,
+    };
+  });
 
   return (
     <section id="blog" className="bg-white section-padding">
@@ -113,14 +83,14 @@ export function Blog() {
           </div>
         </div>
 
-        {/* Original Grid Layout with horizontal scroll container */}
+        {/* Grid Layout with horizontal scroll container */}
         <div
           ref={scrollRef}
           className="overflow-x-auto scroll-smooth scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((p, idx) => (
-              <ScrollReveal key={p.slug} delay={idx * 160}>
+            {displayPosts.map((p, idx) => (
+              <ScrollReveal key={p.slug || idx} delay={idx * 160}>
                 <Link
                   to={pathFor(`/journal/${p.slug}`)}
                   className="flex gap-4 group cursor-pointer"

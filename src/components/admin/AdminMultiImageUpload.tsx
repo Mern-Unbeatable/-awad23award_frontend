@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import axios from 'axios';
 import { extractUploadedUrl, isBlobUrl, resolveMediaUrl, adminApi } from '../../lib/api';
 
 interface AdminMultiImageUploadProps {

@@ -218,7 +218,7 @@ export function AdminGalleryPage() {
     setSaving(true);
     setError('');
     try {
-      const payload = portfolioFormToPayload(form) as Record<string, unknown>;
+      const payload = portfolioFormToPayload(form) as unknown as Record<string, unknown>;
       const method = editingId ? 'PUT' : 'POST';
       const url = editingId ? `/api/gallery/${editingId}` : '/api/gallery';
       console.log('[Portfolio] Submit payload:', payload);

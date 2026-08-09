@@ -184,11 +184,11 @@ export function portfolioFormToPayload(form: PortfolioForm): PortfolioPayloadByT
 
 /** Normalize tab-grouped or flat API item → flat form state. */
 export function portfolioItemToForm(
-  item: GalleryItem | (PortfolioPayloadByTab & { id: string }),
+  rawItem: GalleryItem | (PortfolioPayloadByTab & { id: string }),
   empty: PortfolioForm,
 ): PortfolioForm {
-  if (isTabGroupedItem(item)) {
-    const { overview, challenge, approach, leadership, solution, outcome, skills } = item;
+  if (isTabGroupedItem(rawItem)) {
+    const { overview, challenge, approach, leadership, solution, outcome, skills } = rawItem;
     return {
       titleEn: overview.titleEn,
       titleAr: overview.titleAr,
@@ -241,6 +241,8 @@ export function portfolioItemToForm(
     };
   }
 
+  const item = rawItem as GalleryItem;
+
   return {
     titleEn: item.titleEn,
     titleAr: item.titleAr,
@@ -287,7 +289,7 @@ export function portfolioItemToForm(
 
 /** Normalize tab-grouped or flat API item → flat GalleryItem for list display. */
 export function normalizeGalleryItem(raw: unknown): GalleryItem {
-  const item = raw as GalleryItem & PortfolioPayloadByTab;
+  const item = raw as (GalleryItem | (PortfolioPayloadByTab & { id: string; order?: number; media?: GalleryItem['media'] }));
 
   if (isTabGroupedItem(item)) {
     const heroImageUrl = withResolvedMediaUrl(item.overview.heroImageUrl);
@@ -344,18 +346,19 @@ export function normalizeGalleryItem(raw: unknown): GalleryItem {
     };
   }
 
-  const flatHero = withResolvedMediaUrl(item.heroImageUrl || item.media?.url);
+  const flatItem = item as GalleryItem;
+  const flatHero = withResolvedMediaUrl(flatItem.heroImageUrl || flatItem.media?.url);
   return {
-    ...item,
+    ...flatItem,
     heroImageUrl: flatHero,
     media: {
-      ...item.media,
-      url: withResolvedMediaUrl(item.media?.url || item.heroImageUrl),
+      ...flatItem.media,
+      url: withResolvedMediaUrl(flatItem.media?.url || flatItem.heroImageUrl),
     },
-    screenshots: withResolvedMediaUrls(item.screenshots),
-    challengeImageUrl: withResolvedMediaUrl(item.challengeImageUrl),
-    solutionArchImageUrl: withResolvedMediaUrl(item.solutionArchImageUrl),
-    recognitionImageUrl: withResolvedMediaUrl(item.recognitionImageUrl),
+    screenshots: withResolvedMediaUrls(flatItem.screenshots),
+    challengeImageUrl: withResolvedMediaUrl(flatItem.challengeImageUrl),
+    solutionArchImageUrl: withResolvedMediaUrl(flatItem.solutionArchImageUrl),
+    recognitionImageUrl: withResolvedMediaUrl(flatItem.recognitionImageUrl),
   };
 }
 

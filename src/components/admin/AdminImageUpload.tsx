@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { Upload, X, ImageIcon, ImagesIcon } from 'lucide-react';
+import { Upload, X, ImageIcon } from 'lucide-react';
 import { isBlobUrl, resolveMediaUrl, uploadImageFile } from '../../lib/api';
 
 interface AdminImageUploadProps {
