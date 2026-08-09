@@ -132,7 +132,7 @@ export function BlogEditor({
                 aria-label="Close heading menu"
                 onClick={() => setHeadingOpen(false)}
               />
-              <div className="absolute top-full left-0 mt-1 z-20 min-w-[150px] rounded-xl border border-slate-200 bg-white shadow-lg py-1">
+              <div className="absolute top-full left-0 mt-1 z-20 min-w-37.5 rounded-xl border border-slate-200 bg-white shadow-lg py-1">
                 {(
                   [
                     ['paragraph', 'Body text'],
