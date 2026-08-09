@@ -90,6 +90,9 @@ export interface Post {
   seoDescriptionEn?: string | null;
   seoDescriptionAr?: string | null;
   status: string;
+  readTimeMinutes?: number;
+  authorName?: string | null;
+  authorRole?: string | null;
   publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -176,6 +179,9 @@ export interface GalleryItem {
 
   // Overview / Hero
   tag?: string;
+  tagStyle?: string;
+  subEn?: string;
+  subAr?: string;
   heroImageUrl?: string;
   client?: string;
   role?: string;

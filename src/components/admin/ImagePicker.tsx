@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent } from 'react';
-import { adminApi } from '../../lib/api';
+import { adminApi, extractUploadedUrl } from '../../lib/api';
 
 interface MediaItem {
   id: string;
@@ -45,8 +45,10 @@ export function ImagePicker({ label = 'Image', value, onChange }: ImagePickerPro
     setBusy(true);
     setError('');
     try {
-      const { data } = await adminApi.uploadMedia(file);
-      onChange(data.url);
+      const response = await adminApi.uploadMedia(file);
+      const url = extractUploadedUrl(response);
+      if (!url) throw new Error('No URL returned');
+      onChange(url);
     } catch {
       setError('Upload failed. Try a smaller image, paste a URL, or check R2 storage settings.');
     } finally {
@@ -67,8 +69,9 @@ export function ImagePicker({ label = 'Image', value, onChange }: ImagePickerPro
     setBusy(true);
     setError('');
     try {
-      const { data } = await adminApi.addMediaUrl(trimmed, 'image');
-      onChange(data.url);
+      const response = await adminApi.addMediaUrl(trimmed, 'image');
+      const url = extractUploadedUrl(response) ?? trimmed;
+      onChange(url);
       setUrlInput('');
     } catch {
       onChange(trimmed);

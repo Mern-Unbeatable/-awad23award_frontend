@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
 import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { portfolioFormToTabbedPayload } from '../../lib/portfolioMappers';
 import { confirmDelete } from '../../lib/swal';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
+import { AdminImageUpload } from '../../components/admin/AdminImageUpload';
+import { AdminMultiImageUpload } from '../../components/admin/AdminMultiImageUpload';
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { usePagination } from '../../hooks/usePagination';
 import {
@@ -631,6 +633,10 @@ export function AdminGalleryPage() {
       setActiveTab(0);
       return;
     }
+    if (portfolioHasPendingUploads(form)) {
+      setError('Some images are still uploading. Please wait and try again.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -642,6 +648,9 @@ export function AdminGalleryPage() {
         const created = await adminApi.createPortfolioItem(payload);
         setItems((prev) => [created, ...prev]);
       }
+      void showSuccessToast(
+        editingId ? 'Portfolio item updated' : 'Portfolio item created',
+      );
       navigate(ADMIN_ROUTES.portfolio);
     } catch (err) {
       console.error('Failed to save portfolio item:', err);

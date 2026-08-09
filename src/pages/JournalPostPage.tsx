@@ -4,7 +4,7 @@ import { Clock, Calendar, Share2, Sparkles } from 'lucide-react';
 import { Seo } from '../components/Seo';
 import { useLocale } from '../context/LocaleContext';
 import { useSite } from '../context/SiteContext';
-import { publicApi } from '../lib/api';
+import { publicApi, resolveMediaUrl, isBlobUrl } from '../lib/api';
 import { pick, type Post } from '../types';
 import { SiteFooter } from '../components/site/SiteFooter';
 
@@ -42,15 +42,47 @@ export function JournalPostPage() {
       'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80',
   };
 
-  const title = post ? pick(post, locale, 'title') : defaultPost.title;
-  const category = (post && pick(post, locale, 'category')) || defaultPost.category;
-  const coverImg = post?.coverImage || defaultPost.coverImage;
+  const title = post
+    ? pick(post, locale, 'title') || (locale === 'ar' ? post.titleAr : post.titleEn) || (post as unknown as Record<string, string>).title || defaultPost.title
+    : defaultPost.title;
+
+  const subtitle = post
+    ? pick(post, locale, 'excerpt') || (locale === 'ar' ? post.excerptAr : post.excerptEn) || (post as unknown as Record<string, string>).excerpt || defaultPost.subtitle
+    : defaultPost.subtitle;
+
+  const category = (post && (pick(post, locale, 'category') || (locale === 'ar' ? post.categoryAr : post.categoryEn) || (post as unknown as Record<string, string>).category)) || defaultPost.category;
+
+  let coverImg = post?.coverImage || defaultPost.coverImage;
+  if (coverImg && isBlobUrl(coverImg)) {
+    coverImg = defaultPost.coverImage;
+  } else if (coverImg) {
+    coverImg = resolveMediaUrl(coverImg);
+  }
+
+  const readTime = post?.readTimeMinutes
+    ? `${post.readTimeMinutes} ${t('min read', 'دقائق قراءة')}`
+    : defaultPost.readTime;
+
+  const authorName = post?.authorName || defaultPost.authorName;
+  const authorRole = post?.authorRole || defaultPost.authorRole;
+
+  const publishedDate = post?.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : defaultPost.publishedDate;
+
+  const postBody = post
+    ? pick(post, locale, 'body') || (locale === 'ar' ? post.bodyAr : post.bodyEn) || (post as unknown as Record<string, string>).body || ''
+    : '';
 
   return (
     <>
       <Seo
         title={`${title} | ${settings.brandName}`}
-        description={defaultPost.subtitle}
+        description={subtitle}
         image={coverImg}
         path={pathFor(`/journal/${slug}`)}
       />
@@ -67,7 +99,7 @@ export function JournalPostPage() {
 
             <span className="inline-flex items-center gap-1.5 text-slate-500 text-[12.5px] bg-slate-100 px-3 py-0.5 rounded-full font-medium">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
-              {defaultPost.readTime}
+              {readTime}
             </span>
           </div>
 
@@ -78,7 +110,7 @@ export function JournalPostPage() {
 
           {/* Subtitle */}
           <p className="text-[17px] md:text-[18.5px] text-[#52606D] font-normal leading-relaxed mb-8">
-            {defaultPost.subtitle}
+            {subtitle}
           </p>
 
           {/* Author Meta Bar */}
@@ -87,20 +119,20 @@ export function JournalPostPage() {
             <div className="flex items-center gap-3.5">
               <img
                 src={profileImg}
-                alt="Ahmed Ibrahim"
+                alt={authorName}
                 className="w-11 h-11 rounded-full object-cover shadow-sm"
               />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-[14.5px] text-foreground">
-                    {defaultPost.authorName}
+                    {authorName}
                   </span>
                   <span className="bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
                     {t('Author', 'الكاتب')}
                   </span>
                 </div>
                 <span className="text-[12.5px] text-slate-500 block mt-0.5 font-normal">
-                  {defaultPost.authorRole}
+                  {authorRole}
                 </span>
               </div>
             </div>
@@ -109,7 +141,7 @@ export function JournalPostPage() {
             <div className="flex items-center gap-5 text-[13px] text-slate-500">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-slate-400" />
-                <span>Published {defaultPost.publishedDate}</span>
+                <span>Published {publishedDate}</span>
               </div>
 
               <button
@@ -140,9 +172,15 @@ export function JournalPostPage() {
           </div>
 
           {/* Article Main Body Content */}
-          <div className="space-y-14 text-[#374151] leading-relaxed">
-            {/* Section 1 + Dark Green Callout Box Grid */}
-            <div className="grid gap-8 lg:grid-cols-12 items-start">
+          {postBody ? (
+            <div
+              className="prose prose-lg max-w-none text-[#374151] leading-relaxed space-y-6 [&_p]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:font-serif [&_h2]:mt-8 [&_h2]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+              dangerouslySetInnerHTML={{ __html: postBody }}
+            />
+          ) : (
+            <div className="space-y-14 text-[#374151] leading-relaxed">
+              {/* Section 1 + Dark Green Callout Box Grid */}
+              <div className="grid gap-8 lg:grid-cols-12 items-start">
               {/* Left Column: Intro Text */}
               <div className="lg:col-span-7 space-y-4">
                 <h2 className="text-[32px] md:text-[38px] font-serif font-bold text-[#111827] tracking-tight leading-snug">
@@ -321,8 +359,9 @@ export function JournalPostPage() {
               </p>
             </div>
           </div>
-        </div>
-      </article>
+        )}
+      </div>
+    </article>
 
       {/* Footer CTA */}
       <SiteFooter />
