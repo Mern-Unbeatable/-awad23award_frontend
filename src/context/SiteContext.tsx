@@ -8,11 +8,12 @@ import {
   type ReactNode,
 } from 'react';
 import { publicApi } from '../lib/api';
-import type { GalleryItem, HomeSection, Post, Product, Service, SiteSettings, Testimonial } from '../types';
+import type { GalleryItem, HomeSection, Post, Product, SchedulingSettings, Service, SiteSettings, Testimonial } from '../types';
 import {
   fallbackGallery,
   fallbackPosts,
   fallbackProducts,
+  fallbackScheduling,
   fallbackSections,
   fallbackServices,
   fallbackSettings,
@@ -29,6 +30,7 @@ function slugify(value: string) {
 
 interface SiteContextValue {
   settings: SiteSettings;
+  scheduling: SchedulingSettings;
   sections: HomeSection[];
   services: Service[];
   products: Product[];
@@ -37,6 +39,7 @@ interface SiteContextValue {
   testimonials: Testimonial[];
   loading: boolean;
   refresh: () => Promise<void>;
+  applyScheduling: (data: SchedulingSettings) => void;
   sectionByKey: (key: string) => HomeSection | undefined;
 }
 
@@ -44,6 +47,7 @@ const SiteContext = createContext<SiteContextValue | null>(null);
 
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings>(fallbackSettings);
+  const [scheduling, setScheduling] = useState<SchedulingSettings>(fallbackScheduling);
   const [sections, setSections] = useState<HomeSection[]>(fallbackSections);
   const [services, setServices] = useState<Service[]>(fallbackServices);
   const [products, setProducts] = useState<Product[]>(fallbackProducts);
@@ -54,7 +58,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [s, scheduling, sec, svc, prod, p, g, t] = await Promise.all([
+    const [s, schedulingData, sec, svc, prod, p, g, t] = await Promise.all([
       publicApi.getSettings(),
       publicApi.getScheduling(),
       publicApi.getSections(),
@@ -69,10 +73,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     const brand = rawBrand.replace(/Awad/gi, 'Ibrahim').replace(/عوض/g, 'إبراهيم').replace(/official/gi, '').trim();
     const rawSeoEn = s.seoTitleEn || fallbackSettings.seoTitleEn;
     const rawSeoAr = s.seoTitleAr || fallbackSettings.seoTitleAr;
+    setScheduling(schedulingData);
     setSettings({
       ...fallbackSettings,
       ...s,
-      calendlyUrl: scheduling.bookingUrl || s.calendlyUrl || '',
+      calendlyUrl: schedulingData.bookingUrl || s.calendlyUrl || '',
       brandName: brand,
       seoTitleEn: rawSeoEn.replace(/Awad/gi, 'Ibrahim'),
       seoTitleAr: rawSeoAr.replace(/عوض/g, 'إبراهيم'),
@@ -122,10 +127,15 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         );
         const byOrder = fallbackGallery[index];
         const fallback = byTitle || byOrder;
+        const mediaUrl = item.media?.url ?? '';
         const broken =
-          !item.media?.url ||
-          item.media.url.includes('photo-1611746872915-64342b5c553a') ||
-          item.media.url.includes('photo-1611606063065-ee7946f0787a');
+          !mediaUrl ||
+          mediaUrl.includes('photo-1611746872915-64342b5c553a') ||
+          mediaUrl.includes('photo-1611606063065-ee7946f0787a');
+        const resolvedUrl = broken
+          ? fallback?.media?.url || mediaUrl
+          : mediaUrl || fallback?.media?.url || '';
+        const baseMedia = item.media ?? fallback?.media;
         return {
           ...item,
           slug: item.slug || fallback?.slug || slugify(item.titleEn || `work-${index + 1}`),
@@ -134,14 +144,25 @@ export function SiteProvider({ children }: { children: ReactNode }) {
           bodyEn: item.bodyEn || fallback?.bodyEn || '',
           bodyAr: item.bodyAr || fallback?.bodyAr || '',
           media: {
-            ...item.media,
-            url: broken ? fallback?.media.url || item.media.url : item.media.url,
+            id: baseMedia?.id || item.id,
+            type: baseMedia?.type || 'image',
+            url: resolvedUrl,
+            altEn: baseMedia?.altEn || item.titleEn || '',
+            altAr: baseMedia?.altAr || item.titleAr || '',
           },
         };
       })
     );
     setTestimonials(t.length ? t : fallbackTestimonials);
     setLoading(false);
+  }, []);
+
+  const applyScheduling = useCallback((data: SchedulingSettings) => {
+    setScheduling(data);
+    setSettings((prev) => ({
+      ...prev,
+      calendlyUrl: data.bookingUrl || prev.calendlyUrl,
+    }));
   }, []);
 
   useEffect(() => {
@@ -156,6 +177,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       settings,
+      scheduling,
       sections,
       services,
       products,
@@ -164,9 +186,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       testimonials,
       loading,
       refresh,
+      applyScheduling,
       sectionByKey,
     }),
-    [settings, sections, services, products, posts, gallery, testimonials, loading, refresh, sectionByKey]
+    [settings, scheduling, sections, services, products, posts, gallery, testimonials, loading, refresh, applyScheduling, sectionByKey]
   );
 
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;

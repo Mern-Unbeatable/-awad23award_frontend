@@ -47,11 +47,9 @@ const inputClass =
 const labelClass = 'block text-[13px] font-semibold text-slate-700 mb-1.5';
 
 export const AdminSettingsPage = () => {
-  const { refresh } = useSite();
+  const { scheduling, loading: siteLoading, applyScheduling } = useSite();
   const [settings, setSettings] = useState<SchedulingFormState>(DEFAULT_SETTINGS);
   const [bookingUrl, setBookingUrl] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
@@ -59,26 +57,9 @@ export const AdminSettingsPage = () => {
   } | null>(null);
 
   useEffect(() => {
-    void fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    try {
-      setLoadError(null);
-      const { data } = await adminApi.getSchedulingSettings();
-      setSettings(mapSchedulingToForm(data));
-      setBookingUrl(data.bookingUrl || '');
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      setLoadError(
-        isAxiosError(error) && error.response?.status === 401
-          ? 'Session expired. Please log in again.'
-          : 'Failed to load scheduling settings. Please try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    setSettings(mapSchedulingToForm(scheduling));
+    setBookingUrl(scheduling.bookingUrl || '');
+  }, [scheduling]);
 
   const handleSave = async () => {
     const payload = buildSchedulingPayload(settings);
@@ -97,19 +78,24 @@ export const AdminSettingsPage = () => {
       setMessage(null);
 
       const { data } = await adminApi.updateSchedulingSettings(payload);
+      applyScheduling(data);
       setSettings(mapSchedulingToForm(data));
       setBookingUrl(data.bookingUrl || '');
-      await refresh();
 
       setMessage({
         type: 'success',
         text: 'Scheduling settings saved successfully.',
       });
     } catch (error) {
-      const text =
-        isAxiosError(error) && error.response?.data?.message
-          ? String(error.response.data.message)
-          : 'Failed to save settings. Please try again.';
+      const text = isAxiosError(error)
+        ? error.response?.status === 429
+          ? 'Too many requests. Wait a moment and try again.'
+          : error.response?.status === 401
+            ? 'Session expired. Please log in again.'
+            : error.response?.data?.message
+              ? String(error.response.data.message)
+              : 'Failed to save settings. Please try again.'
+        : 'Failed to save settings. Please try again.';
       setMessage({ type: 'error', text });
       console.error(error);
     } finally {
@@ -129,30 +115,10 @@ export const AdminSettingsPage = () => {
     });
   };
 
-  if (loading) {
+  if (siteLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="w-6 h-6 text-[#38BDF8] animate-spin" />
-      </div>
-    );
-  }
-
-  if (loadError) {
-    return (
-      <div className="w-full max-w-3xl mx-auto">
-        <div className="p-4 rounded-sm bg-red-50 text-red-800 border border-red-200 text-[14px]">
-          {loadError}
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            setLoading(true);
-            void fetchSettings();
-          }}
-          className="mt-4 px-4 py-2.5 bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold rounded-sm transition-colors cursor-pointer"
-        >
-          Retry
-        </button>
       </div>
     );
   }

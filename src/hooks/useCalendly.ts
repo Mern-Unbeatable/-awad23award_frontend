@@ -9,16 +9,16 @@ import {
 } from '../lib/calendly';
 
 export function useCalendly() {
-  const { settings } = useSite();
-  const calendlyPopupUrl = useMemo(
-    () => resolveCalendlyUrl(settings.calendlyUrl || ''),
-    [settings.calendlyUrl]
-  );
-  const externalUrl = useMemo(
-    () => resolveExternalBookingUrl(settings.calendlyUrl || ''),
-    [settings.calendlyUrl]
-  );
-  const isConfigured = Boolean(calendlyPopupUrl || externalUrl);
+  const { settings, scheduling } = useSite();
+
+  const bookingRaw = useMemo(() => {
+    if (!scheduling.isEnabled) return '';
+    return scheduling.bookingUrl || settings.calendlyUrl || '';
+  }, [scheduling.isEnabled, scheduling.bookingUrl, settings.calendlyUrl]);
+
+  const calendlyPopupUrl = useMemo(() => resolveCalendlyUrl(bookingRaw), [bookingRaw]);
+  const externalUrl = useMemo(() => resolveExternalBookingUrl(bookingRaw), [bookingRaw]);
+  const isConfigured = scheduling.isEnabled && Boolean(calendlyPopupUrl || externalUrl);
 
   useEffect(() => {
     if (!calendlyPopupUrl) return;
@@ -37,5 +37,10 @@ export function useCalendly() {
     return false;
   }, [calendlyPopupUrl, externalUrl]);
 
-  return { url: calendlyPopupUrl || externalUrl, isConfigured, openCalendar };
+  return {
+    url: calendlyPopupUrl || externalUrl,
+    isConfigured,
+    openCalendar,
+    scheduling,
+  };
 }
