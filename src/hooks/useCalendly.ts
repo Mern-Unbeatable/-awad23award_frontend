@@ -1,24 +1,41 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useSite } from '../context/SiteContext';
-import { closeCalendlyPopup, loadCalendlyAssets, openCalendlyPopup, resolveCalendlyUrl } from '../lib/calendly';
+import {
+  closeCalendlyPopup,
+  loadCalendlyAssets,
+  openCalendlyPopup,
+  resolveCalendlyUrl,
+  resolveExternalBookingUrl,
+} from '../lib/calendly';
 
 export function useCalendly() {
   const { settings } = useSite();
-  const url = useMemo(() => resolveCalendlyUrl(settings.calendlyUrl || ''), [settings.calendlyUrl]);
-  const isConfigured = Boolean(url);
+  const calendlyPopupUrl = useMemo(
+    () => resolveCalendlyUrl(settings.calendlyUrl || ''),
+    [settings.calendlyUrl]
+  );
+  const externalUrl = useMemo(
+    () => resolveExternalBookingUrl(settings.calendlyUrl || ''),
+    [settings.calendlyUrl]
+  );
+  const isConfigured = Boolean(calendlyPopupUrl || externalUrl);
 
   useEffect(() => {
-    if (!url) return;
+    if (!calendlyPopupUrl) return;
     void loadCalendlyAssets();
     return () => {
       closeCalendlyPopup();
     };
-  }, [url]);
+  }, [calendlyPopupUrl]);
 
   const openCalendar = useCallback(async () => {
-    if (!url) return false;
-    return openCalendlyPopup(url);
-  }, [url]);
+    if (calendlyPopupUrl) return openCalendlyPopup(calendlyPopupUrl);
+    if (externalUrl) {
+      window.open(externalUrl, '_blank', 'noopener,noreferrer');
+      return true;
+    }
+    return false;
+  }, [calendlyPopupUrl, externalUrl]);
 
-  return { url, isConfigured, openCalendar };
+  return { url: calendlyPopupUrl || externalUrl, isConfigured, openCalendar };
 }

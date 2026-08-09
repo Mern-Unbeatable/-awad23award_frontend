@@ -33,7 +33,7 @@ A bilingual (English / Arabic) **React + TypeScript + Vite + Tailwind CSS v4** p
 
 ## Overview
 
-This is the client-side portfolio application for Ahmed Ibrahim — a technology strategist and entrepreneur. It serves as both a public-facing portfolio showcasing services (CRM, WhatsApp automation, AI agents), a case study gallery, a blog/journal, and a contact/booking flow, plus an admin dashboard (CMS) for managing all content.
+This is the client-side portfolio application for Ahmed Ibrahim — a technology strategist and entrepreneur. It lives in the `awad23/web` package alongside the Express API in `awad23/server`. It serves as both a public-facing portfolio showcasing services (CRM, WhatsApp automation, AI agents), a case study gallery, a blog/journal, and a contact/booking flow, plus an admin dashboard (CMS) for managing content.
 
 ---
 
@@ -45,7 +45,7 @@ This is the client-side portfolio application for Ahmed Ibrahim — a technology
 - **Smooth scrolling** — Lenis-based smooth scroll with GSAP ScrollTrigger animations
 - **Dark-mode capable theme** — CSS custom properties and Tailwind CSS v4
 - **Admin dashboard** — Protected routes for managing all site content
-- **Calendly integration** — OAuth-based scheduling with popup widget support
+- **Book a Consultation** — Configurable booking URL (`calendlyUrl` in settings) with Calendly popup widget support; admin scheduling settings at `/admin/settings`
 - **Responsive design** — Mobile-first with adaptive layouts across all pages
 - **Boot loader** — Tech-aesthetic splash screen during initial load
 
@@ -83,7 +83,7 @@ This is the client-side portfolio application for Ahmed Ibrahim — a technology
 
    ```bash
    git clone <repository-url>
-   cd awad23award_frontend
+   cd awad23/web
    ```
 
 2. **Install dependencies:**
@@ -110,19 +110,22 @@ This is the client-side portfolio application for Ahmed Ibrahim — a technology
 
 ### Vite Proxy Configuration
 
-The Vite dev server proxies API requests (`/api/*`) to a backend server. The target URL is configured for demo purposes in `vite.config.ts`. Update it to point at your own backend:
+The Vite dev server proxies API requests (`/api/*`) to the backend. The default target in `vite.config.ts` is the hosted API (`https://backendawad23.maktechgroup.tech`). For local backend development, point the proxy at `http://localhost:4000`:
 
 ```ts
+// vite.config.ts
 server: {
   port: 5173,
   proxy: {
     '/api': {
-      target: '<your-backend-url>',
+      target: 'http://localhost:4000', // or your deployed API URL
       changeOrigin: true,
     },
   },
 },
 ```
+
+Start the API server from `awad23/server` (`npm run dev`) and ensure `CORS_ORIGIN` includes `http://localhost:5173`.
 
 ### `.env` File
 
@@ -151,7 +154,7 @@ VITE_API_BASE=https://your-backend.com/api
 ## Project Structure
 
 ```
-awad23award_frontend/
+awad23/web/
 ├── index.html                    # Root HTML entry point
 ├── vite.config.ts               # Vite config with proxy settings
 ├── package.json
@@ -236,15 +239,16 @@ awad23award_frontend/
         ├── ContactPage.tsx        # Contact form (API-connected)
         ├── BookCallPage.tsx       # Booking page with Calendly integration
         └── admin/
-            ├── AdminLayout.tsx
+            ├── adminRoutes.ts       # Centralized admin path constants
+            ├── AdminLayout.tsx      # Sidebar shell (Blogs, Portfolio, Newsletter, Settings)
             ├── AdminLoginPage.tsx
-            ├── AdminDashboardPage.tsx
             ├── AdminHomepagePage.tsx
             ├── AdminServicesPage.tsx
-            ├── AdminPostsPage.tsx
+            ├── AdminPostsPage.tsx   # Routed at /admin/blogs
+            ├── AdminGalleryPage.tsx # Routed at /admin/portfolio
             ├── AdminMessagesPage.tsx
             ├── AdminNewsletterPage.tsx
-            └── AdminSettingsPage.tsx
+            └── AdminSettingsPage.tsx # Scheduling / booking URL config
 ```
 
 ---
@@ -337,10 +341,12 @@ The API is built with Axios in `src/lib/api.ts`. It uses a shared instance with 
 | `POST`  | `/testimonials`              | Create a testimonial                 |
 | `PUT`   | `/testimonials/:id`          | Update a testimonial                 |
 | `DELETE`| `/testimonials/:id`          | Delete a testimonial                 |
-| `GET`   | `/calendly/auth-url`         | Get Calendly OAuth URL               |
-| `GET`   | `/calendly/status`           | Check Calendly connection status     |
-| `POST`  | `/calendly/sync`             | Sync Calendly link                   |
-| `POST`  | `/calendly/disconnect`       | Disconnect Calendly                  |
+| `GET`   | `/calendly/auth-url`         | *(client stub — not implemented on server)* |
+| `GET`   | `/calendly/status`           | *(client stub — not implemented on server)* |
+| `POST`  | `/calendly/sync`             | *(client stub — not implemented on server)* |
+| `POST`  | `/calendly/disconnect`       | *(client stub — not implemented on server)* |
+
+> **Booking URL:** The live booking link is stored as `calendlyUrl` on `SiteSettings` and updated via `PUT /api/settings`. The frontend reads it through `SiteContext` and `useCalendly` / `ConnectButton`. `AdminSettingsPage` currently calls `/api/admin/scheduling`, which is **not** implemented — it should use `PUT /api/settings` instead.
 
 ### Auth
 
@@ -394,7 +400,7 @@ The app uses two context providers, nested in `src/App.tsx`:
 
 Holds all site-wide data with automatic fetching on mount:
 
-- `settings: SiteSettings` — brand info, contact, SEO, social, Calendly
+- `settings: SiteSettings` — brand info, contact, SEO, social, `calendlyUrl` (booking/consultation link)
 - `sections: HomeSection[]` — homepage section definitions
 - `services: Service[]` — published services
 - `products: Product[]` — published products
@@ -420,21 +426,51 @@ Holds all site-wide data with automatic fetching on mount:
 
 ## Admin Panel
 
-The admin dashboard is at `/admin/login` and is protected by a localStorage-based session check (`isLoggedIn()`).
+The admin dashboard is at `/admin/login` and is protected by a localStorage-based session check (`isLoggedIn()`). After login, the default landing route is `/admin/blogs`.
 
-**Access**: Navigate to `http://localhost:5173/admin/login` and enter credentials. The admin credentials are defined on the backend; the login form in `AdminLoginPage.tsx` pre-fills demo credentials for convenience (replace with your actual credentials).
+**Access**: Navigate to `http://localhost:5173/admin/login` and enter credentials seeded on the backend (`ADMIN_EMAIL` / `ADMIN_PASSWORD` in `server/.env`).
 
-### Admin Sections
+### Sidebar navigation
 
-| Section       | Route              | Capabilities                                      |
-|---------------|--------------------|--------------------------------------------------|
-| **Homepage**  | `/admin/homepage`  | Edit all homepage sections (EN/AR side by side)  |
-| **Services**  | `/admin/services`  | Create, edit, delete services (EN/AR + image)     |
-| **Posts**     | `/admin/posts`     | View blog posts (list + create/edit form)         |
-| **Portfolio** | `/admin/gallery`   | Full tabbed case study builder (7 tabs), media upload |
-| **Newsletter**| `/admin/newsletter`| View/export subscriber list                       |
-| **Messages**  | `/admin/messages`  | View, mark read, delete contact messages          |
-| **Settings**  | `/admin/settings`  | Brand info, SEO, Calendly OAuth, logo/about images|
+The admin sidebar (`AdminLayout.tsx`) shows:
+
+| Item        | Route               |
+|-------------|---------------------|
+| Blogs       | `/admin/blogs`      |
+| Portfolio   | `/admin/portfolio`  |
+| Newsletter  | `/admin/newsletter` |
+| Settings    | `/admin/settings`   |
+
+Legacy paths `/admin/posts` and `/admin/gallery` redirect to the routes above.
+
+### All admin routes
+
+| Section       | Route                    | Capabilities                                      |
+|---------------|--------------------------|--------------------------------------------------|
+| **Blogs**     | `/admin/blogs`           | List, create, edit blog posts                     |
+| **Portfolio** | `/admin/portfolio`       | Tabbed case study builder (7 tabs), media upload  |
+| **Newsletter**| `/admin/newsletter`      | View/export subscriber list                       |
+| **Settings**  | `/admin/settings`        | Booking platform + scheduling URL configuration   |
+| **Homepage**  | `/admin/homepage`        | Edit homepage sections (not in sidebar)           |
+| **Services**  | `/admin/services`        | CRUD services (not in sidebar)                    |
+| **Messages**  | `/admin/messages`        | Contact inbox (not in sidebar)                    |
+
+### Scheduling settings (`AdminSettingsPage`)
+
+`/admin/settings` lets admins pick a booking platform (Calendly, Cal.com, SavvyCal, Acuity, or custom) and save the corresponding URL. The public site uses `settings.calendlyUrl` from `GET /api/settings` for **Book a Consultation** CTAs (`ConnectButton`, `/book` page).
+
+**Intended flow:**
+
+```
+Admin Settings → PUT /api/settings { calendlyUrl }
+  → PostgreSQL SiteSettings
+  → GET /api/settings
+  → SiteContext
+  → useCalendly / ConnectButton
+  → Calendly URL → popup widget | other URL → window.open
+```
+
+> The settings page currently posts to `/api/admin/scheduling`, which does not exist on the backend. Wire it to `adminApi` / `PUT /api/settings` with the `calendlyUrl` field.
 
 ### Portfolio Builder (`AdminGalleryPage`)
 
@@ -517,7 +553,8 @@ The preview server binds to `0.0.0.0` (all interfaces) and defaults to port 3000
 ### Production Considerations
 
 - Ensure the backend API is accessible at the configured `/api` proxy target
-- Calendly integration requires OAuth callback URL configured on your backend (e.g. `https://your-domain.com/api/calendly/callback`)
+- Set the booking URL via `PUT /api/settings` (`calendlyUrl` field) or the admin Settings page once wired to the API
+- Calendly popup requires a valid event URL (not the bare `calendly.com` homepage)
 - For static hosting, configure the server to redirect all non-API routes (including `/ar/*`) to `index.html` for client-side routing
 
 ---
@@ -529,7 +566,7 @@ Core types are defined in `src/types.ts`:
 | Type              | Description                                      |
 |-------------------|--------------------------------------------------|
 | `Locale`          | `'en' \| 'ar'`                                   |
-| `SiteSettings`    | Brand, contact, SEO, social, Calendly config     |
+| `SiteSettings`    | Brand, contact, SEO, social, `calendlyUrl` (booking link) |
 | `HomeSection`     | A homepage section (hero, mission, about, etc.)  |
 | `Service`         | Service with EN/AR fields, features, images      |
 | `Product`         | Product with EN/AR fields and pricing            |
@@ -565,4 +602,8 @@ Helper that selects the locale-appropriate field (`fieldEn` or `fieldAr`) from a
 
 5. The admin `AdminPostsPage` uses local component state for blog management and does not connect to the live API.
 
-6. CSS classes like `.tech-btn`, `.ref-*`, `.field`, `.page-hero__*`, etc. are heavily used but only partially defined in `index.css`. Additional CSS files may be loaded by the backend or expected to be added.
+6. CSS classes like `.tech-btn`, `.ref-*`, `.field`, `.book-page`, `.page-hero__*`, etc. are used across public and admin pages but are only partially defined in `index.css`. Some layouts (e.g. `/book`, admin Settings form fields) may appear unstyled until shared site CSS is added.
+
+7. **`AdminSettingsPage`** uses `fetch('/api/admin/scheduling')` instead of `PUT /api/settings`. Until refactored, saving scheduling settings from the admin UI will fail against the current backend.
+
+8. **Monorepo layout:** Frontend lives in `awad23/web`, API in `awad23/server`. See `server/README.md` for API documentation.

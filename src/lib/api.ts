@@ -206,7 +206,8 @@ export const adminApi = {
     }
   },
   stats: () => api.get('/contact/stats'),
-  updateSettings: (data: Partial<SiteSettings>) => api.put('/settings', data),
+  getSettings: () => api.get<SiteSettings>('/settings'),
+  updateSettings: (data: Partial<SiteSettings>) => api.put<SiteSettings>('/settings', data),
   getSections: () => api.get<HomeSection[]>('/pages'),
   updateSection: (key: string, data: Partial<HomeSection>) => api.put(`/pages/${key}`, data),
   getServices: () => api.get<Service[]>('/services?all=1'),

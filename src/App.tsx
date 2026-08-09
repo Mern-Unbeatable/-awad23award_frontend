@@ -42,14 +42,9 @@ export default function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
-        <Routes>
-          <Route
-            element={
-              <Providers>
-                <PublicLayout />
-              </Providers>
-            }
-          >
+        <Providers>
+          <Routes>
+          <Route element={<PublicLayout />}>
             {publicPaths('/').map((p) => (
               <Route key={p} path={p} element={<HomePage />} />
             ))}
@@ -107,7 +102,8 @@ export default function App() {
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          </Routes>
+        </Providers>
       </BrowserRouter>
     </HelmetProvider>
   );

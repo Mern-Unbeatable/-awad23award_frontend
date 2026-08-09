@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { adminApi } from '../../lib/api';
+import { useSite } from '../../context/SiteContext';
+import { isAxiosError } from 'axios';
 
 interface SchedulingSettings {
   id?: string;
@@ -13,13 +16,17 @@ interface SchedulingSettings {
   buttonColor?: string;
 }
 
+const DEFAULT_SETTINGS: SchedulingSettings = {
+  platform: 'calendly',
+  isEnabled: true,
+  buttonText: 'Book Now',
+};
+
 export const AdminSettingsPage = () => {
-  const [settings, setSettings] = useState<SchedulingSettings>({
-    platform: 'calendly',
-    isEnabled: true,
-    buttonText: 'Book Now',
-  });
+  const { refresh } = useSite();
+  const [settings, setSettings] = useState<SchedulingSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
@@ -33,15 +40,22 @@ export const AdminSettingsPage = () => {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/scheduling');
-      if (response.ok) {
-        const data = await response.json();
-        if (data && Object.keys(data).length > 0) {
-          setSettings(data);
-        }
-      }
+      setLoadError(null);
+      const { data } = await adminApi.getSettings();
+      const calendlyUrl = (data.calendlyUrl || '').trim();
+      const parsed = parseBookingUrl(calendlyUrl);
+      setSettings({
+        ...DEFAULT_SETTINGS,
+        ...parsed,
+        id: data.id,
+      });
     } catch (error) {
       console.error('Error fetching settings:', error);
+      setLoadError(
+        isAxiosError(error) && error.response?.status === 401
+          ? 'Session expired. Please log in again.'
+          : 'Failed to load settings. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -52,23 +66,29 @@ export const AdminSettingsPage = () => {
       setSaving(true);
       setMessage(null);
 
-      const response = await fetch('/api/admin/scheduling', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      });
+      const calendlyUrl = settings.isEnabled ? getSchedulingUrl(settings) || '' : '';
 
-      if (!response.ok) throw new Error('Failed to save settings');
+      if (settings.isEnabled) {
+        const validationError = validateBookingUrl(calendlyUrl);
+        if (validationError) {
+          setMessage({ type: 'error', text: validationError });
+          return;
+        }
+      }
 
-      setMessage({ type: 'success', text: 'Settings saved successfully!' });
+      await adminApi.updateSettings({ calendlyUrl });
+      await refresh();
 
-      // Refresh settings after save
-      await fetchSettings();
-    } catch (error) {
       setMessage({
-        type: 'error',
-        text: 'Failed to save settings. Please try again.',
+        type: 'success',
+        text: 'Booking URL saved successfully.',
       });
+    } catch (error) {
+      const text =
+        isAxiosError(error) && error.response?.data?.message
+          ? String(error.response.data.message)
+          : 'Failed to save settings. Please try again.';
+      setMessage({ type: 'error', text });
       console.error(error);
     } finally {
       setSaving(false);
@@ -92,6 +112,26 @@ export const AdminSettingsPage = () => {
     return (
       <div className='flex justify-center items-center h-64'>
         <div className='text-gray-500'>Loading settings...</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className='max-w-3xl mx-auto p-6'>
+        <div className='p-4 rounded-lg bg-red-50 text-red-800 border border-red-200'>
+          {loadError}
+        </div>
+        <button
+          type='button'
+          onClick={() => {
+            setLoading(true);
+            void fetchSettings();
+          }}
+          className='mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -422,22 +462,82 @@ function getSchedulingUrl(settings: SchedulingSettings): string | null {
 
   switch (settings.platform) {
     case 'calendly':
-      return settings.calendlyUrl || null;
+      return settings.calendlyUrl?.trim() || null;
     case 'calcom':
       return settings.calComUsername
-        ? `https://cal.com/${settings.calComUsername}`
+        ? `https://cal.com/${settings.calComUsername.trim()}`
         : null;
     case 'savvycal':
       return settings.savvyCalUsername
-        ? `https://savvycal.com/${settings.savvyCalUsername}`
+        ? `https://savvycal.com/${settings.savvyCalUsername.trim()}`
         : null;
     case 'acuity':
       return settings.acuityUserId
-        ? `https://acuityscheduling.com/schedule.php?owner=${settings.acuityUserId}`
+        ? `https://acuityscheduling.com/schedule.php?owner=${settings.acuityUserId.trim()}`
         : null;
     case 'custom':
-      return settings.customLink || null;
+      return settings.customLink?.trim() || null;
     default:
       return null;
+  }
+}
+
+function validateBookingUrl(url: string): string | null {
+  if (!url) {
+    return 'Please enter a booking URL before saving.';
+  }
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return 'URL must start with http:// or https://';
+    }
+    return null;
+  } catch {
+    return 'Please enter a valid URL.';
+  }
+}
+
+function parseBookingUrl(calendlyUrl: string): Partial<SchedulingSettings> {
+  const url = calendlyUrl.trim();
+  if (!url) {
+    return { platform: 'calendly', isEnabled: false, calendlyUrl: '' };
+  }
+
+  try {
+    const parsed = new URL(url);
+
+    if (parsed.hostname.includes('calendly.com')) {
+      return { platform: 'calendly', isEnabled: true, calendlyUrl: url };
+    }
+
+    if (parsed.hostname.includes('cal.com')) {
+      const username = parsed.pathname.replace(/^\//, '').split('/')[0];
+      return {
+        platform: 'calcom',
+        isEnabled: true,
+        calComUsername: username,
+      };
+    }
+
+    if (parsed.hostname.includes('savvycal.com')) {
+      const username = parsed.pathname.replace(/^\//, '').split('/')[0];
+      return {
+        platform: 'savvycal',
+        isEnabled: true,
+        savvyCalUsername: username,
+      };
+    }
+
+    if (parsed.hostname.includes('acuityscheduling.com')) {
+      return {
+        platform: 'acuity',
+        isEnabled: true,
+        acuityUserId: parsed.searchParams.get('owner') || '',
+      };
+    }
+
+    return { platform: 'custom', isEnabled: true, customLink: url };
+  } catch {
+    return { platform: 'custom', isEnabled: true, customLink: url };
   }
 }
