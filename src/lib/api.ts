@@ -5,6 +5,7 @@ import type {
   HomeSection,
   Post,
   Product,
+  SchedulingSettings,
   Service,
   SiteSettings,
   Testimonial,
@@ -13,6 +14,7 @@ import {
   fallbackGallery,
   fallbackPosts,
   fallbackProducts,
+  fallbackScheduling,
   fallbackSections,
   fallbackServices,
   fallbackSettings,
@@ -116,6 +118,11 @@ export const publicApi = {
       async () => (await api.get<SiteSettings>('/settings')).data,
       fallbackSettings
     ),
+  getScheduling: () =>
+    withFallback(
+      async () => (await api.get<SchedulingSettings>('/settings/scheduling')).data,
+      fallbackScheduling
+    ),
   getSections: () =>
     withFallback(
       async () => (await api.get<HomeSection[]>('/pages')).data,
@@ -208,6 +215,9 @@ export const adminApi = {
   stats: () => api.get('/contact/stats'),
   getSettings: () => api.get<SiteSettings>('/settings'),
   updateSettings: (data: Partial<SiteSettings>) => api.put<SiteSettings>('/settings', data),
+  getSchedulingSettings: () => api.get<SchedulingSettings>('/admin/settings/scheduling'),
+  updateSchedulingSettings: (data: Omit<SchedulingSettings, 'id' | 'bookingUrl'>) =>
+    api.put<SchedulingSettings>('/admin/settings/scheduling', data),
   getSections: () => api.get<HomeSection[]>('/pages'),
   updateSection: (key: string, data: Partial<HomeSection>) => api.put(`/pages/${key}`, data),
   getServices: () => api.get<Service[]>('/services?all=1'),

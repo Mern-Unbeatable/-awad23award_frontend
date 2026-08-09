@@ -1,30 +1,55 @@
 import { useState, useEffect } from 'react';
+import { CalendarClock, Loader2, Save } from 'lucide-react';
 import { adminApi } from '../../lib/api';
 import { useSite } from '../../context/SiteContext';
 import { isAxiosError } from 'axios';
+import type { SchedulingPlatform, SchedulingSettings } from '../../types';
 
-interface SchedulingSettings {
-  id?: string;
-  platform: 'calendly' | 'calcom' | 'savvycal' | 'acuity' | 'custom';
-  isEnabled: boolean;
-  calendlyUrl?: string;
-  calComUsername?: string;
-  savvyCalUsername?: string;
-  acuityUserId?: string;
-  customLink?: string;
-  buttonText: string;
-  buttonColor?: string;
+type SchedulingFormState = Omit<SchedulingSettings, 'id' | 'bookingUrl'>;
+
+const DEFAULT_SETTINGS: SchedulingFormState = {
+  platform: 'calendly',
+  isEnabled: false,
+  buttonText: 'Book Now',
+  buttonColor: '#2563eb',
+};
+
+function mapSchedulingToForm(data: SchedulingSettings): SchedulingFormState {
+  return {
+    platform: data.platform,
+    isEnabled: data.isEnabled,
+    calendlyUrl: data.calendlyUrl,
+    calComUsername: data.calComUsername,
+    savvyCalUsername: data.savvyCalUsername,
+    acuityUserId: data.acuityUserId,
+    customLink: data.customLink,
+    buttonText: data.buttonText || DEFAULT_SETTINGS.buttonText,
+    buttonColor: data.buttonColor || DEFAULT_SETTINGS.buttonColor,
+  };
 }
 
-const DEFAULT_SETTINGS: SchedulingSettings = {
-  platform: 'calendly',
-  isEnabled: true,
-  buttonText: 'Book Now',
-};
+function buildSchedulingPayload(settings: SchedulingFormState): Omit<SchedulingSettings, 'id' | 'bookingUrl'> {
+  return {
+    platform: settings.platform,
+    isEnabled: settings.isEnabled,
+    buttonText: settings.buttonText.trim(),
+    buttonColor: settings.buttonColor?.trim() || null,
+    calendlyUrl: settings.platform === 'calendly' ? settings.calendlyUrl?.trim() : undefined,
+    calComUsername: settings.platform === 'calcom' ? settings.calComUsername?.trim() : undefined,
+    savvyCalUsername: settings.platform === 'savvycal' ? settings.savvyCalUsername?.trim() : undefined,
+    acuityUserId: settings.platform === 'acuity' ? settings.acuityUserId?.trim() : undefined,
+    customLink: settings.platform === 'custom' ? settings.customLink?.trim() : undefined,
+  };
+}
+
+const inputClass =
+  'w-full px-3 py-2.5 border border-slate-200 rounded-sm text-[14px] text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#38BDF8]/30 focus:border-[#38BDF8] transition-colors';
+const labelClass = 'block text-[13px] font-semibold text-slate-700 mb-1.5';
 
 export const AdminSettingsPage = () => {
   const { refresh } = useSite();
-  const [settings, setSettings] = useState<SchedulingSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<SchedulingFormState>(DEFAULT_SETTINGS);
+  const [bookingUrl, setBookingUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -33,28 +58,22 @@ export const AdminSettingsPage = () => {
     text: string;
   } | null>(null);
 
-  // Fetch existing settings on load
   useEffect(() => {
-    fetchSettings();
+    void fetchSettings();
   }, []);
 
   const fetchSettings = async () => {
     try {
       setLoadError(null);
-      const { data } = await adminApi.getSettings();
-      const calendlyUrl = (data.calendlyUrl || '').trim();
-      const parsed = parseBookingUrl(calendlyUrl);
-      setSettings({
-        ...DEFAULT_SETTINGS,
-        ...parsed,
-        id: data.id,
-      });
+      const { data } = await adminApi.getSchedulingSettings();
+      setSettings(mapSchedulingToForm(data));
+      setBookingUrl(data.bookingUrl || '');
     } catch (error) {
       console.error('Error fetching settings:', error);
       setLoadError(
         isAxiosError(error) && error.response?.status === 401
           ? 'Session expired. Please log in again.'
-          : 'Failed to load settings. Please try again.'
+          : 'Failed to load scheduling settings. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -62,26 +81,29 @@ export const AdminSettingsPage = () => {
   };
 
   const handleSave = async () => {
+    const payload = buildSchedulingPayload(settings);
+    const resolvedUrl = settings.isEnabled ? getSchedulingUrl(settings) || '' : '';
+
+    if (settings.isEnabled) {
+      const validationError = validateSchedulingInput(settings, resolvedUrl);
+      if (validationError) {
+        setMessage({ type: 'error', text: validationError });
+        return;
+      }
+    }
+
     try {
       setSaving(true);
       setMessage(null);
 
-      const calendlyUrl = settings.isEnabled ? getSchedulingUrl(settings) || '' : '';
-
-      if (settings.isEnabled) {
-        const validationError = validateBookingUrl(calendlyUrl);
-        if (validationError) {
-          setMessage({ type: 'error', text: validationError });
-          return;
-        }
-      }
-
-      await adminApi.updateSettings({ calendlyUrl });
+      const { data } = await adminApi.updateSchedulingSettings(payload);
+      setSettings(mapSchedulingToForm(data));
+      setBookingUrl(data.bookingUrl || '');
       await refresh();
 
       setMessage({
         type: 'success',
-        text: 'Booking URL saved successfully.',
+        text: 'Scheduling settings saved successfully.',
       });
     } catch (error) {
       const text =
@@ -95,11 +117,10 @@ export const AdminSettingsPage = () => {
     }
   };
 
-  const handlePlatformChange = (platform: SchedulingSettings['platform']) => {
+  const handlePlatformChange = (platform: SchedulingPlatform) => {
     setSettings({
       ...settings,
       platform,
-      // Clear platform-specific fields when switching
       calendlyUrl: undefined,
       calComUsername: undefined,
       savvyCalUsername: undefined,
@@ -110,25 +131,25 @@ export const AdminSettingsPage = () => {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center h-64'>
-        <div className='text-gray-500'>Loading settings...</div>
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="w-6 h-6 text-[#38BDF8] animate-spin" />
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className='max-w-3xl mx-auto p-6'>
-        <div className='p-4 rounded-lg bg-red-50 text-red-800 border border-red-200'>
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="p-4 rounded-sm bg-red-50 text-red-800 border border-red-200 text-[14px]">
           {loadError}
         </div>
         <button
-          type='button'
+          type="button"
           onClick={() => {
             setLoading(true);
             void fetchSettings();
           }}
-          className='mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+          className="mt-4 px-4 py-2.5 bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold rounded-sm transition-colors cursor-pointer"
         >
           Retry
         </button>
@@ -136,328 +157,253 @@ export const AdminSettingsPage = () => {
     );
   }
 
+  const previewUrl = settings.isEnabled ? getSchedulingUrl(settings) || bookingUrl : '';
+
   return (
-    <div className='max-w-3xl mx-auto p-6'>
-      <div className='mb-8'>
-        <h1 className='text-3xl font-bold text-gray-900'>
+    <div className="w-full max-w-3xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-[26px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight">
           Scheduling Settings
         </h1>
-        <p className='text-gray-600 mt-2'>
-          Configure your booking platform and scheduling preferences.
+        <p className="text-[14px] text-slate-500 mt-1">
+          Configure your booking platform, link, and button preferences for the public site.
         </p>
       </div>
 
       {message && (
         <div
-          className={`p-4 mb-6 rounded-lg ${
+          className={`p-4 rounded-sm text-[14px] border ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-red-50 text-red-800 border-red-200'
           }`}
         >
           {message.text}
         </div>
       )}
 
-      <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6'>
-        <div className='space-y-6'>
-          {/* Enable/Disable Toggle */}
-          <div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg'>
+      <div className="bg-white rounded-sm border border-slate-200 shadow-2xs p-5 sm:p-6 space-y-6">
+        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-sm border border-slate-100">
+          <div>
+            <h2 className="text-[15px] font-semibold text-slate-900">Enable Scheduling</h2>
+            <p className="text-[13px] text-slate-500 mt-0.5">
+              Turn booking functionality on or off across the site
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSettings({ ...settings, isEnabled: !settings.isEnabled })}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+              settings.isEnabled ? 'bg-[#38BDF8]' : 'bg-slate-300'
+            }`}
+            aria-pressed={settings.isEnabled}
+            aria-label="Toggle scheduling"
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                settings.isEnabled ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div>
+          <label className={labelClass}>Booking Platform</label>
+          <select
+            value={settings.platform}
+            onChange={(e) => handlePlatformChange(e.target.value as SchedulingPlatform)}
+            className={inputClass}
+          >
+            <option value="calendly">Calendly</option>
+            <option value="calcom">Cal.com</option>
+            <option value="savvycal">SavvyCal</option>
+            <option value="acuity">Acuity Scheduling</option>
+            <option value="custom">Custom Link</option>
+          </select>
+        </div>
+
+        <div className="space-y-4">
+          {settings.platform === 'calendly' && (
             <div>
-              <h3 className='font-medium text-gray-900'>Enable Scheduling</h3>
-              <p className='text-sm text-gray-500'>
-                Turn booking functionality on or off
+              <label className={labelClass}>Calendly URL</label>
+              <input
+                type="url"
+                value={settings.calendlyUrl || ''}
+                onChange={(e) => setSettings({ ...settings, calendlyUrl: e.target.value })}
+                placeholder="https://calendly.com/your-username"
+                className={inputClass}
+              />
+              <p className="mt-1.5 text-[12px] text-slate-500">Your Calendly booking page URL</p>
+            </div>
+          )}
+
+          {settings.platform === 'calcom' && (
+            <div>
+              <label className={labelClass}>Cal.com Username</label>
+              <input
+                type="text"
+                value={settings.calComUsername || ''}
+                onChange={(e) => setSettings({ ...settings, calComUsername: e.target.value })}
+                placeholder="your-username"
+                className={inputClass}
+              />
+              <p className="mt-1.5 text-[12px] text-slate-500">
+                e.g. &quot;john&quot; for cal.com/john
               </p>
             </div>
-            <button
-              onClick={() =>
-                setSettings({ ...settings, isEnabled: !settings.isEnabled })
-              }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings.isEnabled ? 'bg-blue-600' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  settings.isEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
+          )}
+
+          {settings.platform === 'savvycal' && (
+            <div>
+              <label className={labelClass}>SavvyCal Username</label>
+              <input
+                type="text"
+                value={settings.savvyCalUsername || ''}
+                onChange={(e) => setSettings({ ...settings, savvyCalUsername: e.target.value })}
+                placeholder="your-username"
+                className={inputClass}
               />
-            </button>
-          </div>
+              <p className="mt-1.5 text-[12px] text-slate-500">
+                e.g. &quot;john&quot; for savvycal.com/john
+              </p>
+            </div>
+          )}
 
-          {/* Platform Selection */}
+          {settings.platform === 'acuity' && (
+            <div>
+              <label className={labelClass}>Acuity User ID</label>
+              <input
+                type="text"
+                value={settings.acuityUserId || ''}
+                onChange={(e) => setSettings({ ...settings, acuityUserId: e.target.value })}
+                placeholder="your-user-id"
+                className={inputClass}
+              />
+              <p className="mt-1.5 text-[12px] text-slate-500">Your Acuity Scheduling user ID</p>
+            </div>
+          )}
+
+          {settings.platform === 'custom' && (
+            <div>
+              <label className={labelClass}>Custom Booking Link</label>
+              <input
+                type="url"
+                value={settings.customLink || ''}
+                onChange={(e) => setSettings({ ...settings, customLink: e.target.value })}
+                placeholder="https://example.com/book-appointment"
+                className={inputClass}
+              />
+              <p className="mt-1.5 text-[12px] text-slate-500">Any http(s) booking page URL</p>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-slate-100 pt-6 space-y-4">
+          <h2 className="text-[15px] font-semibold text-slate-900">Button Customization</h2>
+
           <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Booking Platform
-            </label>
-            <select
-              value={settings.platform}
-              onChange={(e) =>
-                handlePlatformChange(
-                  e.target.value as SchedulingSettings['platform'],
-                )
-              }
-              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            >
-              <option value='calendly'>Calendly</option>
-              <option value='calcom'>Cal.com</option>
-              <option value='savvycal'>SavvyCal</option>
-              <option value='acuity'>Acuity Scheduling</option>
-              <option value='custom'>Custom Link</option>
-            </select>
+            <label className={labelClass}>Button Text</label>
+            <input
+              type="text"
+              value={settings.buttonText}
+              onChange={(e) => setSettings({ ...settings, buttonText: e.target.value })}
+              placeholder="Book Now"
+              className={inputClass}
+            />
           </div>
 
-          {/* Platform-specific Configuration */}
-          <div className='space-y-4'>
-            {settings.platform === 'calendly' && (
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Calendly URL
-                </label>
-                <input
-                  type='url'
-                  value={settings.calendlyUrl || ''}
-                  onChange={(e) =>
-                    setSettings({ ...settings, calendlyUrl: e.target.value })
-                  }
-                  placeholder='https://calendly.com/your-username'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                />
-                <p className='mt-1 text-sm text-gray-500'>
-                  Your Calendly booking page URL
-                </p>
-              </div>
-            )}
-
-            {settings.platform === 'calcom' && (
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Cal.com Username
-                </label>
-                <input
-                  type='text'
-                  value={settings.calComUsername || ''}
-                  onChange={(e) =>
-                    setSettings({ ...settings, calComUsername: e.target.value })
-                  }
-                  placeholder='your-username'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                />
-                <p className='mt-1 text-sm text-gray-500'>
-                  Your Cal.com username (e.g., &quot;john&quot; for
-                  cal.com/john)
-                </p>
-              </div>
-            )}
-
-            {settings.platform === 'savvycal' && (
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  SavvyCal Username
-                </label>
-                <input
-                  type='text'
-                  value={settings.savvyCalUsername || ''}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      savvyCalUsername: e.target.value,
-                    })
-                  }
-                  placeholder='your-username'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                />
-                <p className='mt-1 text-sm text-gray-500'>
-                  Your SavvyCal username (e.g., &quot;john&quot; for
-                  savvycal.com/john)
-                </p>
-              </div>
-            )}
-
-            {settings.platform === 'acuity' && (
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Acuity User ID
-                </label>
-                <input
-                  type='text'
-                  value={settings.acuityUserId || ''}
-                  onChange={(e) =>
-                    setSettings({ ...settings, acuityUserId: e.target.value })
-                  }
-                  placeholder='your-user-id'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                />
-                <p className='mt-1 text-sm text-gray-500'>
-                  Your Acuity Scheduling user ID
-                </p>
-              </div>
-            )}
-
-            {settings.platform === 'custom' && (
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Custom Booking Link
-                </label>
-                <input
-                  type='url'
-                  value={settings.customLink || ''}
-                  onChange={(e) =>
-                    setSettings({ ...settings, customLink: e.target.value })
-                  }
-                  placeholder='https://example.com/book-appointment'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                />
-                <p className='mt-1 text-sm text-gray-500'>
-                  Enter a custom URL for your booking page
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Button Customization */}
-          <div className='border-t border-gray-200 pt-6'>
-            <h3 className='text-sm font-medium text-gray-900 mb-4'>
-              Button Customization
-            </h3>
-
-            <div className='space-y-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Button Text
-                </label>
-                <input
-                  type='text'
-                  value={settings.buttonText}
-                  onChange={(e) =>
-                    setSettings({ ...settings, buttonText: e.target.value })
-                  }
-                  placeholder='Book Now'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Button Color (Optional)
-                </label>
-                <div className='flex items-center space-x-3'>
-                  <input
-                    type='color'
-                    value={settings.buttonColor || '#2563eb'}
-                    onChange={(e) =>
-                      setSettings({ ...settings, buttonColor: e.target.value })
-                    }
-                    className='w-12 h-12 p-1 border border-gray-300 rounded-lg cursor-pointer'
-                  />
-                  <input
-                    type='text'
-                    value={settings.buttonColor || ''}
-                    onChange={(e) =>
-                      setSettings({ ...settings, buttonColor: e.target.value })
-                    }
-                    placeholder='#2563eb'
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                  />
-                </div>
-                <p className='mt-1 text-sm text-gray-500'>
-                  Enter a hex color code or use the color picker
-                </p>
-              </div>
+          <div>
+            <label className={labelClass}>Button Color</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={settings.buttonColor || '#2563eb'}
+                onChange={(e) => setSettings({ ...settings, buttonColor: e.target.value })}
+                className="w-11 h-11 p-1 border border-slate-200 rounded-sm cursor-pointer bg-white"
+              />
+              <input
+                type="text"
+                value={settings.buttonColor || ''}
+                onChange={(e) => setSettings({ ...settings, buttonColor: e.target.value })}
+                placeholder="#2563eb"
+                className={inputClass}
+              />
             </div>
-          </div>
-
-          {/* Preview Section */}
-          <div className='border-t border-gray-200 pt-6'>
-            <h3 className='text-sm font-medium text-gray-900 mb-4'>Preview</h3>
-            <div className='p-4 bg-gray-50 rounded-lg'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <p className='text-sm text-gray-600'>
-                    Platform:{' '}
-                    <span className='font-medium capitalize'>
-                      {settings.platform}
-                    </span>
-                  </p>
-                  <p className='text-sm text-gray-600'>
-                    Status:{' '}
-                    <span
-                      className={
-                        settings.isEnabled ? 'text-green-600' : 'text-red-600'
-                      }
-                    >
-                      {settings.isEnabled ? 'Active' : 'Disabled'}
-                    </span>
-                  </p>
-                </div>
-                <button
-                  className='px-4 py-2 text-white rounded-lg transition-colors'
-                  style={{
-                    backgroundColor: settings.buttonColor || '#2563eb',
-                    opacity: settings.isEnabled ? 1 : 0.5,
-                    cursor: settings.isEnabled ? 'pointer' : 'not-allowed',
-                  }}
-                  disabled={!settings.isEnabled}
-                  onClick={() => {
-                    // Test the URL in preview
-                    const url = getSchedulingUrl(settings);
-                    if (url) window.open(url, '_blank');
-                  }}
-                >
-                  {settings.buttonText || 'Book Now'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className='pt-4'>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-lg transition-colors ${
-                saving
-                  ? 'opacity-50 cursor-not-allowed'
-                  : 'hover:bg-blue-700 focus:ring-4 focus:ring-blue-300'
-              }`}
-            >
-              {saving ? (
-                <span className='flex items-center justify-center'>
-                  <svg
-                    className='animate-spin -ml-1 mr-3 h-5 w-5 text-white'
-                    xmlns='http://www.w3.org/2000/svg'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                  >
-                    <circle
-                      className='opacity-25'
-                      cx='12'
-                      cy='12'
-                      r='10'
-                      stroke='currentColor'
-                      strokeWidth='4'
-                    ></circle>
-                    <path
-                      className='opacity-75'
-                      fill='currentColor'
-                      d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-                    ></path>
-                  </svg>
-                  Saving...
-                </span>
-              ) : (
-                'Save Settings'
-              )}
-            </button>
           </div>
         </div>
+
+        <div className="border-t border-slate-100 pt-6">
+          <h2 className="text-[15px] font-semibold text-slate-900 mb-4">Preview</h2>
+          <div className="p-4 bg-slate-50 rounded-sm border border-slate-100 space-y-3">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-slate-600">
+              <p>
+                Platform:{' '}
+                <span className="font-semibold text-slate-900 capitalize">{settings.platform}</span>
+              </p>
+              <p>
+                Status:{' '}
+                <span
+                  className={
+                    settings.isEnabled ? 'font-semibold text-emerald-600' : 'font-semibold text-red-600'
+                  }
+                >
+                  {settings.isEnabled ? 'Active' : 'Disabled'}
+                </span>
+              </p>
+            </div>
+            {previewUrl && (
+              <p className="text-[12px] text-slate-500 break-all">
+                Booking URL: <span className="text-slate-700">{previewUrl}</span>
+              </p>
+            )}
+            <div className="flex items-center justify-between gap-4 pt-2">
+              <div className="flex items-center gap-2 text-slate-500 text-[13px]">
+                <CalendarClock className="w-4 h-4 shrink-0" />
+                <span>Live booking button</span>
+              </div>
+              <button
+                type="button"
+                className="px-4 py-2 text-white text-[13px] font-semibold rounded-sm transition-opacity"
+                style={{
+                  backgroundColor: settings.buttonColor || '#2563eb',
+                  opacity: settings.isEnabled ? 1 : 0.5,
+                  cursor: settings.isEnabled ? 'pointer' : 'not-allowed',
+                }}
+                disabled={!settings.isEnabled || !previewUrl}
+                onClick={() => {
+                  if (previewUrl) window.open(previewUrl, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                {settings.buttonText || 'Book Now'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void handleSave()}
+          disabled={saving}
+          className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-[#38BDF8] hover:bg-[#20B0F0] disabled:opacity-60 disabled:cursor-not-allowed text-white text-[14px] font-semibold rounded-sm transition-colors cursor-pointer"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              Save Settings
+            </>
+          )}
+        </button>
       </div>
     </div>
   );
 };
 
-// Helper function to get scheduling URL
-function getSchedulingUrl(settings: SchedulingSettings): string | null {
+function getSchedulingUrl(settings: SchedulingFormState): string | null {
   if (!settings.isEnabled) return null;
 
   switch (settings.platform) {
@@ -482,62 +428,34 @@ function getSchedulingUrl(settings: SchedulingSettings): string | null {
   }
 }
 
-function validateBookingUrl(url: string): string | null {
-  if (!url) {
-    return 'Please enter a booking URL before saving.';
-  }
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return 'URL must start with http:// or https://';
+function validateSchedulingInput(settings: SchedulingFormState, bookingUrl: string): string | null {
+  if (!bookingUrl) {
+    switch (settings.platform) {
+      case 'calendly':
+        return 'Please enter your Calendly URL.';
+      case 'calcom':
+        return 'Please enter your Cal.com username.';
+      case 'savvycal':
+        return 'Please enter your SavvyCal username.';
+      case 'acuity':
+        return 'Please enter your Acuity user ID.';
+      case 'custom':
+        return 'Please enter a custom booking link.';
+      default:
+        return 'Please complete the booking configuration.';
     }
-    return null;
-  } catch {
-    return 'Please enter a valid URL.';
-  }
-}
-
-function parseBookingUrl(calendlyUrl: string): Partial<SchedulingSettings> {
-  const url = calendlyUrl.trim();
-  if (!url) {
-    return { platform: 'calendly', isEnabled: false, calendlyUrl: '' };
   }
 
-  try {
-    const parsed = new URL(url);
-
-    if (parsed.hostname.includes('calendly.com')) {
-      return { platform: 'calendly', isEnabled: true, calendlyUrl: url };
+  if (settings.platform === 'calendly' || settings.platform === 'custom') {
+    try {
+      const parsed = new URL(bookingUrl);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return 'URL must start with http:// or https://';
+      }
+    } catch {
+      return 'Please enter a valid URL.';
     }
-
-    if (parsed.hostname.includes('cal.com')) {
-      const username = parsed.pathname.replace(/^\//, '').split('/')[0];
-      return {
-        platform: 'calcom',
-        isEnabled: true,
-        calComUsername: username,
-      };
-    }
-
-    if (parsed.hostname.includes('savvycal.com')) {
-      const username = parsed.pathname.replace(/^\//, '').split('/')[0];
-      return {
-        platform: 'savvycal',
-        isEnabled: true,
-        savvyCalUsername: username,
-      };
-    }
-
-    if (parsed.hostname.includes('acuityscheduling.com')) {
-      return {
-        platform: 'acuity',
-        isEnabled: true,
-        acuityUserId: parsed.searchParams.get('owner') || '',
-      };
-    }
-
-    return { platform: 'custom', isEnabled: true, customLink: url };
-  } catch {
-    return { platform: 'custom', isEnabled: true, customLink: url };
   }
+
+  return null;
 }

@@ -23,6 +23,22 @@ export interface SiteSettings {
   showreelPoster?: string | null;
 }
 
+export type SchedulingPlatform = 'calendly' | 'calcom' | 'savvycal' | 'acuity' | 'custom';
+
+export interface SchedulingSettings {
+  id: string;
+  platform: SchedulingPlatform;
+  isEnabled: boolean;
+  calendlyUrl?: string;
+  calComUsername?: string;
+  savvyCalUsername?: string;
+  acuityUserId?: string;
+  customLink?: string;
+  buttonText: string;
+  buttonColor?: string | null;
+  bookingUrl: string;
+}
+
 export interface HomeSection {
   id: string;
   key: string;

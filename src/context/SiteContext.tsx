@@ -54,8 +54,9 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [s, sec, svc, prod, p, g, t] = await Promise.all([
+    const [s, scheduling, sec, svc, prod, p, g, t] = await Promise.all([
       publicApi.getSettings(),
+      publicApi.getScheduling(),
       publicApi.getSections(),
       publicApi.getServices(),
       publicApi.getProducts(),
@@ -71,6 +72,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     setSettings({
       ...fallbackSettings,
       ...s,
+      calendlyUrl: scheduling.bookingUrl || s.calendlyUrl || '',
       brandName: brand,
       seoTitleEn: rawSeoEn.replace(/Awad/gi, 'Ibrahim'),
       seoTitleAr: rawSeoAr.replace(/عوض/g, 'إبراهيم'),

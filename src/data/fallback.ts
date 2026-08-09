@@ -1,4 +1,4 @@
-import type { GalleryItem, HomeSection, Post, Product, Service, SiteSettings, Testimonial } from '../types';
+import type { GalleryItem, HomeSection, Post, Product, SchedulingSettings, Service, SiteSettings, Testimonial } from '../types';
 
 const IMG = {
   // Soft professional portrait (desk / consultant feel) — soft-masked in hero CSS
@@ -35,6 +35,15 @@ export const fallbackSettings: SiteSettings = {
   aboutImageUrl: IMG.about,
   showreelPoster: IMG.hero,
   showreelUrl: '',
+};
+
+export const fallbackScheduling: SchedulingSettings = {
+  id: 'settings',
+  platform: 'calendly',
+  isEnabled: false,
+  buttonText: 'Book Now',
+  buttonColor: '#2563eb',
+  bookingUrl: '',
 };
 
 export const fallbackSections: HomeSection[] = [
