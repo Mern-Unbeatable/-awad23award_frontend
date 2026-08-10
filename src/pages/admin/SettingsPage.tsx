@@ -120,127 +120,131 @@ export const SettingsPage = () => {
           </button>
         </div>
 
-        <div>
-          <label className={labelClass}>Booking Platform</label>
-          <select
-            value={form.platform}
-            onChange={(e) => changePlatform(e.target.value as SchedulingPlatform)}
-            className={inputClass}
-          >
-            <option value="calendly">Calendly</option>
-            <option value="calcom">Cal.com</option>
-            <option value="savvycal">SavvyCal</option>
-            <option value="acuity">Acuity Scheduling</option>
-            <option value="custom">Custom Link</option>
-          </select>
-        </div>
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+          <div className="sm:w-48 sm:shrink-0">
+            <label className={labelClass}>Booking Platform</label>
+            <select
+              value={form.platform}
+              onChange={(e) => changePlatform(e.target.value as SchedulingPlatform)}
+              className={inputClass}
+            >
+              <option value="calendly">Calendly</option>
+              <option value="calcom">Cal.com</option>
+              <option value="savvycal">SavvyCal</option>
+              <option value="acuity">Acuity Scheduling</option>
+              <option value="custom">Custom Link</option>
+            </select>
+          </div>
 
-        <div className="space-y-4">
-          {form.platform === 'calendly' && (
-            <div>
-              <label className={labelClass}>Calendly URL</label>
-              <input
-                type="url"
-                value={form.calendlyUrl || ''}
-                onChange={(e) => updateForm({ calendlyUrl: e.target.value })}
-                placeholder="https://calendly.com/your-username"
-                className={inputClass}
-              />
-              <p className="mt-1.5 text-[12px] text-slate-500">Your Calendly booking page URL</p>
-            </div>
-          )}
+          <div className="sm:flex-1 sm:min-w-0">
+            {form.platform === 'calendly' && (
+              <div>
+                <label className={labelClass}>Calendly URL</label>
+                <input
+                  type="url"
+                  value={form.calendlyUrl || ''}
+                  onChange={(e) => updateForm({ calendlyUrl: e.target.value })}
+                  placeholder="https://calendly.com/your-username"
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-[12px] text-slate-500">Your Calendly booking page URL</p>
+              </div>
+            )}
 
-          {form.platform === 'calcom' && (
-            <div>
-              <label className={labelClass}>Cal.com Username</label>
-              <input
-                type="text"
-                value={form.calComUsername || ''}
-                onChange={(e) => updateForm({ calComUsername: e.target.value })}
-                placeholder="your-username"
-                className={inputClass}
-              />
-              <p className="mt-1.5 text-[12px] text-slate-500">
-                e.g. &quot;john&quot; for cal.com/john
-              </p>
-            </div>
-          )}
+            {form.platform === 'calcom' && (
+              <div>
+                <label className={labelClass}>Cal.com Username</label>
+                <input
+                  type="text"
+                  value={form.calComUsername || ''}
+                  onChange={(e) => updateForm({ calComUsername: e.target.value })}
+                  placeholder="your-username"
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-[12px] text-slate-500">
+                  e.g. &quot;john&quot; for cal.com/john
+                </p>
+              </div>
+            )}
 
-          {form.platform === 'savvycal' && (
-            <div>
-              <label className={labelClass}>SavvyCal Username</label>
-              <input
-                type="text"
-                value={form.savvyCalUsername || ''}
-                onChange={(e) => updateForm({ savvyCalUsername: e.target.value })}
-                placeholder="your-username"
-                className={inputClass}
-              />
-              <p className="mt-1.5 text-[12px] text-slate-500">
-                e.g. &quot;john&quot; for savvycal.com/john
-              </p>
-            </div>
-          )}
+            {form.platform === 'savvycal' && (
+              <div>
+                <label className={labelClass}>SavvyCal Username</label>
+                <input
+                  type="text"
+                  value={form.savvyCalUsername || ''}
+                  onChange={(e) => updateForm({ savvyCalUsername: e.target.value })}
+                  placeholder="your-username"
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-[12px] text-slate-500">
+                  e.g. &quot;john&quot; for savvycal.com/john
+                </p>
+              </div>
+            )}
 
-          {form.platform === 'acuity' && (
-            <div>
-              <label className={labelClass}>Acuity User ID</label>
-              <input
-                type="text"
-                value={form.acuityUserId || ''}
-                onChange={(e) => updateForm({ acuityUserId: e.target.value })}
-                placeholder="your-user-id"
-                className={inputClass}
-              />
-              <p className="mt-1.5 text-[12px] text-slate-500">Your Acuity Scheduling user ID</p>
-            </div>
-          )}
+            {form.platform === 'acuity' && (
+              <div>
+                <label className={labelClass}>Acuity User ID</label>
+                <input
+                  type="text"
+                  value={form.acuityUserId || ''}
+                  onChange={(e) => updateForm({ acuityUserId: e.target.value })}
+                  placeholder="your-user-id"
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-[12px] text-slate-500">Your Acuity Scheduling user ID</p>
+              </div>
+            )}
 
-          {form.platform === 'custom' && (
-            <div>
-              <label className={labelClass}>Custom Booking Link</label>
-              <input
-                type="url"
-                value={form.customLink || ''}
-                onChange={(e) => updateForm({ customLink: e.target.value })}
-                placeholder="https://example.com/book-appointment"
-                className={inputClass}
-              />
-              <p className="mt-1.5 text-[12px] text-slate-500">Any http(s) booking page URL</p>
-            </div>
-          )}
+            {form.platform === 'custom' && (
+              <div>
+                <label className={labelClass}>Custom Booking Link</label>
+                <input
+                  type="url"
+                  value={form.customLink || ''}
+                  onChange={(e) => updateForm({ customLink: e.target.value })}
+                  placeholder="https://example.com/book-appointment"
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-[12px] text-slate-500">Any http(s) booking page URL</p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="border-t border-slate-100 pt-6 space-y-4">
           <h2 className="text-[15px] font-semibold text-slate-900">Button Customization</h2>
 
-          <div>
-            <label className={labelClass}>Button Text</label>
-            <input
-              type="text"
-              value={form.buttonText}
-              onChange={(e) => updateForm({ buttonText: e.target.value })}
-              placeholder="Book Now"
-              className={inputClass}
-            />
-          </div>
-
-          <div>
-            <label className={labelClass}>Button Color</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={form.buttonColor || '#2563eb'}
-                onChange={(e) => updateForm({ buttonColor: e.target.value })}
-                className="w-11 h-11 p-1 border border-slate-200 rounded-sm cursor-pointer bg-white"
-              />
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+            <div className="sm:w-48 sm:shrink-0">
+              <label className={labelClass}>Button Text</label>
               <input
                 type="text"
-                value={form.buttonColor || ''}
-                onChange={(e) => updateForm({ buttonColor: e.target.value })}
-                placeholder="#2563eb"
+                value={form.buttonText}
+                onChange={(e) => updateForm({ buttonText: e.target.value })}
+                placeholder="Book Now"
                 className={inputClass}
               />
+            </div>
+
+            <div className="sm:flex-1 sm:min-w-0">
+              <label className={labelClass}>Button Color</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={form.buttonColor || '#2563eb'}
+                  onChange={(e) => updateForm({ buttonColor: e.target.value })}
+                  className="w-11 h-11 p-1 border border-slate-200 rounded-sm cursor-pointer bg-white shrink-0"
+                />
+                <input
+                  type="text"
+                  value={form.buttonColor || ''}
+                  onChange={(e) => updateForm({ buttonColor: e.target.value })}
+                  placeholder="#2563eb"
+                  className={inputClass}
+                />
+              </div>
             </div>
           </div>
         </div>
