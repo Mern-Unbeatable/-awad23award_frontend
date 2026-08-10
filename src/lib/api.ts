@@ -1,22 +1,12 @@
 import axios from 'axios';
-import {
-  saveSession,
-  getAccessToken,
-  clearSession,
-  getRefreshToken,
-  updateTokens,
-} from './auth';
-import { API_BASE } from './env';
+import { axiosInstance as api } from '../services/axiosInstance';
 import {
   normalizePortfolioList,
   tabbedToGalleryItem,
-  type PortfolioTabbedPayload,
 } from './portfolioMappers';
 import type {
   GalleryItem,
   HomeSection,
-  NewsletterStats,
-  NewsletterSubscriber,
   Post,
   Product,
   SchedulingSettings,
@@ -24,110 +14,6 @@ import type {
   SiteSettings,
   Testimonial,
 } from '../types';
-
-const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 12000,
-});
-
-api.interceptors.request.use((config) => {
-  const token = getAccessToken();
-  if (token && token !== 'undefined' && token !== 'null') {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-let isRefreshing = false;
-let pendingRequests: Array<(token: string) => void> = [];
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const original = error.config;
-
-    if (
-      !error.response ||
-      error.response.status !== 401 ||
-      original._retried ||
-      original.url?.includes('/auth/login') ||
-      original.url?.includes('/auth/refresh')
-    ) {
-      return Promise.reject(error);
-    }
-
-    original._retried = true;
-
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        pendingRequests.push((newToken) => {
-          if (!newToken) {
-            reject(error);
-            return;
-          }
-          original.headers.Authorization = `Bearer ${newToken}`;
-          resolve(api(original));
-        });
-      });
-    }
-
-    isRefreshing = true;
-
-    try {
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) throw new Error('No refresh token available');
-
-      const res = await api.post('/auth/refresh', { refreshToken });
-      const body = res.data;
-      const payload = body?.data || body;
-
-      const newAccessToken =
-        payload?.accessToken ||
-        payload?.token ||
-        body?.accessToken ||
-        body?.token;
-      const newRefreshToken =
-        payload?.refreshToken || body?.refreshToken || refreshToken;
-
-      if (!newAccessToken) throw new Error('Refresh failed to return token');
-
-      updateTokens(newAccessToken, newRefreshToken);
-
-      pendingRequests.forEach((cb) => cb(newAccessToken));
-      pendingRequests = [];
-
-      original.headers.Authorization = `Bearer ${newAccessToken}`;
-      return api(original);
-    } catch (refreshErr) {
-      pendingRequests.forEach((cb) => cb(''));
-      pendingRequests = [];
-      clearSession();
-      if (
-        typeof window !== 'undefined' &&
-        !window.location.pathname.startsWith('/admin/login')
-      ) {
-        window.location.href = '/admin/login';
-      }
-      return Promise.reject(refreshErr);
-    } finally {
-      isRefreshing = false;
-    }
-  },
-);
-
-/** Unwrap `{ success, data }` responses from admin newsletter endpoints */
-function unwrapSuccessBody<T>(body: unknown): T {
-  if (
-    body &&
-    typeof body === 'object' &&
-    'success' in body &&
-    (body as { success: boolean }).success &&
-    'data' in body
-  ) {
-    return (body as { data: T }).data;
-  }
-  return body as T;
-}
 
 export const publicApi = {
   getSettings: () =>
@@ -169,63 +55,10 @@ export const publicApi = {
 };
 
 export const adminApi = {
-  login: async (email: string, password: string) => {
-    const res = await api.post('/auth/login', { email, password });
-    const body = res.data;
-    const payload = body?.data || body;
-
-    const token =
-      payload?.accessToken ||
-      payload?.token ||
-      body?.accessToken ||
-      body?.token;
-    const refreshToken = payload?.refreshToken || body?.refreshToken || token;
-    const adminData = payload?.admin ||
-      payload?.user ||
-      body?.admin ||
-      body?.user || { id: '1', email, name: 'Admin' };
-
-    if (!token || typeof token !== 'string') {
-      throw new Error('No valid access token received from backend server.');
-    }
-
-    saveSession({
-      accessToken: token,
-      refreshToken: refreshToken,
-      admin: adminData,
-    });
-
-    return body;
-  },
-  me: () => api.get('/auth/me'),
-
-  logout: async () => {
-    const refreshToken = getRefreshToken();
-    try {
-      if (refreshToken) {
-        await api.post('/auth/logout', { refreshToken });
-      }
-    } finally {
-      clearSession();
-    }
-  },
   stats: () => api.get('/contact/stats'),
   getSettings: () => api.get<SiteSettings>('/settings'),
   updateSettings: (data: Partial<SiteSettings>) =>
     api.put<SiteSettings>('/settings', data),
-  getSchedulingSettings: async (): Promise<SchedulingSettings> => {
-    const res = await api.get<SchedulingSettings>('/admin/settings/scheduling');
-    return res.data;
-  },
-  updateSchedulingSettings: async (
-    data: Omit<SchedulingSettings, 'id' | 'bookingUrl'>,
-  ): Promise<SchedulingSettings> => {
-    const res = await api.put<SchedulingSettings>(
-      '/admin/settings/scheduling',
-      data,
-    );
-    return res.data;
-  },
   getSections: () => api.get<HomeSection[]>('/pages'),
   updateSection: (key: string, data: Partial<HomeSection>) =>
     api.put(`/pages/${key}`, data),
@@ -235,50 +68,6 @@ export const adminApi = {
     api.put(`/services/${id}`, data),
   deleteService: (id: string) => api.delete(`/services/${id}`),
   getPosts: () => api.get<Post[]>('/posts?all=1'),
-  listPostsAdmin: async (): Promise<Post[]> => {
-    const res = await api.get('/posts?all=1');
-    const unwrapped = unwrapSuccessBody<Post[]>(res.data);
-    if (Array.isArray(unwrapped)) return unwrapped;
-    return Array.isArray(res.data) ? (res.data as Post[]) : [];
-  },
-  createPost: async (data: Partial<Post> | Record<string, unknown>): Promise<Post> => {
-    const res = await api.post('/posts', data);
-    return unwrapSuccessBody<Post>(res.data);
-  },
-  updatePost: async (id: string, data: Partial<Post> | Record<string, unknown>): Promise<Post> => {
-    const res = await api.put(`/posts/${id}`, data);
-    return unwrapSuccessBody<Post>(res.data);
-  },
-  deletePost: (id: string) => api.delete(`/posts/${id}`),
-  listPortfolioAdmin: async (): Promise<GalleryItem[]> => {
-    const res = await api.get('/gallery?all=1');
-    return normalizePortfolioList(res.data).map(resolveGalleryItem);
-  },
-  /** Alias for listPortfolioAdmin (legacy admin page calls) */
-  getGallery: async (): Promise<GalleryItem[]> => {
-    const res = await api.get('/gallery?all=1');
-    return normalizePortfolioList(res.data).map(resolveGalleryItem);
-  },
-  getPortfolioBySlug: async (slug: string): Promise<GalleryItem> => {
-    const res = await api.get(`/gallery/${encodeURIComponent(slug)}`, {
-      params: { all: '1' },
-    });
-    return resolveGalleryItem(tabbedToGalleryItem(res.data));
-  },
-  createPortfolioItem: async (
-    payload: PortfolioTabbedPayload | Record<string, unknown>,
-  ): Promise<GalleryItem> => {
-    const res = await api.post('/gallery', payload);
-    return resolveGalleryItem(tabbedToGalleryItem(res.data));
-  },
-  updatePortfolioItem: async (
-    id: string,
-    payload: PortfolioTabbedPayload | Record<string, unknown>,
-  ): Promise<GalleryItem> => {
-    const res = await api.put(`/gallery/${id}`, payload);
-    return resolveGalleryItem(tabbedToGalleryItem(res.data));
-  },
-  deleteGalleryItem: (id: string) => api.delete(`/gallery/${id}`),
   getMedia: () => api.get('/media'),
   uploadMedia: (file: File, altEn = '', altAr = '') => {
     const form = new FormData();
@@ -294,20 +83,6 @@ export const adminApi = {
   },
   addMediaUrl: (url: string, type: 'image' | 'video' = 'image') =>
     api.post('/media/url', { url, type }),
-  listSubscribers: async (): Promise<NewsletterSubscriber[]> => {
-    const res = await api.get('/newsletter');
-    const data = unwrapSuccessBody<NewsletterSubscriber[]>(res.data);
-    return Array.isArray(data) ? data : [];
-  },
-  getNewsletterStats: async (): Promise<NewsletterStats> => {
-    const res = await api.get('/newsletter/stats');
-    return unwrapSuccessBody<NewsletterStats>(res.data);
-  },
-  deleteSubscriber: (id: string) => api.delete(`/newsletter/${id}`),
-  exportSubscribersCsv: async (): Promise<Blob> => {
-    const res = await api.get('/newsletter/export', { responseType: 'blob' });
-    return res.data;
-  },
   getMessages: () => api.get('/contact'),
   markRead: (id: string) => api.patch(`/contact/${id}/read`),
   deleteMessage: (id: string) => api.delete(`/contact/${id}`),
@@ -378,7 +153,7 @@ export function resolveMediaUrl(url: string): string {
   return trimmed;
 }
 
-function resolveGalleryItem(item: GalleryItem): GalleryItem {
+export function resolveGalleryItem(item: GalleryItem): GalleryItem {
   const hero = resolveMediaUrl(item.heroImageUrl || item.media?.url || '');
   return {
     ...item,
