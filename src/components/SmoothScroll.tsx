@@ -1,8 +1,8 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
-import Lenis from 'lenis';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import gsap from 'gsap';
+import { useEffect, useRef, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
+import Lenis from "lenis";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import gsap from "gsap";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,7 +12,11 @@ function scrollToTop(lenis?: Lenis | null) {
   if (lenis) {
     lenis.scrollTo(0, { immediate: true });
   }
-  window.scrollTo({ top: 0, left: 0, behavior: 'instant' in window ? 'instant' : 'auto' } as ScrollToOptions);
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "instant" in window ? "instant" : "auto",
+  } as ScrollToOptions);
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
 }
@@ -27,14 +31,16 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Stop browser restoring mid-page scroll on reload / back-forward
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
     }
     scrollToTop(null);
   }, []);
 
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (reduced) {
       scrollToTop(null);
       return;
@@ -47,7 +53,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     }
 
     const html = document.documentElement;
-    html.classList.add('lenis', 'lenis-smooth');
+    html.classList.add("lenis", "lenis-smooth");
 
     const lenis = new Lenis({
       autoRaf: true,
@@ -65,21 +71,20 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     let stRaf = 0;
     const onScroll = () => {
-      window.dispatchEvent(new Event('scroll'));
       if (stRaf) return;
       stRaf = requestAnimationFrame(() => {
         ScrollTrigger.update();
         stRaf = 0;
       });
     };
-    lenis.on('scroll', onScroll);
+    lenis.on("scroll", onScroll);
 
     const onResize = () => ScrollTrigger.refresh();
-    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
 
     // Reload / bfcache can restore scroll after Lenis boots — force top again
     const onPageShow = () => scrollToTop(lenisRef.current);
-    window.addEventListener('pageshow', onPageShow);
+    window.addEventListener("pageshow", onPageShow);
 
     const t1 = window.setTimeout(() => scrollToTop(lenisRef.current), 0);
     const t2 = window.setTimeout(() => {
@@ -92,13 +97,13 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
       window.clearTimeout(t3);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("pageshow", onPageShow);
       if (stRaf) cancelAnimationFrame(stRaf);
       lenis.destroy();
       lenisRef.current = null;
       delete (window as LenisWindow).__lenis;
-      html.classList.remove('lenis', 'lenis-smooth');
+      html.classList.remove("lenis", "lenis-smooth");
     };
   }, []);
 
