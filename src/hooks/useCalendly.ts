@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { useSite } from './SiteContext';
+import { useSite } from '../hooks/SiteContext';
 import {
   closeCalendlyPopup,
   loadCalendlyAssets,
@@ -16,9 +16,15 @@ export function useCalendly() {
     return scheduling.bookingUrl || settings.calendlyUrl || '';
   }, [scheduling.isEnabled, scheduling.bookingUrl, settings.calendlyUrl]);
 
-  const calendlyPopupUrl = useMemo(() => resolveCalendlyUrl(bookingRaw), [bookingRaw]);
-  const externalUrl = useMemo(() => resolveExternalBookingUrl(bookingRaw), [bookingRaw]);
-  const isConfigured = scheduling.isEnabled && Boolean(calendlyPopupUrl || externalUrl);
+  const calendlyPopupUrl = useMemo(
+    () => resolveCalendlyUrl(bookingRaw),
+    [bookingRaw],
+  );
+  const externalUrl = useMemo(
+    () => resolveExternalBookingUrl(bookingRaw),
+    [bookingRaw],
+  );
+  const isConfigured = Boolean(calendlyPopupUrl || externalUrl);
 
   useEffect(() => {
     if (!calendlyPopupUrl) return;
@@ -37,10 +43,5 @@ export function useCalendly() {
     return false;
   }, [calendlyPopupUrl, externalUrl]);
 
-  return {
-    url: calendlyPopupUrl || externalUrl,
-    isConfigured,
-    openCalendar,
-    scheduling,
-  };
+  return { isConfigured, openCalendar, scheduling, settings };
 }

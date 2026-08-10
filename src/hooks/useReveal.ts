@@ -1,94 +1,42 @@
-import { useLayoutEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useRef } from 'react';
 
-gsap.registerPlugin(ScrollTrigger);
+const REVEAL_SELECTOR = '[data-reveal], [data-reveal-scale], [data-reveal-right]';
 
-/** Light scroll-in reveals — once only, no scrub (keeps Lenis smooth) */
 export function useReveal<T extends HTMLElement>(deps: unknown[] = []) {
-  const ref = useRef<T | null>(null);
+  const ref = useRef<T>(null);
 
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.querySelectorAll('[data-reveal], [data-reveal-left], [data-reveal-right], [data-reveal-scale]').forEach(
-        (node) => {
-          (node as HTMLElement).style.opacity = '1';
-          (node as HTMLElement).style.transform = 'none';
-        }
-      );
-      return;
-    }
+    const elements = root.querySelectorAll(REVEAL_SELECTOR);
 
-    const ctx = gsap.context(() => {
-      const items = el.querySelectorAll('[data-reveal]');
-      if (items.length) {
-        gsap.fromTo(
-          items,
-          { y: 32, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.7,
-            stagger: 0.07,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: el,
-              start: 'top 88%',
-              once: true,
-              toggleActions: 'play none none none',
-            },
-          }
-        );
+    elements.forEach((el) => {
+      el.classList.add('transition-all', 'duration-700', 'ease-out');
+      if (el.hasAttribute('data-reveal')) {
+        el.classList.add('opacity-0', 'translate-y-6');
+      } else if (el.hasAttribute('data-reveal-scale')) {
+        el.classList.add('opacity-0', 'scale-[0.98]');
+      } else if (el.hasAttribute('data-reveal-right')) {
+        el.classList.add('opacity-0', 'translate-x-6');
       }
+    });
 
-      el.querySelectorAll('[data-reveal-left]').forEach((node) => {
-        gsap.fromTo(
-          node,
-          { x: -28, opacity: 0 },
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.7,
-            ease: 'power2.out',
-            scrollTrigger: { trigger: node, start: 'top 88%', once: true },
-          }
-        );
-      });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          el.classList.remove('opacity-0', 'translate-y-6', 'translate-x-6', 'scale-[0.98]');
+          el.classList.add('opacity-100', 'translate-y-0', 'translate-x-0', 'scale-100');
+          observer.unobserve(el);
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
+    );
 
-      el.querySelectorAll('[data-reveal-right]').forEach((node) => {
-        gsap.fromTo(
-          node,
-          { x: 28, opacity: 0 },
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.7,
-            ease: 'power2.out',
-            scrollTrigger: { trigger: node, start: 'top 88%', once: true },
-          }
-        );
-      });
-
-      el.querySelectorAll('[data-reveal-scale]').forEach((node) => {
-        gsap.fromTo(
-          node,
-          { opacity: 0, y: 20 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.75,
-            ease: 'power2.out',
-            scrollTrigger: { trigger: node, start: 'top 88%', once: true },
-          }
-        );
-      });
-    }, el);
-
-    return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, deps);
 
   return ref;
