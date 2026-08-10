@@ -26,7 +26,7 @@ import {
 import type { AdminLayoutContextValue } from '../../components/layout/admin/adminLayoutContext';
 import {
   useBlogAdmin,
-} from '../../features/blog/blogHooks';
+} from '../../features/admin/blog/blogHooks';
 
 function plainTextFromHtml(html: string) {
   return html

@@ -1,11 +1,12 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Clock, Calendar, Share2, Sparkles } from 'lucide-react';
 import { Seo } from '../../components/Seo';
 import { useLocale } from '../../context/LocaleContext';
 import { useSite } from '../../context/SiteContext';
-import { publicApi, resolveMediaUrl, isBlobUrl } from '../../lib/api';
-import { pick, type Post } from '../../types';
+import { resolveMediaUrl, isBlobUrl } from '../../lib/api';
+import { pick } from '../../types';
+import { useBlogPublic } from '../../features/public/blog/blogHooks';
 import { SiteFooter } from '../../components/site/SiteFooter';
 
 import profileImg from '../../assets/award.png';
@@ -14,12 +15,14 @@ export function JournalPostPage() {
   const { slug = '' } = useParams();
   const { locale, pathFor, t } = useLocale();
   const { settings } = useSite();
-  const [post, setPost] = useState<Post | null>(null);
+  const { post, loadPost } = useBlogPublic();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    void publicApi.getPost(slug).then(setPost);
-  }, [slug]);
+    if (slug) {
+      loadPost(slug).catch(() => undefined);
+    }
+  }, [slug, loadPost]);
 
   const defaultPost = {
     title: t(

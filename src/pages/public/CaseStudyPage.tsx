@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Sparkles,
@@ -26,8 +26,9 @@ import { useLocale } from '../../context/LocaleContext';
 import { useSite } from '../../context/SiteContext';
 import { SiteFooter } from '../../components/site/SiteFooter';
 import { pick } from '../../types';
-import { resolveMediaUrl, isBlobUrl, publicApi, formatApiError } from '../../lib/api';
-import type { SolutionCard, OutcomeItem, GalleryItem } from '../../types';
+import { resolveMediaUrl, isBlobUrl } from '../../lib/api';
+import { usePortfolioPublic } from '../../features/public/portfolio/portfolioHooks';
+import type { SolutionCard, OutcomeItem } from '../../types';
 
 // ─── Icon resolver ────────────────────────────────────────────────────────────
 // Converts a stored icon name string into a Lucide component.
@@ -66,42 +67,16 @@ export function CaseStudyPage() {
   const { slug = '' } = useParams();
   const { locale, pathFor, t } = useLocale();
   const { settings } = useSite();
-  const [item, setItem] = useState<GalleryItem | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const { item, isLoadingItem, itemError, loadItem } = usePortfolioPublic();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (!slug) {
-      setLoading(false);
-      setItem(null);
-      return;
-    }
+    if (!slug) return;
+    loadItem(slug).catch(() => undefined);
+  }, [slug, loadItem]);
 
-    let mounted = true;
-    setLoading(true);
-    setLoadError(null);
-
-    publicApi
-      .getGalleryItem(slug)
-      .then((data) => {
-        if (mounted) setItem(data);
-      })
-      .catch((err) => {
-        console.error('Failed to load portfolio item:', err);
-        if (mounted) {
-          setItem(null);
-          setLoadError(formatApiError(err));
-        }
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [slug]);
+  const loading = isLoadingItem;
+  const loadError = itemError;
 
   if (loading) {
     return (

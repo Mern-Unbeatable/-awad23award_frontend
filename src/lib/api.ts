@@ -1,15 +1,9 @@
 import axios from 'axios';
 import { axiosInstance as api } from '../services/axiosInstance';
-import {
-  normalizePortfolioList,
-  tabbedToGalleryItem,
-} from './portfolioMappers';
 import type {
   GalleryItem,
   HomeSection,
-  Post,
   Product,
-  SchedulingSettings,
   Service,
   SiteSettings,
   Testimonial,
@@ -18,10 +12,6 @@ import type {
 export const publicApi = {
   getSettings: () =>
     api.get<SiteSettings>('/settings').then((res) => res.data),
-  getScheduling: () =>
-    api
-      .get<SchedulingSettings>('/settings/scheduling')
-      .then((res) => res.data),
   getSections: () =>
     api.get<HomeSection[]>('/pages').then((res) => res.data),
   getServices: () =>
@@ -32,17 +22,6 @@ export const publicApi = {
     api.get<Product[]>('/products').then((res) => res.data),
   getProduct: (slug: string) =>
     api.get<Product>(`/products/${slug}`).then((res) => res.data),
-  getPosts: () => api.get<Post[]>('/posts').then((res) => res.data),
-  getPost: (slug: string) =>
-    api.get<Post>(`/posts/${slug}`).then((res) => res.data),
-  getGallery: () =>
-    api.get('/gallery').then((res) =>
-      normalizePortfolioList(res.data).map(resolveGalleryItem),
-    ),
-  getGalleryItem: (slug: string) =>
-    api
-      .get(`/gallery/${encodeURIComponent(slug)}`)
-      .then((res) => resolveGalleryItem(tabbedToGalleryItem(res.data))),
   getTestimonials: () =>
     api.get<Testimonial[]>('/testimonials').then((res) => res.data),
   subscribe: (email: string) => api.post('/newsletter/subscribe', { email }),
@@ -56,9 +35,6 @@ export const publicApi = {
 
 export const adminApi = {
   stats: () => api.get('/contact/stats'),
-  getSettings: () => api.get<SiteSettings>('/settings'),
-  updateSettings: (data: Partial<SiteSettings>) =>
-    api.put<SiteSettings>('/settings', data),
   getSections: () => api.get<HomeSection[]>('/pages'),
   updateSection: (key: string, data: Partial<HomeSection>) =>
     api.put(`/pages/${key}`, data),
@@ -67,7 +43,6 @@ export const adminApi = {
   updateService: (id: string, data: Partial<Service>) =>
     api.put(`/services/${id}`, data),
   deleteService: (id: string) => api.delete(`/services/${id}`),
-  getPosts: () => api.get<Post[]>('/posts?all=1'),
   getMedia: () => api.get('/media'),
   uploadMedia: (file: File, altEn = '', altAr = '') => {
     const form = new FormData();
@@ -92,18 +67,7 @@ export const adminApi = {
   updateTestimonial: (id: string, data: Partial<Testimonial>) =>
     api.put(`/testimonials/${id}`, data),
   deleteTestimonial: (id: string) => api.delete(`/testimonials/${id}`),
-  getCalendlyAuthUrl: () => api.get<{ url: string }>('/calendly/auth-url'),
-  getCalendlyStatus: () =>
-    api.get<{
-      connected: boolean;
-      calendlyUrl: string;
-      calendlyConnectedAt: string | null;
-    }>('/calendly/status'),
-  syncCalendly: () => api.post('/calendly/sync'),
-  disconnectCalendly: () => api.post('/calendly/disconnect'),
 };
-
-export default api;
 
 /** Extract persisted media URL from upload API response (wrapped or flat). */
 export function extractUploadedUrl(response: { data?: unknown }): string | undefined {
@@ -175,17 +139,6 @@ export function resolveGalleryItem(item: GalleryItem): GalleryItem {
       ? resolveMediaUrl(item.recognitionImageUrl)
       : undefined,
   };
-}
-
-/** Unwrap `{ success, data }` API responses or return payload as-is. */
-export function unwrapApiData<T>(body: unknown): T {
-  if (body && typeof body === 'object' && 'data' in body) {
-    const record = body as Record<string, unknown>;
-    if (record.success !== undefined && record.data !== undefined) {
-      return record.data as T;
-    }
-  }
-  return body as T;
 }
 
 /** Human-readable message from an Axios or unknown error (includes status + validation errors). */

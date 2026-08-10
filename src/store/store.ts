@@ -1,17 +1,23 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../features/auth/authSlice';
-import blogReducer from '../features/blog/blogSlice';
-import portfolioReducer from '../features/portfolio/portfolioSlice';
-import newsletterReducer from '../features/newsletter/newsletterSlice';
-import schedulingReducer from '../features/scheduling/schedulingSlice';
+import adminBlogReducer from '../features/admin/blog/blogSlice';
+import publicBlogReducer from '../features/public/blog/blogSlice';
+import adminPortfolioReducer from '../features/admin/portfolio/portfolioSlice';
+import publicPortfolioReducer from '../features/public/portfolio/portfolioSlice';
+import adminSettingsReducer from '../features/admin/settings/settingsSlice';
+import publicSchedulingReducer from '../features/public/scheduling/schedulingSlice';
+import newsletterReducer from '../features/admin/newsletter/newsletterSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    blog: blogReducer,
-    portfolio: portfolioReducer,
+    adminBlog: adminBlogReducer,
+    publicBlog: publicBlogReducer,
+    adminPortfolio: adminPortfolioReducer,
+    publicPortfolio: publicPortfolioReducer,
+    adminSettings: adminSettingsReducer,
+    publicScheduling: publicSchedulingReducer,
     newsletter: newsletterReducer,
-    scheduling: schedulingReducer,
   },
 });
 

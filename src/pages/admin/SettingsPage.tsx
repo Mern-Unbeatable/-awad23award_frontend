@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { CalendarClock, Loader2, RefreshCw, Save } from 'lucide-react';
 import { useSite } from '../../context/SiteContext';
 import type { SchedulingPlatform } from '../../types';
-import { useSchedulingAdmin } from '../../features/scheduling/schedulingHooks';
+import { useSchedulingAdmin } from '../../features/admin/settings/settingsHooks';
 
 const inputClass =
   'w-full px-3 py-2.5 border border-slate-200 rounded-sm text-[14px] text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#38BDF8]/30 focus:border-[#38BDF8] transition-colors';

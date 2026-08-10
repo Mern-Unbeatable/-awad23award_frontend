@@ -10,7 +10,7 @@ import {
 import { portfolioFormToTabbedPayload } from '../../lib/portfolioMappers';
 import { confirmDelete, showSuccessToast } from '../../lib/swal';
 import { AdminContentCard } from '../../components/admin/AdminContentCard';
-import { usePortfolioAdmin } from '../../features/portfolio/portfolioHooks';
+import { usePortfolioAdmin } from '../../features/admin/portfolio/portfolioHooks';
 
 import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
 import { usePagination } from '../../hooks/usePagination';
