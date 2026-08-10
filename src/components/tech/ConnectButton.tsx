@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 import { useCalendly } from '../../hooks/useCalendly';
 import { TechButton } from './TechButton';
 

@@ -1,4 +1,4 @@
-import type { NewsletterStats } from '../../types';
+import type { NewsletterStats } from '../../../types';
 
 export type NewsletterStatus = 'idle' | 'loading' | 'error';
 

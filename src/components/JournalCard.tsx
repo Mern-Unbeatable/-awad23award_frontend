@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useLocale } from '../context/LocaleContext';
+import { useLocale } from '../hooks/LocaleContext';
 import { isBlobUrl, resolveMediaUrl } from '../lib/api';
 import { pick, type Post } from '../types';
 

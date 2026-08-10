@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Globe, Menu, X } from 'lucide-react';
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 import { ConnectButton } from '../tech';
 import { useCalendly } from '../../hooks/useCalendly';
 

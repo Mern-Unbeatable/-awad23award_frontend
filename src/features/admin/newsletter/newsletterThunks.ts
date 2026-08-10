@@ -12,7 +12,7 @@ import {
 } from './newsletterMappers';
 
 export const fetchNewsletterData = createAsyncThunk(
-  'newsletter/fetchData',
+  'adminNewsletter/fetchData',
   async (_, { rejectWithValue }) => {
     try {
       const [listRes, statsRes] = await Promise.all([
@@ -32,7 +32,7 @@ export const fetchNewsletterData = createAsyncThunk(
 );
 
 export const deleteNewsletterSubscriber = createAsyncThunk(
-  'newsletter/deleteSubscriber',
+  'adminNewsletter/deleteSubscriber',
   async (id: string, { rejectWithValue }) => {
     try {
       await deleteSubscriberRequest(id);
@@ -50,7 +50,7 @@ export const deleteNewsletterSubscriber = createAsyncThunk(
 );
 
 export const exportNewsletterCsv = createAsyncThunk(
-  'newsletter/exportCsv',
+  'adminNewsletter/exportCsv',
   async (_, { rejectWithValue }) => {
     try {
       const res = await exportSubscribersCsvRequest();

@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import { useLocale } from '../context/LocaleContext';
-import { useSite } from '../context/SiteContext';
+import { useLocale } from '../hooks/LocaleContext';
+import { useSite } from '../hooks/SiteContext';
 
 interface SeoProps {
   title?: string;

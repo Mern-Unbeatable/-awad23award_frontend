@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from 'react';
-import { useLocale } from '../../context/LocaleContext';
-import { publicApi } from '../../lib/api';
+import { useLocale } from '../../hooks/LocaleContext';
+import { subscribeRequest } from '../../features/public/newsletter/newsletterApi';
 import { ArrowIcon } from './ArrowIcon';
 
 export function HomeNewsletter() {
@@ -11,7 +11,7 @@ export function HomeNewsletter() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      await publicApi.subscribe(email);
+      await subscribeRequest(email);
       setStatus('ok');
       setEmail('');
     } catch {

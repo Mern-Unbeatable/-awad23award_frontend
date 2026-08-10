@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useLocale } from '../../../context/LocaleContext';
-import { useSite } from '../../../context/SiteContext';
+import { useLocale } from '../../../hooks/LocaleContext';
+import { useSite } from '../../../hooks/SiteContext';
 import { BrandLogo, ConnectButton } from '../../tech';
 import { X } from 'lucide-react';
 

@@ -22,8 +22,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Seo } from '../../components/Seo';
-import { useLocale } from '../../context/LocaleContext';
-import { useSite } from '../../context/SiteContext';
+import { useLocale } from '../../hooks/LocaleContext';
+import { useSite } from '../../hooks/SiteContext';
 import { SiteFooter } from '../../components/site/SiteFooter';
 import { pick } from '../../types';
 import { resolveMediaUrl, isBlobUrl } from '../../lib/api';

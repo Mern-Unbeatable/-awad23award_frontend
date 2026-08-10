@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useLocale } from '../../context/LocaleContext';
-import { publicApi } from '../../lib/api';
+import { useLocale } from '../../hooks/LocaleContext';
+import { subscribeRequest } from '../../features/public/newsletter/newsletterApi';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Contact() {
@@ -12,7 +12,7 @@ export function Contact() {
     e.preventDefault();
     if (!email.trim()) return;
     try {
-      await publicApi.subscribe(email.trim());
+      await subscribeRequest(email.trim());
       setStatus('ok');
       setEmail('');
     } catch {

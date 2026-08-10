@@ -1,8 +1,8 @@
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from 'react-redux';
-import { LocaleProvider } from './context/LocaleContext';
-import { SiteProvider } from './context/SiteContext';
+import { LocaleProvider } from './hooks/LocaleContext';
+import { SiteProvider } from './hooks/SiteContext';
 import { AppRouter } from './Router/router';
 import { store } from './store';
 import { AuthBootstrap } from './features/auth/AuthBootstrap';

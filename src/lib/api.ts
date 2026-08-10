@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { axiosInstance as api } from '../services/axiosInstance';
 import type {
   GalleryItem,
@@ -24,7 +23,6 @@ export const publicApi = {
     api.get<Product>(`/products/${slug}`).then((res) => res.data),
   getTestimonials: () =>
     api.get<Testimonial[]>('/testimonials').then((res) => res.data),
-  subscribe: (email: string) => api.post('/newsletter/subscribe', { email }),
   contact: (payload: {
     name: string;
     email: string;
@@ -61,12 +59,6 @@ export const adminApi = {
   getMessages: () => api.get('/contact'),
   markRead: (id: string) => api.patch(`/contact/${id}/read`),
   deleteMessage: (id: string) => api.delete(`/contact/${id}`),
-  getTestimonials: () => api.get<Testimonial[]>('/testimonials?all=1'),
-  createTestimonial: (data: Partial<Testimonial>) =>
-    api.post('/testimonials', data),
-  updateTestimonial: (id: string, data: Partial<Testimonial>) =>
-    api.put(`/testimonials/${id}`, data),
-  deleteTestimonial: (id: string) => api.delete(`/testimonials/${id}`),
 };
 
 /** Extract persisted media URL from upload API response (wrapped or flat). */
@@ -139,28 +131,6 @@ export function resolveGalleryItem(item: GalleryItem): GalleryItem {
       ? resolveMediaUrl(item.recognitionImageUrl)
       : undefined,
   };
-}
-
-/** Human-readable message from an Axios or unknown error (includes status + validation errors). */
-export function formatApiError(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    const status = err.response?.status;
-    const data = err.response?.data;
-    const record =
-      data && typeof data === 'object' ? (data as Record<string, unknown>) : null;
-    const message =
-      (typeof record?.message === 'string' && record.message) || err.message;
-    const fieldErrors = Array.isArray(record?.errors)
-      ? record.errors.filter((e): e is string => typeof e === 'string').join('; ')
-      : '';
-    const parts = [
-      status ? `HTTP ${status}` : '',
-      message,
-      fieldErrors,
-    ].filter(Boolean);
-    return parts.join(' — ');
-  }
-  return err instanceof Error ? err.message : 'Request failed';
 }
 
 /** Upload a file via Media API and return its persisted URL. */

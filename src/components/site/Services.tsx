@@ -1,5 +1,5 @@
 import { Brain, Cpu, BarChart3, CheckCircle2 } from 'lucide-react';
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Services() {

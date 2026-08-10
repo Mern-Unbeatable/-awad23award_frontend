@@ -1,7 +1,7 @@
 import { Seo } from '../../components/Seo';
 import { TechButton } from '../../components/tech';
-import { useLocale } from '../../context/LocaleContext';
-import { useSite } from '../../context/SiteContext';
+import { useLocale } from '../../hooks/LocaleContext';
+import { useSite } from '../../hooks/SiteContext';
 import { useReveal } from '../../hooks/useReveal';
 import { pick } from '../../types';
 

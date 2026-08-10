@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Testimonials() {

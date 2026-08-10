@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { useLocale } from '../../../context/LocaleContext';
-import { useSite } from '../../../context/SiteContext';
+import { useLocale } from '../../../hooks/LocaleContext';
+import { useSite } from '../../../hooks/SiteContext';
 import { ArrowIcon, BrandLogo, TechButton } from '../../tech';
 
 export function Footer() {

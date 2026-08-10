@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { CalendarClock, Loader2, RefreshCw, Save } from 'lucide-react';
-import { useSite } from '../../context/SiteContext';
+import { useSite } from '../../hooks/SiteContext';
 import type { SchedulingPlatform } from '../../types';
 import { useSchedulingAdmin } from '../../features/admin/settings/settingsHooks';
 

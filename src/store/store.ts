@@ -6,7 +6,7 @@ import adminPortfolioReducer from '../features/admin/portfolio/portfolioSlice';
 import publicPortfolioReducer from '../features/public/portfolio/portfolioSlice';
 import adminSettingsReducer from '../features/admin/settings/settingsSlice';
 import publicSchedulingReducer from '../features/public/scheduling/schedulingSlice';
-import newsletterReducer from '../features/admin/newsletter/newsletterSlice';
+import adminNewsletterReducer from '../features/admin/newsletter/newsletterSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,7 +17,7 @@ export const store = configureStore({
     publicPortfolio: publicPortfolioReducer,
     adminSettings: adminSettingsReducer,
     publicScheduling: publicSchedulingReducer,
-    newsletter: newsletterReducer,
+    adminNewsletter: adminNewsletterReducer,
   },
 });
 

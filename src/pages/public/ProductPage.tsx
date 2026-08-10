@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Seo } from '../../components/Seo';
 import { GlassCard, TechButton } from '../../components/tech';
-import { useLocale } from '../../context/LocaleContext';
-import { useSite } from '../../context/SiteContext';
+import { useLocale } from '../../hooks/LocaleContext';
+import { useSite } from '../../hooks/SiteContext';
 import { publicApi } from '../../lib/api';
 import { pick, type Product } from '../../types';
 

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import type { NewsletterStats, NewsletterSubscriber } from '../../types';
+import type { NewsletterStats, NewsletterSubscriber } from '../../../types';
 import {
   EMPTY_NEWSLETTER_STATS,
   type NewsletterStatus,
@@ -28,8 +28,8 @@ const initialState: NewsletterState = {
   exportStatus: 'idle',
 };
 
-const newsletterSlice = createSlice({
-  name: 'newsletter',
+const adminNewsletterSlice = createSlice({
+  name: 'adminNewsletter',
   initialState,
   reducers: {
     clearNewsletterActionError(state) {
@@ -82,5 +82,5 @@ const newsletterSlice = createSlice({
   },
 });
 
-export const { clearNewsletterActionError } = newsletterSlice.actions;
-export default newsletterSlice.reducer;
+export const { clearNewsletterActionError } = adminNewsletterSlice.actions;
+export default adminNewsletterSlice.reducer;

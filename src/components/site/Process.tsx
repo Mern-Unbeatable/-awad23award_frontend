@@ -1,4 +1,4 @@
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Process() {

@@ -1,5 +1,5 @@
 import { Nav } from "./Nav";
-import { useLocale } from "../../context/LocaleContext";
+import { useLocale } from "../../hooks/LocaleContext";
 import { ConnectButton, TechMarquee } from "../tech";
 import { AnimatedCounter } from "./AnimatedCounter";
 

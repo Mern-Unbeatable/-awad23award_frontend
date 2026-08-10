@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 
 interface MissionBlockProps {
   missionText: string;

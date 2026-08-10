@@ -1,7 +1,7 @@
 import { Seo } from '../../components/Seo';
 import { ConnectButton, TechButton } from '../../components/tech';
-import { useLocale } from '../../context/LocaleContext';
-import { useSite } from '../../context/SiteContext';
+import { useLocale } from '../../hooks/LocaleContext';
+import { useSite } from '../../hooks/SiteContext';
 import { useCalendly } from '../../hooks/useCalendly';
 
 export function BookCallPage() {

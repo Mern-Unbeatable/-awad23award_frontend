@@ -16,11 +16,7 @@ const serverUrl = normalizeOrigin(
   import.meta.env.VITE_SERVER_URL || DEFAULT_SERVER_URL,
 );
 
-/** Backend origin, e.g. http://localhost:4000 */
-export const SERVER_URL = serverUrl;
-
-/** Full API URL, e.g. http://localhost:4000/api */
-export const API_URL = `${serverUrl}${API_PATH}`;
-
 /** Axios baseURL — relative in dev (Vite proxy), absolute in production builds */
-export const API_BASE = import.meta.env.DEV ? API_PATH : API_URL;
+export const API_BASE = import.meta.env.DEV
+  ? API_PATH
+  : `${serverUrl}${API_PATH}`;

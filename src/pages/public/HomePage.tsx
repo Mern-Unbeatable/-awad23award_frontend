@@ -8,7 +8,7 @@ import { Testimonials } from '../../components/site/Testimonials';
 import { Blog } from '../../components/site/Blog';
 import { Contact } from '../../components/site/Contact';
 import { SiteFooter } from '../../components/site/SiteFooter';
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 
 export function HomePage() {
   const { pathFor } = useLocale();

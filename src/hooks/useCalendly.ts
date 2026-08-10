@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { useSite } from '../context/SiteContext';
+import { useSite } from './SiteContext';
 import {
   closeCalendlyPopup,
   loadCalendlyAssets,

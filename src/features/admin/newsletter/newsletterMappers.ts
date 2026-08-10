@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import type {
   NewsletterStats,
   NewsletterSubscriber,
-} from '../../types';
+} from '../../../types';
 
 /** Unwrap `{ success, data }` admin API responses. */
 export function unwrapSuccessBody<T>(body: unknown): T {

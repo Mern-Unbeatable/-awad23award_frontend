@@ -31,9 +31,10 @@ function stripLocale(pathname: string) {
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const locale: Locale = location.pathname === '/ar' || location.pathname.startsWith('/ar/')
-    ? 'ar'
-    : 'en';
+  const locale: Locale =
+    location.pathname === '/ar' || location.pathname.startsWith('/ar/')
+      ? 'ar'
+      : 'en';
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -44,7 +45,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const pathFor = useCallback(
     (path: string, localeOverride?: Locale) => {
       let clean = path.startsWith('/') ? path : `/${path}`;
-      // Avoid /ar/ar/... if callers pass a localized path
       if (clean === '/ar' || clean.startsWith('/ar/')) {
         clean = clean.replace(/^\/ar/, '') || '/';
       }
@@ -55,7 +55,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       }
       return clean;
     },
-    [locale]
+    [locale],
   );
 
   const setLocale = useCallback(
@@ -63,14 +63,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       const base = stripLocale(location.pathname);
       navigate(pathFor(base, next) + location.search);
     },
-    [location.pathname, location.search, navigate, pathFor]
+    [location.pathname, location.search, navigate, pathFor],
   );
 
   const toggleLocale = useCallback(() => {
     setLocale(locale === 'en' ? 'ar' : 'en');
   }, [locale, setLocale]);
 
-  const t = useCallback((en: string, ar: string) => (locale === 'ar' ? ar : en), [locale]);
+  const t = useCallback(
+    (en: string, ar: string) => (locale === 'ar' ? ar : en),
+    [locale],
+  );
 
   const value = useMemo(
     () => ({
@@ -81,7 +84,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       pathFor,
       t,
     }),
-    [locale, setLocale, toggleLocale, pathFor, t]
+    [locale, setLocale, toggleLocale, pathFor, t],
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;

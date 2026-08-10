@@ -1,4 +1,4 @@
-import { useLocale } from '../../context/LocaleContext';
+import { useLocale } from '../../hooks/LocaleContext';
 
 export function StatCard() {
   const { t } = useLocale();
