@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Clock, Calendar, Share2, Sparkles } from 'lucide-react';
+import { Clock, Calendar, Share2, Sparkles, Loader2 } from 'lucide-react';
 import { Seo } from '../../components/Seo';
 import { useLocale } from '../../hooks/LocaleContext';
 import { useSite } from '../../hooks/SiteContext';
@@ -15,14 +15,32 @@ export function JournalPostPage() {
   const { slug = '' } = useParams();
   const { locale, pathFor, t } = useLocale();
   const { settings } = useSite();
-  const { post, loadPost } = useBlogPublic();
+  const { post, loadPost, isLoadingPost, postError } = useBlogPublic();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    if (slug) {
-      loadPost(slug).catch(() => undefined);
-    }
+    if (!slug) return;
+    loadPost(slug).catch(() => undefined);
   }, [slug, loadPost]);
+
+  const isLoading = isLoadingPost || (slug && post?.slug !== slug);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white pt-28 pb-16 min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#36BFFB] animate-spin" />
+      </div>
+    );
+  }
+
+  if (postError || !post) {
+    return (
+      <div className="bg-white pt-28 pb-16 min-h-screen flex items-center justify-center px-6">
+        <p className="text-slate-600 text-center">
+          {postError || t('Could not load this article.', 'تعذر تحميل هذا المقال.')}
+        </p>
+      </div>
+    );
+  }
 
   const defaultPost = {
     title: t(

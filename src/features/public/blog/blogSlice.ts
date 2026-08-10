@@ -48,14 +48,17 @@ const publicBlogSlice = createSlice({
         state.postStatus = 'loading';
         state.postError = null;
         state.postSlug = action.meta.arg;
+        state.post = null;
       })
       .addCase(fetchPublicPost.fulfilled, (state, action) => {
+        if (action.meta.arg !== action.payload.slug) return;
         state.post = action.payload;
         state.postSlug = action.payload.slug;
         state.postStatus = 'idle';
         state.postError = null;
       })
       .addCase(fetchPublicPost.rejected, (state, action) => {
+        if (state.postSlug !== action.meta.arg) return;
         state.post = null;
         state.postStatus = 'error';
         state.postError =
