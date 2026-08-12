@@ -74,6 +74,8 @@ export function BlogEditor({
       attributes: {
         class:
           'blog-editor-content min-h-[320px] sm:min-h-[420px] outline-none px-1 py-2 text-[16px] leading-relaxed text-[#374151] focus:outline-none',
+        dir,
+        style: dir === 'rtl' ? 'text-align: right;' : 'text-align: left;',
       },
     },
   });
@@ -88,6 +90,16 @@ export function BlogEditor({
     }
   }, [value, editor]);
 
+  useEffect(() => {
+    if (!editor) return;
+    const el = editor.view.dom as HTMLElement;
+    el.setAttribute('dir', dir);
+    el.style.textAlign = dir === 'rtl' ? 'right' : 'left';
+    // Default new Arabic paragraphs to the right without overriding saved aligns.
+    if (dir === 'rtl' && editor.isEmpty) {
+      editor.commands.setTextAlign('right');
+    }
+  }, [dir, editor]);
   if (!editor) return null;
 
   const activeHeading: HeadingLevel = editor.isActive('heading', { level: 1 })
@@ -112,8 +124,9 @@ export function BlogEditor({
   const toolBtnActive = `${toolBtn} text-slate-900 bg-sky-50 ring-1 ring-[#38BDF8]/40`;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-slate-200/90 bg-white shadow-2xs" dir={dir}>
+    <div className="rounded-2xl overflow-hidden border border-slate-200/90 bg-white shadow-2xs">
       <div
+        dir="ltr"
         className="sticky z-10 bg-white/95 backdrop-blur-sm px-3 sm:px-4 py-2.5 flex flex-wrap items-center gap-1 border-b border-slate-100"
         style={{ top: toolbarStickyTop }}
       >
@@ -191,7 +204,7 @@ export function BlogEditor({
         </button>
       </div>
 
-      <div className="px-5 sm:px-8 py-5 bg-white">
+      <div className="px-5 sm:px-8 py-5 bg-white" dir={dir}>
         <EditorContent editor={editor} />
       </div>
     </div>

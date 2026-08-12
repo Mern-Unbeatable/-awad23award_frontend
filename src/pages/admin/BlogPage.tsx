@@ -24,9 +24,7 @@ import {
   adminBlogEditPath,
 } from '../../Router/adminRoutes';
 import type { AdminLayoutContextValue } from '../../components/layout/admin/adminLayoutContext';
-import {
-  useBlogAdmin,
-} from '../../features/admin/blog/blogHooks';
+import { useBlogAdmin } from '../../features/admin/blog/blogHooks';
 
 function plainTextFromHtml(html: string) {
   return html
@@ -103,11 +101,15 @@ export function BlogPage() {
   const [readTimeTouched, setReadTimeTouched] = useState(false);
   const [img, setImg] = useState('');
   const [mode, setMode] = useState<'write' | 'preview'>('write');
+  const [formStep, setFormStep] = useState<1 | 2>(1);
   const [contentLocale, setContentLocale] = useState<'en' | 'ar'>('en');
 
   const activeBody = contentLocale === 'ar' ? bodyAr : body;
   const wordCount = useMemo(() => countWords(activeBody), [activeBody]);
-  const autoReadTime = useMemo(() => estimateReadTime(body || bodyAr), [body, bodyAr]);
+  const autoReadTime = useMemo(
+    () => estimateReadTime(body || bodyAr),
+    [body, bodyAr],
+  );
   const effectiveReadTime = readTimeTouched ? readTime : autoReadTime;
   const publishedLabel = useMemo(() => todayLabel(), []);
 
@@ -131,6 +133,7 @@ export function BlogPage() {
       setEditingBlog(null);
       setSaveError('');
       setMode('write');
+      setFormStep(1);
       setContentLocale('en');
       return;
     }
@@ -153,6 +156,7 @@ export function BlogPage() {
         setEditingBlog(blog);
         setSaveError('');
         setMode('write');
+        setFormStep(1);
         setContentLocale('en');
       } else if (!loadError) {
         navigate(ADMIN_ROUTES.blogs, { replace: true });
@@ -186,8 +190,7 @@ export function BlogPage() {
     }
   }
 
-  async function handleSave(e?: React.FormEvent) {
-    e?.preventDefault();
+  function goToArabicStep() {
     if (!title.trim()) {
       setSaveError(
         'Add a title — it becomes the headline on the public article page.',
@@ -195,11 +198,48 @@ export function BlogPage() {
       return;
     }
     if (!body.trim()) {
-      setSaveError('Add article content before publishing.');
+      setSaveError('Add article content before continuing.');
       return;
     }
     if (img && isBlobUrl(img)) {
-      setSaveError('Cover image is still uploading. Please wait and try again.');
+      setSaveError(
+        'Cover image is still uploading. Please wait and try again.',
+      );
+      return;
+    }
+    setSaveError('');
+    setFormStep(2);
+    setContentLocale('ar');
+  }
+
+  function goToEnglishStep() {
+    setSaveError('');
+    setFormStep(1);
+    setContentLocale('en');
+  }
+
+  async function handleSave(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (formStep === 1) {
+      goToArabicStep();
+      return;
+    }
+    if (!title.trim()) {
+      setSaveError(
+        'Add a title — it becomes the headline on the public article page.',
+      );
+      setFormStep(1);
+      return;
+    }
+    if (!body.trim()) {
+      setSaveError('Add article content before publishing.');
+      setFormStep(1);
+      return;
+    }
+    if (img && isBlobUrl(img)) {
+      setSaveError(
+        'Cover image is still uploading. Please wait and try again.',
+      );
       return;
     }
     setSaveError('');
@@ -239,9 +279,7 @@ export function BlogPage() {
   }
 
   const closeFormRef = useRef(closeForm);
-  const handleSaveRef = useRef(handleSave);
   closeFormRef.current = closeForm;
-  handleSaveRef.current = handleSave;
 
   useLayoutEffect(() => {
     if (!isFormMode) {
@@ -250,15 +288,23 @@ export function BlogPage() {
     }
     setHeaderExtension(
       <BlogFormHeaderBar
-        title={title}
+        title={formStep === 2 ? titleAr || title : title}
         isEditing={Boolean(editingBlog)}
         mode={mode}
+        formStep={formStep}
         onBack={() => closeFormRef.current()}
         onModeChange={setMode}
-        onSave={() => handleSaveRef.current()}
       />,
     );
-  }, [isFormMode, title, mode, editingBlog, setHeaderExtension]);
+  }, [
+    isFormMode,
+    title,
+    titleAr,
+    mode,
+    editingBlog,
+    formStep,
+    setHeaderExtension,
+  ]);
 
   useEffect(() => {
     return () => setHeaderExtension(null);
@@ -308,8 +354,12 @@ export function BlogPage() {
             </div>
             <BlogArticlePreview
               title={contentLocale === 'ar' ? titleAr || title : title}
-              subtitle={contentLocale === 'ar' ? subtitleAr || subtitle : subtitle}
-              category={contentLocale === 'ar' ? categoryAr || category : category}
+              subtitle={
+                contentLocale === 'ar' ? subtitleAr || subtitle : subtitle
+              }
+              category={
+                contentLocale === 'ar' ? categoryAr || category : category
+              }
               readTime={effectiveReadTime}
               coverImage={previewCover}
               bodyHtml={contentLocale === 'ar' ? bodyAr || body : body}
@@ -324,171 +374,249 @@ export function BlogPage() {
             onSubmit={(e) => void handleSave(e)}
             className='grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start'
           >
-            <div className='min-w-0 space-y-6'>
-              <div className='rounded-xl border border-slate-200 bg-white p-5 sm:p-7'>
-                <div className='mb-4 flex items-center justify-between gap-3'>
-                  <span className='text-[11px] font-bold uppercase tracking-wider text-slate-500'>
-                    English content
-                  </span>
-                </div>
-                <input
-                  type='text'
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder='Article title'
-                  className='w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0'
-                />
-                <input
-                  type='text'
-                  value={subtitle}
-                  onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder='Add a subtitle (optional)'
-                  className='mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0'
-                />
+            <div className='min-w-0 space-y-4'>
+              {formStep === 1 ? (
+                <div className='rounded-xl border border-slate-200 bg-white p-5 sm:p-7'>
+                  <div className='mb-4'>
+                    <span className='text-[11px] font-bold uppercase tracking-wider text-slate-500'>
+                      Step 1 — English content
+                    </span>
+                  </div>
+                  <input
+                    type='text'
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder='Article title'
+                    className='w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0'
+                  />
+                  <input
+                    type='text'
+                    value={subtitle}
+                    onChange={(e) => setSubtitle(e.target.value)}
+                    placeholder='Add a subtitle (optional)'
+                    className='mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0'
+                  />
 
-                <div className='my-5 h-px bg-slate-100' />
+                  <div className='my-5 h-px bg-slate-100' />
 
-                <div className='flex items-center justify-between mb-2.5 gap-3'>
-                  <span className={labelCls + ' mb-0'}>Content (EN)</span>
-                  <span className='text-[11.5px] text-slate-400 tabular-nums shrink-0'>
-                    {countWords(body)} words · {estimateReadTime(body)}
-                  </span>
+                  <div className='flex items-center justify-between mb-2.5 gap-3'>
+                    <span className={labelCls + ' mb-0'}>Content</span>
+                    <span className='text-[11.5px] text-slate-400 tabular-nums shrink-0'>
+                      {countWords(body)} words · {estimateReadTime(body)}
+                    </span>
+                  </div>
+                  <BlogEditor value={body} onChange={setBody} />
                 </div>
-                <BlogEditor value={body} onChange={setBody} />
-              </div>
-
-              <div className='rounded-xl border border-slate-200 bg-white p-5 sm:p-7'>
-                <div className='mb-4 flex items-center justify-between gap-3'>
-                  <span className='text-[11px] font-bold uppercase tracking-wider text-slate-500'>
-                    Arabic content
-                  </span>
-                  <span className='text-[11px] text-slate-400'>RTL</span>
-                </div>
-                <input
-                  type='text'
+              ) : (
+                <div
                   dir='rtl'
-                  value={titleAr}
-                  onChange={(e) => setTitleAr(e.target.value)}
-                  placeholder='عنوان المقال'
-                  className='w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0 text-end'
-                />
-                <input
-                  type='text'
-                  dir='rtl'
-                  value={subtitleAr}
-                  onChange={(e) => setSubtitleAr(e.target.value)}
-                  placeholder='أضف عنوانًا فرعيًا (اختياري)'
-                  className='mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0 text-end'
-                />
+                  className='rounded-xl border border-slate-200 bg-white p-5 sm:p-7'
+                >
+                  <div className='mb-4 flex items-center justify-between gap-3'>
+                    <span className='text-[11px] font-bold uppercase tracking-wider text-slate-500'>
+                      Step 2 — Arabic content
+                    </span>
+                    <span className='text-[11px] text-slate-400'>RTL</span>
+                  </div>
+                  <input
+                    type='text'
+                    dir='rtl'
+                    lang='ar'
+                    value={titleAr}
+                    onChange={(e) => setTitleAr(e.target.value)}
+                    placeholder='عنوان المقال'
+                    className='w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0 text-right'
+                  />
+                  <input
+                    type='text'
+                    dir='rtl'
+                    lang='ar'
+                    value={subtitleAr}
+                    onChange={(e) => setSubtitleAr(e.target.value)}
+                    placeholder='أضف عنوانًا فرعيًا (اختياري)'
+                    className='mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0 text-right'
+                  />
 
-                <div className='my-5 h-px bg-slate-100' />
+                  <div className='my-5 h-px bg-slate-100' />
 
-                <div className='flex items-center justify-between mb-2.5 gap-3'>
-                  <span className={labelCls + ' mb-0'}>Content (AR)</span>
-                  <span className='text-[11.5px] text-slate-400 tabular-nums shrink-0'>
-                    {countWords(bodyAr)} words · {estimateReadTime(bodyAr)}
-                  </span>
+                  <div className='flex items-center justify-between mb-2.5 gap-3'>
+                    <span className={labelCls + ' mb-0'}>Content</span>
+                    <span className='text-[11.5px] text-slate-400 tabular-nums shrink-0'>
+                      {countWords(bodyAr)} words · {estimateReadTime(bodyAr)}
+                    </span>
+                  </div>
+                  <BlogEditor
+                    value={bodyAr}
+                    onChange={setBodyAr}
+                    dir='rtl'
+                    placeholder='اكتب محتوى المقال كما سيظهر للقراء…'
+                  />
                 </div>
-                <BlogEditor
-                  value={bodyAr}
-                  onChange={setBodyAr}
-                  dir='rtl'
-                  placeholder='اكتب محتوى المقال كما سيظهر للقراء…'
-                />
-              </div>
+              )}
             </div>
 
             <aside className='space-y-5 lg:sticky lg:top-6'>
-              <div className='rounded-xl border border-slate-200 bg-white p-5'>
-                <AdminImageUpload
-                  label='Cover image'
-                  value={img}
-                  onChange={setImg}
-                  height='aspect-[16/10] min-h-36'
-                />
-              </div>
-
-              <div className='rounded-xl border border-slate-200 bg-white p-5 space-y-4'>
-                <div>
-                  <label className={labelCls}>Category (EN)</label>
-                  <input
-                    type='text'
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder='e.g. AI Strategy'
-                    className={fieldCls}
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Category (AR)</label>
-                  <input
-                    type='text'
-                    dir='rtl'
-                    value={categoryAr}
-                    onChange={(e) => setCategoryAr(e.target.value)}
-                    placeholder='مثال: استراتيجية الذكاء الاصطناعي'
-                    className={`${fieldCls} text-end`}
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Read time</label>
-                  <input
-                    type='text'
-                    value={readTimeTouched ? readTime : autoReadTime}
-                    onChange={(e) => {
-                      setReadTimeTouched(true);
-                      setReadTime(e.target.value);
-                    }}
-                    placeholder='5 min read'
-                    className={fieldCls}
-                  />
-                  <p className='mt-1.5 text-[11.5px] text-slate-400'>
-                    Auto-calculated — edit to override.
-                  </p>
+              <div className='flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3'>
+                <div className='flex items-center gap-2 flex-1'>
+                  <span
+                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold ${
+                      formStep === 1
+                        ? 'bg-[#38BDF8] text-white'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}
+                  >
+                    1
+                  </span>
+                  <span
+                    className={`text-[13px] font-semibold ${
+                      formStep === 1 ? 'text-slate-900' : 'text-slate-500'
+                    }`}
+                  >
+                    English
+                  </span>
+                  <span className='mx-1 h-px flex-1 bg-slate-200' />
+                  <span
+                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold ${
+                      formStep === 2
+                        ? 'bg-[#38BDF8] text-white'
+                        : 'bg-slate-100 text-slate-400'
+                    }`}
+                  >
+                    2
+                  </span>
+                  <span
+                    className={`text-[13px] font-semibold ${
+                      formStep === 2 ? 'text-slate-900' : 'text-slate-500'
+                    }`}
+                  >
+                    Arabic
+                  </span>
                 </div>
               </div>
 
-              <div className='rounded-xl border border-slate-200 bg-white p-5 space-y-4'>
-                <div>
-                  <label className={labelCls}>Card excerpt (EN)</label>
-                  <textarea
-                    rows={3}
-                    value={excerpt}
-                    onChange={(e) => setExcerpt(e.target.value)}
-                    placeholder='Short teaser for list & homepage cards. Leave blank to auto-generate.'
-                    className={`${fieldCls} resize-y min-h-21`}
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Card excerpt (AR)</label>
-                  <textarea
-                    rows={3}
-                    dir='rtl'
-                    value={excerptAr}
-                    onChange={(e) => setExcerptAr(e.target.value)}
-                    placeholder='مقتطف قصير لبطاقات القائمة والصفحة الرئيسية.'
-                    className={`${fieldCls} resize-y min-h-21 text-end`}
-                  />
-                </div>
-              </div>
+              {formStep === 1 ? (
+                <>
+                  <div className='rounded-xl border border-slate-200 bg-white p-5'>
+                    <AdminImageUpload
+                      label='Cover image'
+                      value={img}
+                      onChange={setImg}
+                      height='aspect-[16/10] min-h-36'
+                    />
+                  </div>
 
-              <div className='flex items-center gap-2'>
-                <button
-                  type='button'
-                  onClick={closeForm}
-                  disabled={saving}
-                  className='flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60'
-                >
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  disabled={saving}
-                  className='flex-1 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60'
-                >
-                  {saving ? 'Saving…' : editingBlog ? 'Save' : 'Publish'}
-                </button>
-              </div>
+                  <div className='rounded-xl border border-slate-200 bg-white p-5 space-y-4'>
+                    <div>
+                      <label className={labelCls}>Category</label>
+                      <input
+                        type='text'
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        placeholder='e.g. AI Strategy'
+                        className={fieldCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Read time</label>
+                      <input
+                        type='text'
+                        value={readTimeTouched ? readTime : autoReadTime}
+                        onChange={(e) => {
+                          setReadTimeTouched(true);
+                          setReadTime(e.target.value);
+                        }}
+                        placeholder='5 min read'
+                        className={fieldCls}
+                      />
+                      <p className='mt-1.5 text-[11.5px] text-slate-400'>
+                        Auto-calculated — edit to override.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className='rounded-xl border border-slate-200 bg-white p-5'>
+                    <label className={labelCls}>Card excerpt</label>
+                    <textarea
+                      rows={3}
+                      value={excerpt}
+                      onChange={(e) => setExcerpt(e.target.value)}
+                      placeholder='Short teaser for list & homepage cards. Leave blank to auto-generate.'
+                      className={`${fieldCls} resize-y min-h-21`}
+                    />
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={closeForm}
+                      disabled={saving}
+                      className='flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60'
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type='button'
+                      onClick={goToArabicStep}
+                      disabled={saving}
+                      className='flex-1 px-4 py-2.5 rounded-lg bg-[#38BDF8] hover:bg-[#20B0F0] text-white transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60'
+                    >
+                      Next
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div dir='rtl' className='rounded-xl border border-slate-200 bg-white p-5 space-y-4'>
+                    <div>
+                      <label className={`${labelCls} text-right`}>Category (AR)</label>
+                      <input
+                        type='text'
+                        dir='rtl'
+                        lang='ar'
+                        value={categoryAr}
+                        onChange={(e) => setCategoryAr(e.target.value)}
+                        placeholder='مثال: استراتيجية الذكاء الاصطناعي'
+                        className={`${fieldCls} text-right`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`${labelCls} text-right`}>Card excerpt (AR)</label>
+                      <textarea
+                        rows={3}
+                        dir='rtl'
+                        lang='ar'
+                        value={excerptAr}
+                        onChange={(e) => setExcerptAr(e.target.value)}
+                        placeholder='مقتطف قصير لبطاقات القائمة والصفحة الرئيسية.'
+                        className={`${fieldCls} resize-y min-h-21 text-right`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className='rounded-xl border border-slate-200 bg-slate-50 p-4 text-[12.5px] text-slate-600 leading-relaxed'>
+                    English content is saved in memory. Publishing will submit
+                    both English and Arabic fields together.
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={goToEnglishStep}
+                      disabled={saving}
+                      className='flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60'
+                    >
+                      Back
+                    </button>
+                    <button
+                      type='submit'
+                      disabled={saving}
+                      className='flex-1 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors text-[13px] font-semibold cursor-pointer disabled:opacity-60'
+                    >
+                      {saving ? 'Saving…' : editingBlog ? 'Save' : 'Publish'}
+                    </button>
+                  </div>
+                </>
+              )}
             </aside>
           </form>
         )}
