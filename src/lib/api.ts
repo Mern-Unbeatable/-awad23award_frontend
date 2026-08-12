@@ -1,4 +1,5 @@
 import { axiosInstance as api } from '../services/axiosInstance';
+import { SERVER_URL } from './env';
 import type {
   GalleryItem,
   HomeSection,
@@ -79,7 +80,10 @@ export function isBlobUrl(url: string): boolean {
 }
 
 /**
- * Rewrite backend upload URLs to same-origin `/uploads/...` paths (Vite proxy in dev).
+ * Resolve a stored media URL for use in <img src> / CSS.
+ *
+ * Upload paths are always served from the backend (`SERVER_URL` / Vite `/uploads` proxy).
+ * Never leave bare `/uploads/...` in production builds — that would hit the frontend host.
  * Returns empty string for blob/data URLs (not persistable).
  */
 export function resolveMediaUrl(url: string): string {
@@ -87,26 +91,36 @@ export function resolveMediaUrl(url: string): string {
   const trimmed = url.trim();
   if (!trimmed) return '';
 
-  if (trimmed.startsWith('/uploads/')) return trimmed;
-  if (trimmed.startsWith('uploads/')) return `/${trimmed}`;
+  let uploadPath: string | null = null;
 
-  try {
-    const parsed = new URL(trimmed);
-    if (parsed.pathname.startsWith('/uploads/')) {
-      return parsed.pathname;
-    }
-    // External URLs (unsplash, etc.)
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-      return trimmed;
-    }
-  } catch {
-    // bare filename, e.g. uuid.png stored without path
-    if (/^[a-f0-9-]+\.(png|jpe?g|webp|gif)$/i.test(trimmed)) {
-      return `/uploads/${trimmed}`;
+  if (trimmed.startsWith('/uploads/')) {
+    uploadPath = trimmed;
+  } else if (trimmed.startsWith('uploads/')) {
+    uploadPath = `/${trimmed}`;
+  } else {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.pathname.startsWith('/uploads/')) {
+        uploadPath = `${parsed.pathname}${parsed.search}`;
+      } else if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        // External URLs (unsplash, CDN, etc.)
+        return trimmed;
+      }
+    } catch {
+      // bare filename, e.g. uuid.png stored without path
+      if (/^[a-f0-9-]+\.(png|jpe?g|webp|gif)$/i.test(trimmed)) {
+        uploadPath = `/uploads/${trimmed}`;
+      }
     }
   }
 
-  return trimmed;
+  if (!uploadPath) return trimmed;
+
+  // Dev: same-origin path so Vite can proxy to the API server.
+  if (import.meta.env.DEV) return uploadPath;
+
+  // Production: absolute backend origin (frontend host does not serve /uploads).
+  return `${SERVER_URL}${uploadPath}`;
 }
 
 export function resolveGalleryItem(item: GalleryItem): GalleryItem {

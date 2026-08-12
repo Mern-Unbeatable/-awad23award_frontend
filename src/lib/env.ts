@@ -16,6 +16,9 @@ const serverUrl = normalizeOrigin(
   import.meta.env.VITE_SERVER_URL || DEFAULT_SERVER_URL,
 );
 
+/** Backend origin (no trailing slash). Used for media/upload URLs. */
+export const SERVER_URL = serverUrl;
+
 /** Axios baseURL — relative in dev (Vite proxy), absolute in production builds */
 export const API_BASE = import.meta.env.DEV
   ? API_PATH
