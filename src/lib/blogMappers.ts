@@ -1,15 +1,20 @@
 import type { Post } from '../types';
 import { isBlobUrl } from './api';
 
-/** Admin blog list/editor shape (English-first UI) */
+/** Admin blog list/editor shape (bilingual UI) */
 export interface BlogPostItem {
   id: string;
   slug: string;
   title: string;
+  titleAr: string;
   subtitle: string;
+  subtitleAr: string;
   excerpt: string;
+  excerptAr: string;
   body: string;
+  bodyAr: string;
   category: string;
+  categoryAr: string;
   readTime: string;
   author: string;
   img: string;
@@ -18,10 +23,15 @@ export interface BlogPostItem {
 
 export interface BlogFormInput {
   title: string;
+  titleAr: string;
   subtitle: string;
+  subtitleAr: string;
   excerpt: string;
+  excerptAr: string;
   body: string;
+  bodyAr: string;
   category: string;
+  categoryAr: string;
   readTime: string;
   readTimeTouched: boolean;
   autoReadTime: string;
@@ -49,10 +59,15 @@ export function postToBlogItem(post: Post): BlogPostItem {
     id: post.id,
     slug: post.slug,
     title: post.titleEn || '',
+    titleAr: post.titleAr || '',
     subtitle: post.seoDescriptionEn || '',
+    subtitleAr: post.seoDescriptionAr || '',
     excerpt: post.excerptEn || '',
+    excerptAr: post.excerptAr || '',
     body: post.bodyEn || '',
+    bodyAr: post.bodyAr || '',
     category: post.categoryEn || 'Insights',
+    categoryAr: post.categoryAr || '',
     readTime: formatReadTime(post.readTimeMinutes, post.bodyEn || ''),
     author: post.authorName || 'Author',
     img: post.coverImage && !isBlobUrl(post.coverImage) ? post.coverImage : '',
@@ -61,11 +76,30 @@ export function postToBlogItem(post: Post): BlogPostItem {
 }
 
 export function blogFormToPostPayload(form: BlogFormInput): Record<string, unknown> {
+  const titleEn = form.title.trim();
+  const titleAr = form.titleAr.trim() || titleEn;
+
   const excerptEn =
     form.excerpt.trim() ||
     form.subtitle.trim() ||
     form.body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) ||
-    form.title.trim();
+    titleEn;
+
+  const excerptAr =
+    form.excerptAr.trim() ||
+    form.subtitleAr.trim() ||
+    form.bodyAr.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) ||
+    titleAr ||
+    excerptEn;
+
+  const bodyEn = form.body;
+  const bodyAr = form.bodyAr.trim() ? form.bodyAr : form.body;
+
+  const categoryEn = form.category.trim() || 'Insights';
+  const categoryAr = form.categoryAr.trim() || categoryEn;
+
+  const seoDescriptionEn = form.subtitle.trim() || null;
+  const seoDescriptionAr = form.subtitleAr.trim() || seoDescriptionEn;
 
   const readTimeMinutes = form.readTimeTouched
     ? parseReadTimeMinutes(form.readTime)
@@ -77,16 +111,16 @@ export function blogFormToPostPayload(form: BlogFormInput): Record<string, unkno
   const status = form.status === 'draft' ? 'draft' : 'published';
 
   return {
-    titleEn: form.title.trim(),
-    titleAr: form.title.trim(),
-    excerptEn: excerptEn,
-    excerptAr: excerptEn,
-    bodyEn: form.body,
-    bodyAr: form.body,
-    categoryEn: form.category.trim() || 'Insights',
-    categoryAr: form.category.trim() || 'Insights',
-    seoDescriptionEn: form.subtitle.trim() || null,
-    seoDescriptionAr: form.subtitle.trim() || null,
+    titleEn,
+    titleAr,
+    excerptEn,
+    excerptAr,
+    bodyEn,
+    bodyAr,
+    categoryEn,
+    categoryAr,
+    seoDescriptionEn,
+    seoDescriptionAr,
     coverImage: safeCover,
     readTimeMinutes,
     authorName: form.author?.trim() || null,

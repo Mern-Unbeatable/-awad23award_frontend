@@ -15,17 +15,6 @@ import {
   selectNewsletterSubscribers,
 } from './newsletterSelectors';
 
-function downloadCsvBlob(blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'newsletter_subscribers.csv';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
 export function useNewsletterAdmin() {
   const dispatch = useAppDispatch();
   const subscribers = useAppSelector(selectNewsletterSubscribers);
@@ -45,10 +34,10 @@ export function useNewsletterAdmin() {
     [dispatch],
   );
 
-  const exportCsv = useCallback(async () => {
-    const blob = await dispatch(exportNewsletterCsv()).unwrap();
-    downloadCsvBlob(blob);
-  }, [dispatch]);
+  const exportCsv = useCallback(
+    () => dispatch(exportNewsletterCsv()).unwrap(),
+    [dispatch],
+  );
 
   const clearActionError = useCallback(
     () => dispatch(clearNewsletterActionError()),

@@ -21,6 +21,8 @@ interface BlogEditorProps {
   placeholder?: string;
   /** Sticky offset so the toolbar sits under the page chrome bar (CSS length). */
   toolbarStickyTop?: string;
+  /** Text direction for RTL (Arabic) content. */
+  dir?: 'ltr' | 'rtl';
 }
 
 type HeadingLevel = 'paragraph' | 1 | 2 | 3;
@@ -35,6 +37,7 @@ export function BlogEditor({
   onChange,
   placeholder = 'Write the article body the way readers will see it…',
   toolbarStickyTop = '0px',
+  dir = 'ltr',
 }: BlogEditorProps) {
   const [headingOpen, setHeadingOpen] = useState(false);
 
@@ -109,7 +112,7 @@ export function BlogEditor({
   const toolBtnActive = `${toolBtn} text-slate-900 bg-sky-50 ring-1 ring-[#38BDF8]/40`;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-slate-200/90 bg-white shadow-2xs">
+    <div className="rounded-2xl overflow-hidden border border-slate-200/90 bg-white shadow-2xs" dir={dir}>
       <div
         className="sticky z-10 bg-white/95 backdrop-blur-sm px-3 sm:px-4 py-2.5 flex flex-wrap items-center gap-1 border-b border-slate-100"
         style={{ top: toolbarStickyTop }}

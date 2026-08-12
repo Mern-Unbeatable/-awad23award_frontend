@@ -90,17 +90,24 @@ export function BlogPage() {
     usePagination(blogs, BLOGS_PAGE_SIZE);
 
   const [title, setTitle] = useState('');
+  const [titleAr, setTitleAr] = useState('');
   const [subtitle, setSubtitle] = useState('');
+  const [subtitleAr, setSubtitleAr] = useState('');
   const [excerpt, setExcerpt] = useState('');
+  const [excerptAr, setExcerptAr] = useState('');
   const [body, setBody] = useState('');
+  const [bodyAr, setBodyAr] = useState('');
   const [category, setCategory] = useState('');
+  const [categoryAr, setCategoryAr] = useState('');
   const [readTime, setReadTime] = useState('5 min read');
   const [readTimeTouched, setReadTimeTouched] = useState(false);
   const [img, setImg] = useState('');
   const [mode, setMode] = useState<'write' | 'preview'>('write');
+  const [contentLocale, setContentLocale] = useState<'en' | 'ar'>('en');
 
-  const wordCount = useMemo(() => countWords(body), [body]);
-  const autoReadTime = useMemo(() => estimateReadTime(body), [body]);
+  const activeBody = contentLocale === 'ar' ? bodyAr : body;
+  const wordCount = useMemo(() => countWords(activeBody), [activeBody]);
+  const autoReadTime = useMemo(() => estimateReadTime(body || bodyAr), [body, bodyAr]);
   const effectiveReadTime = readTimeTouched ? readTime : autoReadTime;
   const publishedLabel = useMemo(() => todayLabel(), []);
 
@@ -109,32 +116,44 @@ export function BlogPage() {
   useEffect(() => {
     if (isNewPage) {
       setTitle('');
+      setTitleAr('');
       setSubtitle('');
+      setSubtitleAr('');
       setExcerpt('');
+      setExcerptAr('');
       setBody('');
+      setBodyAr('');
       setCategory('AI Strategy & Digital Transformation');
+      setCategoryAr('');
       setReadTime('5 min read');
       setReadTimeTouched(false);
       setImg('');
       setEditingBlog(null);
       setSaveError('');
       setMode('write');
+      setContentLocale('en');
       return;
     }
     if (isEditPage && postId && !isLoading) {
       const blog = blogs.find((b) => b.id === postId);
       if (blog) {
         setTitle(blog.title);
+        setTitleAr(blog.titleAr || '');
         setSubtitle(blog.subtitle || '');
+        setSubtitleAr(blog.subtitleAr || '');
         setExcerpt(blog.excerpt);
+        setExcerptAr(blog.excerptAr || '');
         setBody(blog.body || `<p>${blog.excerpt}</p>`);
+        setBodyAr(blog.bodyAr || '');
         setCategory(blog.category || 'Insights');
+        setCategoryAr(blog.categoryAr || '');
         setReadTime(blog.readTime);
         setReadTimeTouched(true);
         setImg(blog.img);
         setEditingBlog(blog);
         setSaveError('');
         setMode('write');
+        setContentLocale('en');
       } else if (!loadError) {
         navigate(ADMIN_ROUTES.blogs, { replace: true });
       }
@@ -188,10 +207,15 @@ export function BlogPage() {
     try {
       const payload = blogFormToPostPayload({
         title,
+        titleAr,
         subtitle,
+        subtitleAr,
         excerpt,
+        excerptAr,
         body,
+        bodyAr,
         category,
+        categoryAr,
         readTime,
         readTimeTouched,
         autoReadTime,
@@ -258,13 +282,37 @@ export function BlogPage() {
 
         {mode === 'preview' ? (
           <div className='max-w-3xl mx-auto'>
+            <div className='mb-4 flex justify-center gap-2'>
+              <button
+                type='button'
+                onClick={() => setContentLocale('en')}
+                className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold cursor-pointer ${
+                  contentLocale === 'en'
+                    ? 'bg-[#38BDF8] text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                English
+              </button>
+              <button
+                type='button'
+                onClick={() => setContentLocale('ar')}
+                className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold cursor-pointer ${
+                  contentLocale === 'ar'
+                    ? 'bg-[#38BDF8] text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                العربية
+              </button>
+            </div>
             <BlogArticlePreview
-              title={title}
-              subtitle={subtitle}
-              category={category}
+              title={contentLocale === 'ar' ? titleAr || title : title}
+              subtitle={contentLocale === 'ar' ? subtitleAr || subtitle : subtitle}
+              category={contentLocale === 'ar' ? categoryAr || category : category}
               readTime={effectiveReadTime}
               coverImage={previewCover}
-              bodyHtml={body}
+              bodyHtml={contentLocale === 'ar' ? bodyAr || body : body}
               publishedLabel={publishedLabel}
             />
             <p className='mt-4 text-center text-[12px] text-slate-400 tabular-nums'>
@@ -276,31 +324,78 @@ export function BlogPage() {
             onSubmit={(e) => void handleSave(e)}
             className='grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start'
           >
-            <div className='min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-7'>
-              <input
-                type='text'
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder='Article title'
-                className='w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0'
-              />
-              <input
-                type='text'
-                value={subtitle}
-                onChange={(e) => setSubtitle(e.target.value)}
-                placeholder='Add a subtitle (optional)'
-                className='mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0'
-              />
+            <div className='min-w-0 space-y-6'>
+              <div className='rounded-xl border border-slate-200 bg-white p-5 sm:p-7'>
+                <div className='mb-4 flex items-center justify-between gap-3'>
+                  <span className='text-[11px] font-bold uppercase tracking-wider text-slate-500'>
+                    English content
+                  </span>
+                </div>
+                <input
+                  type='text'
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder='Article title'
+                  className='w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0'
+                />
+                <input
+                  type='text'
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  placeholder='Add a subtitle (optional)'
+                  className='mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0'
+                />
 
-              <div className='my-5 h-px bg-slate-100' />
+                <div className='my-5 h-px bg-slate-100' />
 
-              <div className='flex items-center justify-between mb-2.5 gap-3'>
-                <span className={labelCls + ' mb-0'}>Content</span>
-                <span className='text-[11.5px] text-slate-400 tabular-nums shrink-0'>
-                  {wordCount} words · {effectiveReadTime}
-                </span>
+                <div className='flex items-center justify-between mb-2.5 gap-3'>
+                  <span className={labelCls + ' mb-0'}>Content (EN)</span>
+                  <span className='text-[11.5px] text-slate-400 tabular-nums shrink-0'>
+                    {countWords(body)} words · {estimateReadTime(body)}
+                  </span>
+                </div>
+                <BlogEditor value={body} onChange={setBody} />
               </div>
-              <BlogEditor value={body} onChange={setBody} />
+
+              <div className='rounded-xl border border-slate-200 bg-white p-5 sm:p-7'>
+                <div className='mb-4 flex items-center justify-between gap-3'>
+                  <span className='text-[11px] font-bold uppercase tracking-wider text-slate-500'>
+                    Arabic content
+                  </span>
+                  <span className='text-[11px] text-slate-400'>RTL</span>
+                </div>
+                <input
+                  type='text'
+                  dir='rtl'
+                  value={titleAr}
+                  onChange={(e) => setTitleAr(e.target.value)}
+                  placeholder='عنوان المقال'
+                  className='w-full bg-transparent border-0 p-0 text-[26px] sm:text-[30px] font-bold text-slate-900 tracking-tight placeholder:text-slate-300 focus:outline-none focus:ring-0 text-end'
+                />
+                <input
+                  type='text'
+                  dir='rtl'
+                  value={subtitleAr}
+                  onChange={(e) => setSubtitleAr(e.target.value)}
+                  placeholder='أضف عنوانًا فرعيًا (اختياري)'
+                  className='mt-2 w-full bg-transparent border-0 p-0 text-[15.5px] text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-0 text-end'
+                />
+
+                <div className='my-5 h-px bg-slate-100' />
+
+                <div className='flex items-center justify-between mb-2.5 gap-3'>
+                  <span className={labelCls + ' mb-0'}>Content (AR)</span>
+                  <span className='text-[11.5px] text-slate-400 tabular-nums shrink-0'>
+                    {countWords(bodyAr)} words · {estimateReadTime(bodyAr)}
+                  </span>
+                </div>
+                <BlogEditor
+                  value={bodyAr}
+                  onChange={setBodyAr}
+                  dir='rtl'
+                  placeholder='اكتب محتوى المقال كما سيظهر للقراء…'
+                />
+              </div>
             </div>
 
             <aside className='space-y-5 lg:sticky lg:top-6'>
@@ -315,13 +410,24 @@ export function BlogPage() {
 
               <div className='rounded-xl border border-slate-200 bg-white p-5 space-y-4'>
                 <div>
-                  <label className={labelCls}>Category</label>
+                  <label className={labelCls}>Category (EN)</label>
                   <input
                     type='text'
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder='e.g. AI Strategy'
                     className={fieldCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Category (AR)</label>
+                  <input
+                    type='text'
+                    dir='rtl'
+                    value={categoryAr}
+                    onChange={(e) => setCategoryAr(e.target.value)}
+                    placeholder='مثال: استراتيجية الذكاء الاصطناعي'
+                    className={`${fieldCls} text-end`}
                   />
                 </div>
                 <div>
@@ -342,15 +448,28 @@ export function BlogPage() {
                 </div>
               </div>
 
-              <div className='rounded-xl border border-slate-200 bg-white p-5'>
-                <label className={labelCls}>Card excerpt</label>
-                <textarea
-                  rows={3}
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder='Short teaser for list & homepage cards. Leave blank to auto-generate.'
-                  className={`${fieldCls} resize-y min-h-21`}
-                />
+              <div className='rounded-xl border border-slate-200 bg-white p-5 space-y-4'>
+                <div>
+                  <label className={labelCls}>Card excerpt (EN)</label>
+                  <textarea
+                    rows={3}
+                    value={excerpt}
+                    onChange={(e) => setExcerpt(e.target.value)}
+                    placeholder='Short teaser for list & homepage cards. Leave blank to auto-generate.'
+                    className={`${fieldCls} resize-y min-h-21`}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Card excerpt (AR)</label>
+                  <textarea
+                    rows={3}
+                    dir='rtl'
+                    value={excerptAr}
+                    onChange={(e) => setExcerptAr(e.target.value)}
+                    placeholder='مقتطف قصير لبطاقات القائمة والصفحة الرئيسية.'
+                    className={`${fieldCls} resize-y min-h-21 text-end`}
+                  />
+                </div>
               </div>
 
               <div className='flex items-center gap-2'>

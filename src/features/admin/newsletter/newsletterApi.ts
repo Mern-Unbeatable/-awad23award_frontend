@@ -10,4 +10,6 @@ export const deleteSubscriberRequest = (id: string) =>
   http.delete(NEWSLETTER_ENDPOINTS.byId(id));
 
 export const exportSubscribersCsvRequest = () =>
-  http.get<Blob>(NEWSLETTER_ENDPOINTS.EXPORT, { responseType: 'blob' });
+  http.get(NEWSLETTER_ENDPOINTS.EXPORT, {
+    responseType: 'blob',
+  });
