@@ -23,3 +23,6 @@ export const SERVER_URL = serverUrl;
 export const API_BASE = import.meta.env.DEV
   ? API_PATH
   : `${serverUrl}${API_PATH}`;
+
+/** Google reCAPTCHA v2 site key (public). Secret key stays on the server. */
+export const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY ?? '';

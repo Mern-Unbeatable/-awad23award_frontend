@@ -1,21 +1,36 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useRef, useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { useLocale } from '../../hooks/LocaleContext';
 import { subscribeRequest } from '../../features/public/newsletter/newsletterApi';
+import { NewsletterRecaptcha } from '../../features/public/newsletter/NewsletterRecaptcha';
 import { ArrowIcon } from './ArrowIcon';
 
 export function HomeNewsletter() {
   const { t } = useLocale();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [email, setEmail] = useState('');
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'ok' | 'err'>('idle');
+
+  function resetRecaptcha() {
+    recaptchaRef.current?.reset();
+    setRecaptchaToken(null);
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!recaptchaToken) {
+      setStatus('err');
+      return;
+    }
     try {
-      await subscribeRequest(email);
+      await subscribeRequest(email, recaptchaToken);
       setStatus('ok');
       setEmail('');
+      resetRecaptcha();
     } catch {
       setStatus('err');
+      resetRecaptcha();
     }
   }
 
@@ -53,6 +68,9 @@ export function HomeNewsletter() {
             {t('Subscribe', 'اشترك')}
             <ArrowIcon />
           </button>
+        </div>
+        <div className="mt-3">
+          <NewsletterRecaptcha ref={recaptchaRef} onChange={setRecaptchaToken} />
         </div>
         <input type="text" name="website" className="sr-only" tabIndex={-1} autoComplete="off" />
         {status === 'ok' && <p className="ref-nl-status is-ok">{t('You are on the list.', 'أنت على القائمة.')}</p>}

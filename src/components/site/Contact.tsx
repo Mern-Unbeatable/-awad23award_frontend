@@ -1,22 +1,37 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { useLocale } from '../../hooks/LocaleContext';
 import { subscribeRequest } from '../../features/public/newsletter/newsletterApi';
+import { NewsletterRecaptcha } from '../../features/public/newsletter/NewsletterRecaptcha';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Contact() {
   const { t } = useLocale();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [email, setEmail] = useState('');
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'ok' | 'err'>('idle');
+
+  const resetRecaptcha = () => {
+    recaptchaRef.current?.reset();
+    setRecaptchaToken(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
+    if (!recaptchaToken) {
+      setStatus('err');
+      return;
+    }
     try {
-      await subscribeRequest(email.trim());
+      await subscribeRequest(email.trim(), recaptchaToken);
       setStatus('ok');
       setEmail('');
+      resetRecaptcha();
     } catch {
       setStatus('err');
+      resetRecaptcha();
     }
   };
 
@@ -61,6 +76,9 @@ export function Contact() {
                   >
                     {t('Submit', 'إرسال')}
                   </button>
+                </div>
+                <div className="mt-3">
+                  <NewsletterRecaptcha ref={recaptchaRef} onChange={setRecaptchaToken} />
                 </div>
                 {status === 'ok' && (
                   <p className="mt-2 text-xs font-semibold text-emerald-600">
