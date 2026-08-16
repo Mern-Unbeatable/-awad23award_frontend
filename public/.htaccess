@@ -1,0 +1,21 @@
+# Apache SPA fallback for React Router (Hostinger public_html).
+# Vite copies everything in /public into /dist, so this file is included in the build output.
+# Upload the entire dist/ folder contents (including this .htaccess) into public_html.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Do not rewrite the SPA entry itself
+  RewriteRule ^index\.html$ - [L]
+
+  # Serve real files and folders as-is (JS/CSS hashed assets, images, favicon)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Send every other path (/admin/login, /ar/..., etc.) to index.html
+  RewriteRule . /index.html [QSA,L]
+</IfModule>
+
+# Fallback if a request still looks like a missing file
+ErrorDocument 404 /index.html
