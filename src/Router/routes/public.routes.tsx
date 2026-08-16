@@ -1,17 +1,49 @@
 import { Navigate, Route } from 'react-router-dom';
 import { PublicLayout } from '../../components/layout/public/PublicLayout';
 import { HomePage } from '../../pages/public/HomePage';
-import { AboutPage } from '../../pages/public/AboutPage';
-import { ServicesPage } from '../../pages/public/ServicesPage';
-import { ProductPage } from '../../pages/public/ProductPage';
-import { JournalPage } from '../../pages/public/JournalPage';
-import { JournalPostPage } from '../../pages/public/JournalPostPage';
-import { ServicePage } from '../../pages/public/ServicePage';
-import { GalleryPage } from '../../pages/public/GalleryPage';
-import { CaseStudyPage } from '../../pages/public/CaseStudyPage';
-import { ContactPage } from '../../pages/public/ContactPage';
-import { BookCallPage } from '../../pages/public/BookCallPage';
 import { publicPaths } from '../publicPaths';
+import { lazyNamed } from '../lazyPages';
+
+const AboutPage = lazyNamed(
+  () => import('../../pages/public/AboutPage'),
+  'AboutPage',
+);
+const ServicesPage = lazyNamed(
+  () => import('../../pages/public/ServicesPage'),
+  'ServicesPage',
+);
+const ProductPage = lazyNamed(
+  () => import('../../pages/public/ProductPage'),
+  'ProductPage',
+);
+const JournalPage = lazyNamed(
+  () => import('../../pages/public/JournalPage'),
+  'JournalPage',
+);
+const JournalPostPage = lazyNamed(
+  () => import('../../pages/public/JournalPostPage'),
+  'JournalPostPage',
+);
+const ServicePage = lazyNamed(
+  () => import('../../pages/public/ServicePage'),
+  'ServicePage',
+);
+const GalleryPage = lazyNamed(
+  () => import('../../pages/public/GalleryPage'),
+  'GalleryPage',
+);
+const CaseStudyPage = lazyNamed(
+  () => import('../../pages/public/CaseStudyPage'),
+  'CaseStudyPage',
+);
+const ContactPage = lazyNamed(
+  () => import('../../pages/public/ContactPage'),
+  'ContactPage',
+);
+const BookCallPage = lazyNamed(
+  () => import('../../pages/public/BookCallPage'),
+  'BookCallPage',
+);
 
 export const publicRoutes = (
   <Route element={<PublicLayout />}>

@@ -25,5 +25,30 @@ export default defineConfig(({ mode }) => {
       host: true,
       allowedHosts: true,
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('@tiptap') || id.includes('prosemirror')) {
+              return 'tiptap';
+            }
+            if (id.includes('gsap') || id.includes('@gsap') || id.includes('lenis')) {
+              return 'motion';
+            }
+            if (
+              /[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(
+                id,
+              )
+            ) {
+              return 'react';
+            }
+            if (id.includes('@reduxjs') || id.includes('react-redux')) {
+              return 'redux';
+            }
+          },
+        },
+      },
+    },
   };
 });

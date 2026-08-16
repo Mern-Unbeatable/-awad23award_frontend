@@ -1,12 +1,32 @@
 import { Navigate, Route } from 'react-router-dom';
 import { RoleRoute } from '../RoleRoute';
-import { HomepagePage } from '../../pages/admin/HomepagePage';
-import { ServicesPage } from '../../pages/admin/ServicesPage';
-import { BlogPage } from '../../pages/admin/BlogPage';
-import { PortfolioPage } from '../../pages/admin/PortfolioPage';
-import { MessagesPage } from '../../pages/admin/MessagesPage';
-import { SettingsPage } from '../../pages/admin/SettingsPage';
 import { ADMIN_ROUTES } from '../adminRoutes';
+import { lazyNamed } from '../lazyPages';
+
+const HomepagePage = lazyNamed(
+  () => import('../../pages/admin/HomepagePage'),
+  'HomepagePage',
+);
+const ServicesPage = lazyNamed(
+  () => import('../../pages/admin/ServicesPage'),
+  'ServicesPage',
+);
+const BlogPage = lazyNamed(
+  () => import('../../pages/admin/BlogPage'),
+  'BlogPage',
+);
+const PortfolioPage = lazyNamed(
+  () => import('../../pages/admin/PortfolioPage'),
+  'PortfolioPage',
+);
+const MessagesPage = lazyNamed(
+  () => import('../../pages/admin/MessagesPage'),
+  'MessagesPage',
+);
+const SettingsPage = lazyNamed(
+  () => import('../../pages/admin/SettingsPage'),
+  'SettingsPage',
+);
 
 /** Authenticated routes available to ADMIN and EDITOR (matches backend authorize). */
 export const sharedRoutes = (

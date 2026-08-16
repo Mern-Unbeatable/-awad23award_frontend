@@ -1,6 +1,11 @@
 import { Route } from 'react-router-dom';
 import { RoleRoute } from '../RoleRoute';
-import { NewsletterPage } from '../../pages/admin/NewsletterPage';
+import { lazyNamed } from '../lazyPages';
+
+const NewsletterPage = lazyNamed(
+  () => import('../../pages/admin/NewsletterPage'),
+  'NewsletterPage',
+);
 
 /** ADMIN-only routes (newsletter API requires ADMIN role on the server). */
 export const adminRoutes = (

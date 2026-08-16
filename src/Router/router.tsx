@@ -1,11 +1,20 @@
+import { Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { AdminLayout } from '../components/layout/admin/AdminLayout';
-import { LoginPage } from '../pages/auth/LoginPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { HomeRedirect } from './HomeRedirect';
 import { publicRoutes } from './routes/public.routes';
 import { sharedRoutes } from './routes/shared.routes';
 import { adminRoutes } from './routes/admin.routes';
+import { lazyNamed, RouteFallback } from './lazyPages';
+
+const LoginPage = lazyNamed(
+  () => import('../pages/auth/LoginPage'),
+  'LoginPage',
+);
+const AdminLayout = lazyNamed(
+  () => import('../components/layout/admin/AdminLayout'),
+  'AdminLayout',
+);
 
 /**
  * Portfolio App Router
@@ -21,24 +30,26 @@ import { adminRoutes } from './routes/admin.routes';
  */
 export function AppRouter() {
   return (
-    <Routes>
-      {/* ── Public site ─────────────────────────────────────────── */}
-      {publicRoutes}
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        {/* ── Public site ─────────────────────────────────────────── */}
+        {publicRoutes}
 
-      {/* ── Auth ────────────────────────────────────────────────── */}
-      <Route path='/admin/login' element={<LoginPage />} />
+        {/* ── Auth ────────────────────────────────────────────────── */}
+        <Route path='/admin/login' element={<LoginPage />} />
 
-      {/* ── Authenticated admin application ─────────────────────── */}
-      <Route element={<ProtectedRoute />}>
-        <Route path='/admin' element={<AdminLayout />}>
-          <Route index element={<HomeRedirect />} />
-          {sharedRoutes}
-          {adminRoutes}
+        {/* ── Authenticated admin application ─────────────────────── */}
+        <Route element={<ProtectedRoute />}>
+          <Route path='/admin' element={<AdminLayout />}>
+            <Route index element={<HomeRedirect />} />
+            {sharedRoutes}
+            {adminRoutes}
+          </Route>
         </Route>
-      </Route>
 
-      {/* ── 404 ─────────────────────────────────────────────────── */}
-      <Route path='*' element={<Navigate to='/' replace />} />
-    </Routes>
+        {/* ── 404 ─────────────────────────────────────────────────── */}
+        <Route path='*' element={<Navigate to='/' replace />} />
+      </Routes>
+    </Suspense>
   );
 }
