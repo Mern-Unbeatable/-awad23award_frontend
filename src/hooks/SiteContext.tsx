@@ -93,8 +93,6 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       settingsResult,
       sectionsResult,
       servicesResult,
-      productsResult,
-      testimonialsResult,
       postsResult,
       galleryResult,
       schedulingResult,
@@ -102,8 +100,6 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       publicApi.getSettings(),
       publicApi.getSections(),
       publicApi.getServices(),
-      publicApi.getProducts(),
-      publicApi.getTestimonials(),
       dispatch(fetchPublicPosts()),
       dispatch(fetchPublicGallery()),
       dispatch(fetchPublicScheduling()),
@@ -115,12 +111,6 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       sectionsResult.status === 'fulfilled' ? sectionsResult.value : fallbackSections;
     const svc =
       servicesResult.status === 'fulfilled' ? servicesResult.value : fallbackServices;
-    const prod =
-      productsResult.status === 'fulfilled' ? productsResult.value : fallbackProducts;
-    const t =
-      testimonialsResult.status === 'fulfilled'
-        ? testimonialsResult.value
-        : fallbackTestimonials;
 
     const rawBrand = s.brandName || fallbackSettings.brandName;
     const brand = rawBrand
@@ -170,14 +160,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         return { ...service, imageUrl: fallback?.imageUrl || service.imageUrl };
       }),
     );
-    setProducts(
-      (prod.length ? prod : fallbackProducts).map((product) => {
-        if (product.imageUrl) return product;
-        const fallback = fallbackProducts.find((f) => f.slug === product.slug);
-        return { ...product, imageUrl: fallback?.imageUrl || product.imageUrl };
-      }),
-    );
-    setTestimonials(t.length ? t : fallbackTestimonials);
+    setProducts(fallbackProducts);
+    setTestimonials(fallbackTestimonials);
     setSiteLoading(false);
 
     void postsResult;
