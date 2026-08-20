@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
-import { Plus, ChevronRight, Upload, X, ImageIcon } from 'lucide-react';
+import { Plus, ChevronRight, Upload, X, ImageIcon, Lock, Check } from 'lucide-react';
 import {
   adminApi,
   extractUploadedUrl,
@@ -509,12 +509,251 @@ function formFromItem(item: GalleryItem): PortfolioForm {
   };
 }
 
+const REQUIRED_MSG = 'This field is required.';
+
+function isBlank(value: unknown): boolean {
+  if (value == null) return true;
+  if (typeof value === 'string') return value.trim() === '';
+  return false;
+}
+
+function hasNonBlankLine(lines: string[] | undefined): boolean {
+  return Boolean(lines?.some((line) => !isBlank(line)));
+}
+
+function isChallengeItemEmpty(item: ChallengeItem): boolean {
+  return isBlank(item.title) && isBlank(item.body);
+}
+
+function isChallengeItemComplete(item: ChallengeItem): boolean {
+  return !isBlank(item.iconName) && !isBlank(item.title) && !isBlank(item.body);
+}
+
+function isApproachCardEmpty(card: ApproachCard): boolean {
+  return isBlank(card.title) && !hasNonBlankLine(card.bullets);
+}
+
+function isApproachCardComplete(card: ApproachCard): boolean {
+  return !isBlank(card.title) && hasNonBlankLine(card.bullets);
+}
+
+function isLeadershipCardEmpty(card: LeadershipCard): boolean {
+  return isBlank(card.title) && isBlank(card.body);
+}
+
+function isLeadershipCardComplete(card: LeadershipCard): boolean {
+  return !isBlank(card.iconName) && !isBlank(card.title) && !isBlank(card.body);
+}
+
+function isSolutionCardEmpty(card: SolutionCard): boolean {
+  return isBlank(card.tag) && isBlank(card.title) && isBlank(card.body);
+}
+
+function isSolutionCardComplete(card: SolutionCard): boolean {
+  return !isBlank(card.tag) && !isBlank(card.title) && !isBlank(card.body);
+}
+
+function isOutcomeItemEmpty(item: OutcomeItem): boolean {
+  return isBlank(item.text);
+}
+
+function isOutcomeItemComplete(item: OutcomeItem): boolean {
+  return !isBlank(item.text);
+}
+
+function isSkillCardEmpty(card: SkillCard): boolean {
+  return isBlank(card.category) && isBlank(card.title) && isBlank(card.body);
+}
+
+function isSkillCardComplete(card: SkillCard): boolean {
+  return (
+    !isBlank(card.num) &&
+    !isBlank(card.category) &&
+    !isBlank(card.title) &&
+    !isBlank(card.body)
+  );
+}
+
+function countCompleteItems<T>(items: T[], isComplete: (item: T) => boolean): number {
+  return items.filter(isComplete).length;
+}
+
+type PortfolioFieldErrors = Record<string, string>;
+
+function validatePortfolioForm(form: PortfolioForm): {
+  errors: PortfolioFieldErrors;
+  firstTab: number;
+} {
+  const errors: PortfolioFieldErrors = {};
+
+  if (isBlank(form.titleEn)) errors.titleEn = REQUIRED_MSG;
+  if (isBlank(form.slug)) errors.slug = REQUIRED_MSG;
+
+  form.challengeItems.forEach((item, idx) => {
+    if (isChallengeItemEmpty(item)) return;
+    if (isBlank(item.iconName)) errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
+    if (isBlank(item.title)) errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
+    if (isBlank(item.body)) errors[`challengeItems.${idx}.body`] = REQUIRED_MSG;
+  });
+
+  form.approachCards.forEach((card, idx) => {
+    if (isApproachCardEmpty(card)) return;
+    if (isBlank(card.title)) errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
+    if (!hasNonBlankLine(card.bullets)) errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
+  });
+
+  form.leadershipCards.forEach((card, idx) => {
+    if (isLeadershipCardEmpty(card)) return;
+    if (isBlank(card.iconName)) errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
+    if (isBlank(card.title)) errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
+    if (isBlank(card.body)) errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
+  });
+
+  form.solutionCards.forEach((card, idx) => {
+    if (isSolutionCardEmpty(card)) return;
+    if (isBlank(card.tag)) errors[`solutionCards.${idx}.tag`] = REQUIRED_MSG;
+    if (isBlank(card.title)) errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
+    if (isBlank(card.body)) errors[`solutionCards.${idx}.body`] = REQUIRED_MSG;
+  });
+
+  form.outcomeItems.forEach((item, idx) => {
+    if (isOutcomeItemEmpty(item)) return;
+    if (isBlank(item.text)) errors[`outcomeItems.${idx}.text`] = REQUIRED_MSG;
+  });
+
+  form.skillCards.forEach((card, idx) => {
+    if (isSkillCardEmpty(card)) return;
+    if (isBlank(card.num)) errors[`skillCards.${idx}.num`] = REQUIRED_MSG;
+    if (isBlank(card.category)) errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
+    if (isBlank(card.title)) errors[`skillCards.${idx}.title`] = REQUIRED_MSG;
+    if (isBlank(card.body)) errors[`skillCards.${idx}.body`] = REQUIRED_MSG;
+  });
+
+  const keys = Object.keys(errors);
+  let firstTab = 0;
+  if (keys.some((key) => key.startsWith('skillCards.'))) firstTab = 6;
+  if (keys.some((key) => key.startsWith('outcomeItems.'))) firstTab = 5;
+  if (keys.some((key) => key.startsWith('solutionCards.'))) firstTab = 4;
+  if (keys.some((key) => key.startsWith('leadershipCards.'))) firstTab = 3;
+  if (keys.some((key) => key.startsWith('approachCards.'))) firstTab = 2;
+  if (keys.some((key) => key.startsWith('challengeItems.'))) firstTab = 1;
+  if (keys.some((key) => key === 'titleEn' || key === 'slug')) firstTab = 0;
+
+  return { errors, firstTab };
+}
+
+function validatePortfolioStep(
+  form: PortfolioForm,
+  tabIndex: number,
+): PortfolioFieldErrors {
+  const errors: PortfolioFieldErrors = {};
+  const itemRequired = 'Complete this item to continue.';
+
+  if (tabIndex === 0) {
+    if (isBlank(form.titleEn)) errors.titleEn = REQUIRED_MSG;
+    if (isBlank(form.slug)) errors.slug = REQUIRED_MSG;
+    return errors;
+  }
+
+  if (tabIndex === 1) {
+    if (form.challengeItems.length < 5) {
+      errors.challengeItems = 'Add 5 challenge items to continue.';
+    }
+    form.challengeItems.forEach((item, idx) => {
+      if (isBlank(item.iconName)) errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
+      if (isBlank(item.title)) errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
+      if (isBlank(item.body)) errors[`challengeItems.${idx}.body`] = REQUIRED_MSG;
+    });
+    return errors;
+  }
+
+  if (tabIndex === 2) {
+    if (form.approachCards.length < 4) {
+      errors.approachCards = 'Add 4 approach cards to continue.';
+    }
+    form.approachCards.forEach((card, idx) => {
+      if (isBlank(card.title)) errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
+      if (!hasNonBlankLine(card.bullets)) errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
+    });
+    return errors;
+  }
+
+  if (tabIndex === 3) {
+    if (form.leadershipCards.length < 4) {
+      errors.leadershipCards = 'Add 4 leadership cards to continue.';
+    }
+    form.leadershipCards.forEach((card, idx) => {
+      if (isBlank(card.iconName)) errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
+      if (isBlank(card.title)) errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
+      if (isBlank(card.body)) errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
+    });
+    return errors;
+  }
+
+  if (tabIndex === 4) {
+    if (form.solutionCards.length < 4) {
+      errors.solutionCards = 'Add 4 feature cards to continue.';
+    }
+    form.solutionCards.forEach((card, idx) => {
+      if (isBlank(card.tag)) errors[`solutionCards.${idx}.tag`] = REQUIRED_MSG;
+      if (isBlank(card.title)) errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
+      if (isBlank(card.body)) errors[`solutionCards.${idx}.body`] = REQUIRED_MSG;
+    });
+    return errors;
+  }
+
+  if (tabIndex === 5) {
+    if (form.outcomeItems.length < 3) {
+      errors.outcomeItems = 'Add 3 outcome items to continue.';
+    }
+    form.outcomeItems.forEach((item, idx) => {
+      if (isBlank(item.text)) errors[`outcomeItems.${idx}.text`] = REQUIRED_MSG;
+    });
+    return errors;
+  }
+
+  if (tabIndex === 6) {
+    if (form.skillCards.length < 7) {
+      errors.skillCards = 'Add 7 skill cards to continue.';
+    }
+    form.skillCards.forEach((card, idx) => {
+      if (isBlank(card.num)) errors[`skillCards.${idx}.num`] = REQUIRED_MSG;
+      if (isBlank(card.category)) errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
+      if (isBlank(card.title)) errors[`skillCards.${idx}.title`] = REQUIRED_MSG;
+      if (isBlank(card.body)) errors[`skillCards.${idx}.body`] = REQUIRED_MSG;
+    });
+  }
+
+  return errors;
+}
+
+function isPortfolioStepComplete(form: PortfolioForm, tabIndex: number): boolean {
+  return Object.keys(validatePortfolioStep(form, tabIndex)).length === 0;
+}
+
+function isPortfolioStepUnlocked(form: PortfolioForm, tabIndex: number): boolean {
+  if (tabIndex <= 0) return true;
+  for (let step = 0; step < tabIndex; step += 1) {
+    if (!isPortfolioStepComplete(form, step)) return false;
+  }
+  return true;
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className='text-[11.5px] text-red-500 mt-1.5 font-medium'>{message}</p>
+  );
+}
+
 function Field({
   label,
   children,
+  error,
 }: {
   label: string;
   children: React.ReactNode;
+  error?: string;
 }) {
   return (
     <div>
@@ -522,6 +761,7 @@ function Field({
         {label}
       </label>
       {children}
+      <FieldError message={error} />
     </div>
   );
 }
@@ -529,6 +769,14 @@ function Field({
 const inputCls =
   'w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13.5px] text-slate-800 focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all';
 const textareaCls = `${inputCls} resize-none`;
+
+function fieldInputCls(hasError?: boolean) {
+  return hasError ? `${inputCls} border-red-400 focus:border-red-500` : inputCls;
+}
+
+function fieldTextareaCls(hasError?: boolean) {
+  return hasError ? `${textareaCls} border-red-400 focus:border-red-500` : textareaCls;
+}
 
 const TABS = [
   'Overview',
@@ -584,6 +832,8 @@ export function PortfolioPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [form, setForm] = useState<PortfolioForm>(EMPTY_FORM);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<PortfolioFieldErrors>({});
+  const [showFieldErrors, setShowFieldErrors] = useState(false);
 
   const { page, setPage, totalPages, paginatedItems, totalItems, pageSize } =
     usePagination(items, PORTFOLIO_PAGE_SIZE);
@@ -594,6 +844,8 @@ export function PortfolioPage() {
       setEditingId(null);
       setActiveTab(0);
       setError('');
+      setFieldErrors({});
+      setShowFieldErrors(false);
       return;
     }
     if (isEditPage && itemId && !loading) {
@@ -603,11 +855,23 @@ export function PortfolioPage() {
         setEditingId(item.id);
         setActiveTab(0);
         setError('');
+        setFieldErrors({});
+        setShowFieldErrors(false);
       } else {
         navigate(ADMIN_ROUTES.portfolio, { replace: true });
       }
     }
   }, [isNewPage, isEditPage, itemId, items, loading, navigate]);
+
+  useEffect(() => {
+    if (!showFieldErrors) return;
+    const errors = validatePortfolioStep(form, activeTab);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length === 0) {
+      setError('');
+      setShowFieldErrors(false);
+    }
+  }, [form, showFieldErrors, activeTab]);
 
   function closeForm() {
     navigate(ADMIN_ROUTES.portfolio);
@@ -618,6 +882,35 @@ export function PortfolioPage() {
     value: PortfolioForm[K],
   ) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function goToTab(target: number) {
+    if (target === activeTab) return;
+    if (!isPortfolioStepUnlocked(form, target)) return;
+    if (target < activeTab) {
+      setActiveTab(target);
+      return;
+    }
+
+    for (let step = activeTab; step < target; step += 1) {
+      const stepErrors = validatePortfolioStep(form, step);
+      if (Object.keys(stepErrors).length > 0) {
+        setFieldErrors(stepErrors);
+        setShowFieldErrors(true);
+        setActiveTab(step);
+        setError('Please complete this step before continuing.');
+        return;
+      }
+    }
+
+    setFieldErrors({});
+    setShowFieldErrors(false);
+    setError('');
+    setActiveTab(target);
+  }
+
+  function goToNextStep() {
+    goToTab(activeTab + 1);
   }
 
   function openCreate() {
@@ -642,6 +935,17 @@ export function PortfolioPage() {
   }
 
   async function handleSave() {
+    const validation = validatePortfolioForm(form);
+    if (Object.keys(validation.errors).length > 0) {
+      setFieldErrors(validation.errors);
+      setShowFieldErrors(true);
+      setActiveTab(validation.firstTab);
+      setError('Please fill in all required fields.');
+      return;
+    }
+    setFieldErrors({});
+    setShowFieldErrors(false);
+
     if (!form.titleEn.trim() || !form.slug.trim()) {
       setError('Title (EN) and Slug are required.');
       setActiveTab(0);
@@ -700,9 +1004,9 @@ export function PortfolioPage() {
       <div className='space-y-6'>
         {/* Titles */}
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Title (EN)'>
+          <Field label='Title (EN)' error={fieldErrors.titleEn}>
             <input
-              className={inputCls}
+              className={fieldInputCls(Boolean(fieldErrors.titleEn))}
               value={form.titleEn}
               onChange={(e) => setField('titleEn', e.target.value)}
               placeholder='AD Squared'
@@ -721,9 +1025,9 @@ export function PortfolioPage() {
 
         {/* Slug & Tag */}
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Slug (URL path)'>
+          <Field label='Slug (URL path)' error={fieldErrors.slug}>
             <input
-              className={inputCls}
+              className={fieldInputCls(Boolean(fieldErrors.slug))}
               value={form.slug}
               onChange={(e) => setField('slug', e.target.value)}
               placeholder='ad-squared'
@@ -886,9 +1190,9 @@ export function PortfolioPage() {
 
         {/* Challenge items */}
         <div>
-          <div className='flex items-center justify-between mb-3'>
+          <div className='flex items-center justify-between mb-1.5'>
             <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
-              Challenge Items (max 5)
+              Challenge Items ({form.challengeItems.length}/5)
             </label>
             {form.challengeItems.length < 5 && (
               <button
@@ -900,13 +1204,19 @@ export function PortfolioPage() {
                     body: '',
                   })
                 }
-                className='text-[12px] font-semibold text-[#38BDF8] hover:text-[#20B0F0] flex items-center gap-1 cursor-pointer transition-colors'
+                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
               >
+                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
                 <Plus className='w-3.5 h-3.5' /> Add Item
               </button>
             )}
           </div>
-          <div className='space-y-3'>
+          <p className='text-[12px] text-slate-400 mb-3'>
+            Add 5 challenge items in total. Each item needs an icon, title, and
+            body.
+          </p>
+          <FieldError message={fieldErrors.challengeItems} />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {form.challengeItems.map((ci, idx) => (
               <div
                 key={idx}
@@ -925,7 +1235,9 @@ export function PortfolioPage() {
                   </button>
                 </div>
                 <input
-                  className={inputCls}
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`challengeItems.${idx}.iconName`]),
+                  )}
                   placeholder='Icon name (Users, AlertTriangle, FileText, Code2, BookOpen)'
                   value={ci.iconName}
                   onChange={(e) =>
@@ -934,8 +1246,13 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`challengeItems.${idx}.iconName`]}
+                />
                 <input
-                  className={inputCls}
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`challengeItems.${idx}.title`]),
+                  )}
                   placeholder='Title'
                   value={ci.title}
                   onChange={(e) =>
@@ -944,8 +1261,13 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`challengeItems.${idx}.title`]}
+                />
                 <textarea
-                  className={textareaCls}
+                  className={fieldTextareaCls(
+                    Boolean(fieldErrors[`challengeItems.${idx}.body`]),
+                  )}
                   rows={2}
                   placeholder='Body text'
                   value={ci.body}
@@ -955,8 +1277,31 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`challengeItems.${idx}.body`]}
+                />
               </div>
             ))}
+            {form.challengeItems.length < 5 &&
+              Array.from({ length: 5 - form.challengeItems.length }).map(
+                (_, slot) => (
+                  <button
+                    key={`challenge-add-slot-${slot}`}
+                    type='button'
+                    onClick={() =>
+                      addItem('challengeItems', {
+                        iconName: 'AlertTriangle',
+                        title: '',
+                        body: '',
+                      })
+                    }
+                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                  >
+                    <Plus className='w-8 h-8' />
+                    <span className='text-[13px] font-semibold'>Add Item</span>
+                  </button>
+                ),
+              )}
           </div>
         </div>
 
@@ -1004,9 +1349,9 @@ export function PortfolioPage() {
         </div>
 
         <div>
-          <div className='flex items-center justify-between mb-3'>
+          <div className='flex items-center justify-between mb-1.5'>
             <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
-              Approach Cards (max 4)
+              Approach Cards ({form.approachCards.length}/4)
             </label>
             {form.approachCards.length < 4 && (
               <button
@@ -1014,13 +1359,19 @@ export function PortfolioPage() {
                 onClick={() =>
                   addItem('approachCards', { title: '', bullets: [''] })
                 }
-                className='text-[12px] font-semibold text-[#38BDF8] hover:text-[#20B0F0] flex items-center gap-1 cursor-pointer'
+                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
               >
+                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
                 <Plus className='w-3.5 h-3.5' /> Add Card
               </button>
             )}
           </div>
-          <div className='space-y-4'>
+          <p className='text-[12px] text-slate-400 mb-3'>
+            Add 4 approach cards in total. Each card needs a title and bullet
+            points.
+          </p>
+          <FieldError message={fieldErrors.approachCards} />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {form.approachCards.map((card, idx) => (
               <div
                 key={idx}
@@ -1039,7 +1390,9 @@ export function PortfolioPage() {
                   </button>
                 </div>
                 <input
-                  className={inputCls}
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`approachCards.${idx}.title`]),
+                  )}
                   placeholder='Card Title (e.g. Technical Archaeology)'
                   value={card.title}
                   onChange={(e) =>
@@ -1048,12 +1401,17 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`approachCards.${idx}.title`]}
+                />
                 <div>
                   <label className='block text-[11px] text-slate-400 font-semibold mb-1'>
                     Bullet Points (one per line)
                   </label>
                   <textarea
-                    className={textareaCls}
+                    className={fieldTextareaCls(
+                      Boolean(fieldErrors[`approachCards.${idx}.bullets`]),
+                    )}
                     rows={4}
                     value={card.bullets.join('\n')}
                     onChange={(e) =>
@@ -1063,9 +1421,28 @@ export function PortfolioPage() {
                     }
                     placeholder='Each line becomes a bullet point'
                   />
+                  <FieldError
+                    message={fieldErrors[`approachCards.${idx}.bullets`]}
+                  />
                 </div>
               </div>
             ))}
+            {form.approachCards.length < 4 &&
+              Array.from({ length: 4 - form.approachCards.length }).map(
+                (_, slot) => (
+                  <button
+                    key={`approach-add-slot-${slot}`}
+                    type='button'
+                    onClick={() =>
+                      addItem('approachCards', { title: '', bullets: [''] })
+                    }
+                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                  >
+                    <Plus className='w-8 h-8' />
+                    <span className='text-[13px] font-semibold'>Add Card</span>
+                  </button>
+                ),
+              )}
           </div>
         </div>
 
@@ -1106,9 +1483,9 @@ export function PortfolioPage() {
         </div>
 
         <div>
-          <div className='flex items-center justify-between mb-3'>
+          <div className='flex items-center justify-between mb-1.5'>
             <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
-              Leadership Cards (max 4)
+              Leadership Cards ({form.leadershipCards.length}/4)
             </label>
             {form.leadershipCards.length < 4 && (
               <button
@@ -1120,13 +1497,19 @@ export function PortfolioPage() {
                     body: '',
                   })
                 }
-                className='text-[12px] font-semibold text-[#38BDF8] hover:text-[#20B0F0] flex items-center gap-1 cursor-pointer'
+                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
               >
+                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
                 <Plus className='w-3.5 h-3.5' /> Add Card
               </button>
             )}
           </div>
-          <div className='space-y-3'>
+          <p className='text-[12px] text-slate-400 mb-3'>
+            Add 4 leadership cards in total. Each card needs an icon, title, and
+            body.
+          </p>
+          <FieldError message={fieldErrors.leadershipCards} />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {form.leadershipCards.map((card, idx) => (
               <div
                 key={idx}
@@ -1145,7 +1528,9 @@ export function PortfolioPage() {
                   </button>
                 </div>
                 <input
-                  className={inputCls}
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`leadershipCards.${idx}.iconName`]),
+                  )}
                   placeholder='Icon (Users, Cpu, GitBranch, ShieldCheck)'
                   value={card.iconName}
                   onChange={(e) =>
@@ -1154,8 +1539,13 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`leadershipCards.${idx}.iconName`]}
+                />
                 <input
-                  className={inputCls}
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`leadershipCards.${idx}.title`]),
+                  )}
                   placeholder='Title'
                   value={card.title}
                   onChange={(e) =>
@@ -1164,8 +1554,13 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`leadershipCards.${idx}.title`]}
+                />
                 <textarea
-                  className={textareaCls}
+                  className={fieldTextareaCls(
+                    Boolean(fieldErrors[`leadershipCards.${idx}.body`]),
+                  )}
                   rows={2}
                   placeholder='Body text'
                   value={card.body}
@@ -1175,8 +1570,31 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`leadershipCards.${idx}.body`]}
+                />
               </div>
             ))}
+            {form.leadershipCards.length < 4 &&
+              Array.from({ length: 4 - form.leadershipCards.length }).map(
+                (_, slot) => (
+                  <button
+                    key={`leadership-add-slot-${slot}`}
+                    type='button'
+                    onClick={() =>
+                      addItem('leadershipCards', {
+                        iconName: 'Users',
+                        title: '',
+                        body: '',
+                      })
+                    }
+                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                  >
+                    <Plus className='w-8 h-8' />
+                    <span className='text-[13px] font-semibold'>Add Card</span>
+                  </button>
+                ),
+              )}
           </div>
         </div>
 
@@ -1228,9 +1646,9 @@ export function PortfolioPage() {
         </div>
 
         <div>
-          <div className='flex items-center justify-between mb-3'>
+          <div className='flex items-center justify-between mb-1.5'>
             <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
-              Feature Cards (max 4)
+              Feature Cards ({form.solutionCards.length}/4)
             </label>
             {form.solutionCards.length < 4 && (
               <button
@@ -1243,13 +1661,19 @@ export function PortfolioPage() {
                     body: '',
                   })
                 }
-                className='text-[12px] font-semibold text-[#38BDF8] hover:text-[#20B0F0] flex items-center gap-1 cursor-pointer'
+                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
               >
+                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
                 <Plus className='w-3.5 h-3.5' /> Add Card
               </button>
             )}
           </div>
-          <div className='space-y-3'>
+          <p className='text-[12px] text-slate-400 mb-3'>
+            Add 4 feature cards in total. Each card needs a tag, title, and
+            body.
+          </p>
+          <FieldError message={fieldErrors.solutionCards} />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {form.solutionCards.map((card, idx) => (
               <div
                 key={idx}
@@ -1285,7 +1709,9 @@ export function PortfolioPage() {
                   </button>
                 </div>
                 <input
-                  className={inputCls}
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`solutionCards.${idx}.tag`]),
+                  )}
                   placeholder='Badge tag (e.g. Financial Sync)'
                   value={card.tag}
                   onChange={(e) =>
@@ -1294,8 +1720,13 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.tag`]}
+                />
                 <input
-                  className={inputCls}
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`solutionCards.${idx}.title`]),
+                  )}
                   placeholder='Card Title'
                   value={card.title}
                   onChange={(e) =>
@@ -1304,8 +1735,13 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.title`]}
+                />
                 <textarea
-                  className={textareaCls}
+                  className={fieldTextareaCls(
+                    Boolean(fieldErrors[`solutionCards.${idx}.body`]),
+                  )}
                   rows={2}
                   placeholder='Card Body'
                   value={card.body}
@@ -1315,8 +1751,32 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.body`]}
+                />
               </div>
             ))}
+            {form.solutionCards.length < 4 &&
+              Array.from({ length: 4 - form.solutionCards.length }).map(
+                (_, slot) => (
+                  <button
+                    key={`solution-add-slot-${slot}`}
+                    type='button'
+                    onClick={() =>
+                      addItem('solutionCards', {
+                        color: 'green',
+                        tag: '',
+                        title: '',
+                        body: '',
+                      })
+                    }
+                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                  >
+                    <Plus className='w-8 h-8' />
+                    <span className='text-[13px] font-semibold'>Add Card</span>
+                  </button>
+                ),
+              )}
           </div>
         </div>
 
@@ -1363,9 +1823,9 @@ export function PortfolioPage() {
     return (
       <div className='space-y-6'>
         <div>
-          <div className='flex items-center justify-between mb-3'>
+          <div className='flex items-center justify-between mb-1.5'>
             <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
-              Outcome Items (max 3)
+              Outcome Items ({form.outcomeItems.length}/3)
             </label>
             {form.outcomeItems.length < 3 && (
               <button
@@ -1373,13 +1833,18 @@ export function PortfolioPage() {
                 onClick={() =>
                   addItem('outcomeItems', { color: 'emerald', text: '' })
                 }
-                className='text-[12px] font-semibold text-[#38BDF8] hover:text-[#20B0F0] flex items-center gap-1 cursor-pointer'
+                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
               >
+                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
                 <Plus className='w-3.5 h-3.5' /> Add Item
               </button>
             )}
           </div>
-          <div className='space-y-3'>
+          <p className='text-[12px] text-slate-400 mb-3'>
+            Add 3 outcome items in total. Each item needs outcome text.
+          </p>
+          <FieldError message={fieldErrors.outcomeItems} />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {form.outcomeItems.map((item, idx) => (
               <div
                 key={idx}
@@ -1415,7 +1880,9 @@ export function PortfolioPage() {
                   </button>
                 </div>
                 <textarea
-                  className={textareaCls}
+                  className={fieldTextareaCls(
+                    Boolean(fieldErrors[`outcomeItems.${idx}.text`]),
+                  )}
                   rows={3}
                   placeholder='Outcome paragraph'
                   value={item.text}
@@ -1425,8 +1892,27 @@ export function PortfolioPage() {
                     })
                   }
                 />
+                <FieldError
+                  message={fieldErrors[`outcomeItems.${idx}.text`]}
+                />
               </div>
             ))}
+            {form.outcomeItems.length < 3 &&
+              Array.from({ length: 3 - form.outcomeItems.length }).map(
+                (_, slot) => (
+                  <button
+                    key={`outcome-add-slot-${slot}`}
+                    type='button'
+                    onClick={() =>
+                      addItem('outcomeItems', { color: 'emerald', text: '' })
+                    }
+                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                  >
+                    <Plus className='w-8 h-8' />
+                    <span className='text-[13px] font-semibold'>Add Item</span>
+                  </button>
+                ),
+              )}
           </div>
         </div>
 
@@ -1452,9 +1938,9 @@ export function PortfolioPage() {
   function renderSkills() {
     return (
       <div className='space-y-5'>
-        <div className='flex items-center justify-between'>
+        <div className='flex items-center justify-between mb-1.5'>
           <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
-            Skill Cards (max 7)
+            Skill Cards ({form.skillCards.length}/7)
           </label>
           {form.skillCards.length < 7 && (
             <button
@@ -1467,13 +1953,19 @@ export function PortfolioPage() {
                   body: '',
                 })
               }
-              className='text-[12px] font-semibold text-[#38BDF8] hover:text-[#20B0F0] flex items-center gap-1 cursor-pointer'
+              className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
             >
+              <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
               <Plus className='w-3.5 h-3.5' /> Add Skill
             </button>
           )}
         </div>
-        <div className='space-y-3'>
+        <p className='text-[12px] text-slate-400 -mt-2'>
+          Add 7 skill cards in total. Each card needs a number, category, title,
+          and description.
+        </p>
+        <FieldError message={fieldErrors.skillCards} />
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {form.skillCards.map((sk, idx) => (
             <div
               key={idx}
@@ -1492,29 +1984,45 @@ export function PortfolioPage() {
                 </button>
               </div>
               <div className='grid grid-cols-2 gap-3'>
-                <input
-                  className={inputCls}
-                  placeholder='Number'
-                  value={sk.num}
-                  onChange={(e) =>
-                    updateItem<SkillCard>('skillCards', idx, {
-                      num: e.target.value,
-                    })
-                  }
-                />
-                <input
-                  className={inputCls}
-                  placeholder='Category (e.g. CORE DOMAIN)'
-                  value={sk.category}
-                  onChange={(e) =>
-                    updateItem<SkillCard>('skillCards', idx, {
-                      category: e.target.value,
-                    })
-                  }
-                />
+                <div>
+                  <input
+                    className={fieldInputCls(
+                      Boolean(fieldErrors[`skillCards.${idx}.num`]),
+                    )}
+                    placeholder='Number'
+                    value={sk.num}
+                    onChange={(e) =>
+                      updateItem<SkillCard>('skillCards', idx, {
+                        num: e.target.value,
+                      })
+                    }
+                  />
+                  <FieldError
+                    message={fieldErrors[`skillCards.${idx}.num`]}
+                  />
+                </div>
+                <div>
+                  <input
+                    className={fieldInputCls(
+                      Boolean(fieldErrors[`skillCards.${idx}.category`]),
+                    )}
+                    placeholder='Category (e.g. CORE DOMAIN)'
+                    value={sk.category}
+                    onChange={(e) =>
+                      updateItem<SkillCard>('skillCards', idx, {
+                        category: e.target.value,
+                      })
+                    }
+                  />
+                  <FieldError
+                    message={fieldErrors[`skillCards.${idx}.category`]}
+                  />
+                </div>
               </div>
               <input
-                className={inputCls}
+                className={fieldInputCls(
+                  Boolean(fieldErrors[`skillCards.${idx}.title`]),
+                )}
                 placeholder='Skill Title'
                 value={sk.title}
                 onChange={(e) =>
@@ -1523,8 +2031,11 @@ export function PortfolioPage() {
                   })
                 }
               />
+              <FieldError message={fieldErrors[`skillCards.${idx}.title`]} />
               <textarea
-                className={textareaCls}
+                className={fieldTextareaCls(
+                  Boolean(fieldErrors[`skillCards.${idx}.body`]),
+                )}
                 rows={2}
                 placeholder='Description'
                 value={sk.body}
@@ -1534,8 +2045,30 @@ export function PortfolioPage() {
                   })
                 }
               />
+              <FieldError message={fieldErrors[`skillCards.${idx}.body`]} />
             </div>
           ))}
+          {form.skillCards.length < 7 &&
+            Array.from({ length: 7 - form.skillCards.length }).map(
+              (_, slot) => (
+                <button
+                  key={`skill-add-slot-${slot}`}
+                  type='button'
+                  onClick={() =>
+                    addItem('skillCards', {
+                      num: String(form.skillCards.length + 1),
+                      category: '',
+                      title: '',
+                      body: '',
+                    })
+                  }
+                  className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                >
+                  <Plus className='w-8 h-8' />
+                  <span className='text-[13px] font-semibold'>Add Skill</span>
+                </button>
+              ),
+            )}
         </div>
       </div>
     );
@@ -1603,29 +2136,49 @@ export function PortfolioPage() {
         <div className='bg-white rounded-2xl border border-slate-100 shadow-2xs overflow-hidden'>
           {/* ── Tab Bar ── */}
           <div className='flex overflow-x-auto border-b border-slate-100 scrollbar-hide'>
-            {TABS.map((tab, idx) => (
+            {TABS.map((tab, idx) => {
+              const unlocked = isPortfolioStepUnlocked(form, idx);
+              const complete = isPortfolioStepComplete(form, idx);
+              const locked = !unlocked;
+              return (
               <button
                 key={tab}
                 type='button'
-                onClick={() => setActiveTab(idx)}
-                className={`flex items-center gap-1.5 px-3 sm:px-5 py-3 sm:py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors cursor-pointer border-b-2 shrink-0 ${
-                  activeTab === idx
-                    ? 'border-[#38BDF8] text-[#38BDF8] bg-sky-50/60'
-                    : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                onClick={() => goToTab(idx)}
+                disabled={locked}
+                className={`flex items-center gap-1.5 px-3 sm:px-5 py-3 sm:py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors border-b-2 shrink-0 ${
+                  locked
+                    ? 'border-transparent text-slate-400 cursor-not-allowed'
+                    : activeTab === idx
+                    ? 'border-[#38BDF8] text-[#38BDF8] bg-sky-50/60 cursor-pointer'
+                    : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 cursor-pointer'
                 }`}
               >
                 <span
                   className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
-                    activeTab === idx
+                    locked
+                      ? 'bg-slate-100 text-slate-400'
+                      : complete
+                      ? activeTab === idx
+                        ? 'bg-[#38BDF8] text-white'
+                        : 'bg-emerald-500 text-white'
+                      : activeTab === idx
                       ? 'bg-[#38BDF8] text-white'
                       : 'bg-slate-100 text-slate-500'
                   }`}
                 >
-                  {idx + 1}
+                  {locked ? (
+                    <Lock className='w-3 h-3' />
+                  ) : complete ? (
+                    <Check className='w-3.5 h-3.5' strokeWidth={3} />
+                  ) : (
+                    idx + 1
+                  )}
                 </span>
                 <span className='hidden sm:inline text-[13px]'>{tab}</span>
               </button>
-            ))}
+              );
+            })}
           </div>
 
           {/* ── Tab Content ── */}
@@ -1647,8 +2200,9 @@ export function PortfolioPage() {
             {activeTab < TABS.length - 1 ? (
               <button
                 type='button'
-                onClick={() => setActiveTab((t) => t + 1)}
-                className='px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5'
+                onClick={goToNextStep}
+                disabled={!isPortfolioStepComplete(form, activeTab)}
+                className='px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-slate-100'
               >
                 Next <ChevronRight className='w-3.5 h-3.5' />
               </button>
