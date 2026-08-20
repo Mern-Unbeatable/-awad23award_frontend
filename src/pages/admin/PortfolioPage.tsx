@@ -525,57 +525,24 @@ function isChallengeItemEmpty(item: ChallengeItem): boolean {
   return isBlank(item.title) && isBlank(item.body);
 }
 
-function isChallengeItemComplete(item: ChallengeItem): boolean {
-  return !isBlank(item.iconName) && !isBlank(item.title) && !isBlank(item.body);
-}
-
 function isApproachCardEmpty(card: ApproachCard): boolean {
   return isBlank(card.title) && !hasNonBlankLine(card.bullets);
-}
-
-function isApproachCardComplete(card: ApproachCard): boolean {
-  return !isBlank(card.title) && hasNonBlankLine(card.bullets);
 }
 
 function isLeadershipCardEmpty(card: LeadershipCard): boolean {
   return isBlank(card.title) && isBlank(card.body);
 }
 
-function isLeadershipCardComplete(card: LeadershipCard): boolean {
-  return !isBlank(card.iconName) && !isBlank(card.title) && !isBlank(card.body);
-}
-
 function isSolutionCardEmpty(card: SolutionCard): boolean {
   return isBlank(card.tag) && isBlank(card.title) && isBlank(card.body);
-}
-
-function isSolutionCardComplete(card: SolutionCard): boolean {
-  return !isBlank(card.tag) && !isBlank(card.title) && !isBlank(card.body);
 }
 
 function isOutcomeItemEmpty(item: OutcomeItem): boolean {
   return isBlank(item.text);
 }
 
-function isOutcomeItemComplete(item: OutcomeItem): boolean {
-  return !isBlank(item.text);
-}
-
 function isSkillCardEmpty(card: SkillCard): boolean {
   return isBlank(card.category) && isBlank(card.title) && isBlank(card.body);
-}
-
-function isSkillCardComplete(card: SkillCard): boolean {
-  return (
-    !isBlank(card.num) &&
-    !isBlank(card.category) &&
-    !isBlank(card.title) &&
-    !isBlank(card.body)
-  );
-}
-
-function countCompleteItems<T>(items: T[], isComplete: (item: T) => boolean): number {
-  return items.filter(isComplete).length;
 }
 
 type PortfolioFieldErrors = Record<string, string>;
@@ -647,7 +614,6 @@ function validatePortfolioStep(
   tabIndex: number,
 ): PortfolioFieldErrors {
   const errors: PortfolioFieldErrors = {};
-  const itemRequired = 'Complete this item to continue.';
 
   if (tabIndex === 0) {
     if (isBlank(form.titleEn)) errors.titleEn = REQUIRED_MSG;
