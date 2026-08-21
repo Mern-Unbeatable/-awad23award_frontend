@@ -402,35 +402,24 @@ export function CaseStudyPage() {
                     <p className="text-[16px] text-slate-500 leading-relaxed max-w-md">{leadershipBody}</p>
                   </div>
 
-                  <div className="lg:col-span-7 rounded-lg bg-[#0A0E17] text-white overflow-hidden shadow-2xl border border-slate-800 flex flex-col justify-between">
-                    <div className="p-6 md:p-8 grid md:grid-cols-12 gap-6 items-center">
-                      <div className="md:col-span-6 space-y-4">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 block">PILLAR 04 • TECHNICAL LEADERSHIP</span>
-                        <h3 className="text-[24px] font-serif font-bold text-white leading-snug">{t('Technical Leadership', 'القيادة التقنية')}</h3>
-                        <p className="text-[12.5px] text-slate-400 leading-relaxed">{leadershipBody}</p>
-                        <div className="space-y-2.5 pt-1">
-                          {leadershipCards.slice(0, 2).map((card, idx) => (
-                            <div key={idx} className="bg-[#141A26] rounded-lg p-3 border border-slate-800">
-                              <h5 className="text-[12px] font-bold text-white mb-0.5">{card.title}</h5>
-                              <p className="text-[11px] text-slate-400">{card.body}</p>
-                            </div>
-                          ))}
-                        </div>
+                  <div className="lg:col-span-7 rounded-md bg-[#0A0E17] text-white overflow-hidden flex flex-col justify-between">
+                    {heroImage && (
+                      <div className="p-6 md:p-8">
+                        <img src={heroImage} alt={t('Technical Leadership', 'القيادة التقنية')} className="rounded-lg h-60 w-full object-cover shadow-md" />
                       </div>
-                      <div className="md:col-span-6">
-                        <img src={heroImage} alt="Technical Leadership" className="rounded-lg h-60 w-full object-cover shadow-md" />
-                      </div>
-                    </div>
+                    )}
+                    {leadershipStat && (
                     <div className="bg-[#36BFFB] text-white p-5 px-7 flex flex-wrap items-center justify-between gap-4">
                       <div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 block">TEAM EXECUTION</span>
-                        <span className="text-[17px] font-bold text-white">Offshore Delivery Alignment</span>
+                        <span className="text-[17px] font-bold text-white">{t('Offshore Delivery Alignment', 'تنسيق التسليم الخارجي')}</span>
                       </div>
                       <div className="flex items-center gap-2 text-[14px] font-bold">
                         <span className="text-white/80">•</span>
                         <span>{leadershipStat}</span>
                       </div>
                     </div>
+                    )}
                   </div>
                 </div>
 
