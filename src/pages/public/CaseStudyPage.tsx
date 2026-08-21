@@ -168,7 +168,6 @@ export function CaseStudyPage() {
     challengeImage = '';
   }
   const challengeCaption = item.challengeCaption || '';
-  const challengeBadge = item.challengeBadgeLabel || 'CRITICAL';
 
   const approachBody =
     locale === 'ar' ? item.approachBodyAr || '' : item.approachBodyEn || '';
@@ -304,19 +303,6 @@ export function CaseStudyPage() {
                 <div className="grid lg:grid-cols-12 gap-8 items-stretch">
                   {/* Left: Challenge Items */}
                   <div className="lg:col-span-6 space-y-4">
-                    <div className="bg-[#FFF8F0] border border-amber-200 rounded-lg p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                          <AlertTriangle className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-[15px] text-slate-900">Legacy System State</h4>
-                          <p className="text-[12px] text-slate-500">Core bottlenecks inherited upon engagement</p>
-                        </div>
-                      </div>
-                      <span className="bg-[#36BFFB] text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase">{challengeBadge}</span>
-                    </div>
-
                     {challengeItems.map((ci, idx) => {
                       const Icon = getIcon(ci.iconName);
                       return (
