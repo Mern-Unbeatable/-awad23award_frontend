@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { useSite } from '../../hooks/SiteContext';
+import { fallbackSettings } from '../../data/fallback';
 
 type SocialItem = {
   key: string;
@@ -50,7 +50,7 @@ function EmailIcon() {
 }
 
 function useSocialItems(): SocialItem[] {
-  const { settings } = useSite();
+  const settings = fallbackSettings;
 
   const whatsappUrl = settings.contactPhone
     ? `https://wa.me/${settings.contactPhone.replace(/\D/g, '')}`
