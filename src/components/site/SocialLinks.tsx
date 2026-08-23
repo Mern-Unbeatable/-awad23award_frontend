@@ -1,5 +1,5 @@
-import type { ReactElement } from 'react';
-import { fallbackSettings } from '../../data/fallback';
+import type { ReactElement } from "react";
+import { fallbackSettings } from "../../data/fallback";
 
 type SocialItem = {
   key: string;
@@ -10,7 +10,7 @@ type SocialItem = {
 };
 
 type SocialLinksProps = {
-  variant?: 'icons' | 'inline';
+  variant?: "icons" | "inline";
   className?: string;
 };
 
@@ -24,7 +24,13 @@ function LinkedInIcon() {
 
 function InstagramIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
       <rect x="3" y="3" width="18" height="18" rx="5" />
       <circle cx="12" cy="12" r="4" />
       <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
@@ -42,7 +48,13 @@ function WhatsAppIcon() {
 
 function EmailIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
       <rect x="3" y="5" width="18" height="14" rx="3" />
       <path d="M3 8l9 6 9-6" />
     </svg>
@@ -53,54 +65,57 @@ function useSocialItems(): SocialItem[] {
   const settings = fallbackSettings;
 
   const whatsappUrl = settings.contactPhone
-    ? `https://wa.me/${settings.contactPhone.replace(/\D/g, '')}`
+    ? `https://wa.me/${settings.contactPhone.replace(/\D/g, "")}`
     : null;
 
   return [
     settings.socialLinkedin && {
-      key: 'linkedin',
+      key: "linkedin",
       href: settings.socialLinkedin,
-      label: 'LinkedIn',
+      label: "LinkedIn",
       external: true,
       icon: <LinkedInIcon />,
     },
     settings.socialInstagram && {
-      key: 'instagram',
+      key: "instagram",
       href: settings.socialInstagram,
-      label: 'Instagram',
+      label: "Instagram",
       external: true,
       icon: <InstagramIcon />,
     },
     whatsappUrl && {
-      key: 'whatsapp',
+      key: "whatsapp",
       href: whatsappUrl,
-      label: 'WhatsApp',
+      label: "WhatsApp",
       external: true,
       icon: <WhatsAppIcon />,
     },
     settings.contactEmail && {
-      key: 'email',
+      key: "email",
       href: `mailto:${settings.contactEmail}`,
-      label: 'Email',
+      label: "Email",
       external: false,
       icon: <EmailIcon />,
     },
   ].filter(Boolean) as SocialItem[];
 }
 
-export function SocialLinks({ variant = 'icons', className = '' }: SocialLinksProps) {
+export function SocialLinks({
+  variant = "icons",
+  className = "",
+}: SocialLinksProps) {
   const items = useSocialItems();
 
   if (!items.length) return null;
 
-  if (variant === 'inline') {
+  if (variant === "inline") {
     return (
       <div className={`ref-foot-links ${className}`.trim()}>
         {items.map(({ key, href, label, external, icon }) => (
           <a
             key={key}
             href={href}
-            {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+            {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
           >
             {icon}
             {label}
@@ -118,7 +133,7 @@ export function SocialLinks({ variant = 'icons', className = '' }: SocialLinksPr
           href={href}
           aria-label={label}
           title={label}
-          {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+          {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200/90 bg-white text-slate-700 transition-colors hover:border-[#36BFFB] hover:text-[#36BFFB] [&_svg]:h-[18px] [&_svg]:w-[18px]"
         >
           {icon}
