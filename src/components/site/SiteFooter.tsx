@@ -1,5 +1,6 @@
 import { useLocale } from '../../hooks/LocaleContext';
 import { ConnectButton } from '../tech';
+import { SocialLinks } from './SocialLinks';
 
 const links = [
   { key: 'Home', en: 'Home', ar: 'الرئيسية', href: '#top' },
@@ -45,9 +46,9 @@ export function SiteFooter() {
         </div>
       </div>
 
-      {/* Nav Links & Copyright */}
-      <div className="container mx-auto px-6 max-w-7xl border-t border-gray-100/90 pt-8 pb-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <nav className="flex items-center gap-6">
+      {/* Nav Links, Social & Copyright */}
+      <div className="container mx-auto px-6 max-w-7xl border-t border-gray-100/90 pt-8 pb-12 flex flex-col items-center gap-6">
+        <nav className="flex flex-wrap items-center justify-center gap-6">
           {links.map((l) => (
             <a
               key={l.key}
@@ -59,8 +60,10 @@ export function SiteFooter() {
           ))}
         </nav>
 
-        <p className="text-[13px] text-gray-500 font-normal">
-          © 2026 Ahmed Ibrahim. All rights reserved.
+        <SocialLinks variant="icons" className="justify-center" />
+
+        <p className="text-[13px] text-gray-500 font-normal text-center">
+          © {new Date().getFullYear()} Ahmed Ibrahim. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
         </p>
       </div>
 
