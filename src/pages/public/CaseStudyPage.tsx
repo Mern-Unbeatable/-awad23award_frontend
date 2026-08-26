@@ -285,8 +285,8 @@ export function CaseStudyPage() {
           ""),
   );
 
-  const outcomeItems = (item.outcomeItems ?? []).filter((item) =>
-    hasValue(item.textEn ?? item.text) || hasValue(item.textAr),
+  const outcomeItems = (item.outcomeItems ?? []).filter(
+    (item) => hasValue(item.textEn ?? item.text) || hasValue(item.textAr),
   );
   let recognitionImage = cleanText(item.recognitionImageUrl || "");
   if (recognitionImage && !isBlobUrl(recognitionImage)) {
@@ -296,8 +296,14 @@ export function CaseStudyPage() {
   }
   const recognitionLabel = cleanText(
     locale === "ar"
-      ? (item.recognitionLabelAr ?? item.recognitionLabelEn ?? item.recognitionLabel ?? "")
-      : (item.recognitionLabelEn ?? item.recognitionLabelAr ?? item.recognitionLabel ?? ""),
+      ? (item.recognitionLabelAr ??
+          item.recognitionLabelEn ??
+          item.recognitionLabel ??
+          "")
+      : (item.recognitionLabelEn ??
+          item.recognitionLabelAr ??
+          item.recognitionLabel ??
+          ""),
   );
 
   const skillCards = (item.skillCards ?? []).filter(

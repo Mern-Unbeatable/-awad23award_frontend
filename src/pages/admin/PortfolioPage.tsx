@@ -755,11 +755,14 @@ function validatePortfolioForm(form: PortfolioForm): {
     if (isOutcomeItemEmpty(item)) return;
     if (isBlank(item.textEn ?? item.text))
       errors[`outcomeItems.${idx}.textEn`] = REQUIRED_MSG;
-    if (isBlank(item.textAr)) errors[`outcomeItems.${idx}.textAr`] = REQUIRED_MSG;
+    if (isBlank(item.textAr))
+      errors[`outcomeItems.${idx}.textAr`] = REQUIRED_MSG;
   });
 
-  if (isBlank(form.recognitionLabelEn)) errors.recognitionLabelEn = REQUIRED_MSG;
-  if (isBlank(form.recognitionLabelAr)) errors.recognitionLabelAr = REQUIRED_MSG;
+  if (isBlank(form.recognitionLabelEn))
+    errors.recognitionLabelEn = REQUIRED_MSG;
+  if (isBlank(form.recognitionLabelAr))
+    errors.recognitionLabelAr = REQUIRED_MSG;
 
   form.skillCards.forEach((card, idx) => {
     if (isSkillCardEmpty(card)) return;
@@ -885,8 +888,10 @@ function validatePortfolioStep(
       if (isBlank(item.textAr))
         errors[`outcomeItems.${idx}.textAr`] = REQUIRED_MSG;
     });
-    if (isBlank(form.recognitionLabelEn)) errors.recognitionLabelEn = REQUIRED_MSG;
-    if (isBlank(form.recognitionLabelAr)) errors.recognitionLabelAr = REQUIRED_MSG;
+    if (isBlank(form.recognitionLabelEn))
+      errors.recognitionLabelEn = REQUIRED_MSG;
+    if (isBlank(form.recognitionLabelAr))
+      errors.recognitionLabelAr = REQUIRED_MSG;
     return errors;
   }
 
@@ -2394,8 +2399,8 @@ export function PortfolioPage() {
             )}
           </div>
           <p className="text-[12px] text-slate-400 mb-3">
-            Add 3 outcome items in total. Each item needs outcome text in EN
-            and AR.
+            Add 3 outcome items in total. Each item needs outcome text in EN and
+            AR.
           </p>
           <FieldError message={fieldErrors.outcomeItems} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
