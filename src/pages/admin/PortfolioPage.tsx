@@ -410,7 +410,8 @@ interface PortfolioForm {
   approachBodyEn: string;
   approachBodyAr: string;
   approachCards: ApproachCard[];
-  approachInsight: string;
+  approachInsightEn: string;
+  approachInsightAr: string;
   leadershipBodyEn: string;
   leadershipBodyAr: string;
   leadershipCards: LeadershipCard[];
@@ -466,8 +467,18 @@ const EMPTY_FORM: PortfolioForm = {
   challengeBadgeLabel: "CRITICAL",
   approachBodyEn: "",
   approachBodyAr: "",
-  approachCards: [{ title: "", bullets: [""] }],
-  approachInsight: "",
+  approachInsightEn: "",
+  approachInsightAr: "",
+  approachCards: [
+    {
+      titleEn: "",
+      titleAr: "",
+      bodyEn: "",
+      bodyAr: "",
+      bulletsEn: [],
+      bulletsAr: [],
+    },
+  ],
   leadershipBodyEn: "",
   leadershipBodyAr: "",
   leadershipCards: [{ iconName: "Users", title: "", body: "" }],
@@ -517,9 +528,17 @@ function formFromItem(item: GalleryItem): PortfolioForm {
     approachBodyEn: item.approachBodyEn || "",
     approachBodyAr: item.approachBodyAr || "",
     approachCards: item.approachCards?.length
-      ? item.approachCards
+      ? item.approachCards.map((card) => ({
+          titleEn: card.titleEn ?? "",
+          titleAr: card.titleAr ?? "",
+          bodyEn: card.bodyEn ?? "",
+          bodyAr: card.bodyAr ?? "",
+          bulletsEn: splitLines(card.bulletsEn),
+          bulletsAr: splitLines(card.bulletsAr),
+        }))
       : EMPTY_FORM.approachCards,
-    approachInsight: item.approachInsight || "",
+    approachInsightEn: item.approachInsightEn || "",
+    approachInsightAr: item.approachInsightAr || "",
     leadershipBodyEn: item.leadershipBodyEn || "",
     leadershipBodyAr: item.leadershipBodyAr || "",
     leadershipCards: item.leadershipCards?.length
@@ -553,8 +572,8 @@ function isBlank(value: unknown): boolean {
   return false;
 }
 
-function hasNonBlankLine(lines: string[] | undefined): boolean {
-  return Boolean(lines?.some((line) => !isBlank(line)));
+function splitLines(value?: string[] | null): string[] {
+  return (value ?? []).map((line) => line.trim()).filter(Boolean);
 }
 
 function isChallengeItemEmpty(item: ChallengeItem): boolean {
@@ -567,7 +586,14 @@ function isChallengeItemEmpty(item: ChallengeItem): boolean {
 }
 
 function isApproachCardEmpty(card: ApproachCard): boolean {
-  return isBlank(card.title) && !hasNonBlankLine(card.bullets);
+  return (
+    isBlank(card.titleEn) &&
+    isBlank(card.titleAr) &&
+    isBlank(card.bodyEn) &&
+    isBlank(card.bodyAr) &&
+    !splitLines(card.bulletsEn).length &&
+    !splitLines(card.bulletsAr).length
+  );
 }
 
 function isLeadershipCardEmpty(card: LeadershipCard): boolean {
@@ -613,10 +639,18 @@ function validatePortfolioForm(form: PortfolioForm): {
 
   form.approachCards.forEach((card, idx) => {
     if (isApproachCardEmpty(card)) return;
-    if (isBlank(card.title))
-      errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
-    if (!hasNonBlankLine(card.bullets))
-      errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
+    if (isBlank(card.titleEn))
+      errors[`approachCards.${idx}.titleEn`] = REQUIRED_MSG;
+    if (isBlank(card.titleAr))
+      errors[`approachCards.${idx}.titleAr`] = REQUIRED_MSG;
+    if (isBlank(card.bodyEn))
+      errors[`approachCards.${idx}.bodyEn`] = REQUIRED_MSG;
+    if (isBlank(card.bodyAr))
+      errors[`approachCards.${idx}.bodyAr`] = REQUIRED_MSG;
+    if (!splitLines(card.bulletsEn).length)
+      errors[`approachCards.${idx}.bulletsEn`] = REQUIRED_MSG;
+    if (!splitLines(card.bulletsAr).length)
+      errors[`approachCards.${idx}.bulletsAr`] = REQUIRED_MSG;
   });
 
   form.leadershipCards.forEach((card, idx) => {
@@ -700,10 +734,18 @@ function validatePortfolioStep(
       errors.approachCards = "Add 4 approach cards to continue.";
     }
     form.approachCards.forEach((card, idx) => {
-      if (isBlank(card.title))
-        errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
-      if (!hasNonBlankLine(card.bullets))
-        errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
+      if (isBlank(card.titleEn))
+        errors[`approachCards.${idx}.titleEn`] = REQUIRED_MSG;
+      if (isBlank(card.titleAr))
+        errors[`approachCards.${idx}.titleAr`] = REQUIRED_MSG;
+      if (isBlank(card.bodyEn))
+        errors[`approachCards.${idx}.bodyEn`] = REQUIRED_MSG;
+      if (isBlank(card.bodyAr))
+        errors[`approachCards.${idx}.bodyAr`] = REQUIRED_MSG;
+      if (!splitLines(card.bulletsEn).length)
+        errors[`approachCards.${idx}.bulletsEn`] = REQUIRED_MSG;
+      if (!splitLines(card.bulletsAr).length)
+        errors[`approachCards.${idx}.bulletsAr`] = REQUIRED_MSG;
     });
     return errors;
   }
@@ -1414,12 +1456,11 @@ export function PortfolioPage() {
                         title: "",
                         titleEn: "",
                         titleAr: "",
-                        body: "",
                         bodyEn: "",
                         bodyAr: "",
                       })
                     }
-                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
+                    className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
                     <Plus className="w-8 h-8" />
                     <span className="text-[13px] font-semibold">Add Item</span>
@@ -1495,7 +1536,14 @@ export function PortfolioPage() {
               <button
                 type="button"
                 onClick={() =>
-                  addItem("approachCards", { title: "", bullets: [""] })
+                  addItem("approachCards", {
+                    titleEn: "",
+                    titleAr: "",
+                    bodyEn: "",
+                    bodyAr: "",
+                    bulletsEn: [],
+                    bulletsAr: [],
+                  })
                 }
                 className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
               >
@@ -1505,8 +1553,8 @@ export function PortfolioPage() {
             )}
           </div>
           <p className="text-[12px] text-slate-400 mb-3">
-            Add 4 approach cards in total. Each card needs a title and bullet
-            points.
+            Add 4 approach cards in total. Each card needs bilingual title,
+            body, and bullet lists.
           </p>
           <FieldError message={fieldErrors.approachCards} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1529,39 +1577,133 @@ export function PortfolioPage() {
                 </div>
                 <input
                   className={fieldInputCls(
-                    Boolean(fieldErrors[`approachCards.${idx}.title`]),
+                    Boolean(fieldErrors[`approachCards.${idx}.titleEn`]),
                   )}
-                  placeholder="Card Title (e.g. Technical Archaeology)"
-                  value={card.title}
+                  placeholder="Title (EN)"
+                  value={card.titleEn}
                   onChange={(e) =>
                     updateItem<ApproachCard>("approachCards", idx, {
-                      title: e.target.value,
+                      titleEn: e.target.value,
                     })
                   }
                 />
                 <FieldError
-                  message={fieldErrors[`approachCards.${idx}.title`]}
+                  message={fieldErrors[`approachCards.${idx}.titleEn`]}
                 />
-                <div>
-                  <label className="block text-[11px] text-slate-400 font-semibold mb-1">
-                    Bullet Points (one per line)
-                  </label>
-                  <textarea
-                    className={fieldTextareaCls(
-                      Boolean(fieldErrors[`approachCards.${idx}.bullets`]),
-                    )}
-                    rows={4}
-                    value={card.bullets.join("\n")}
-                    onChange={(e) =>
-                      updateItem<ApproachCard>("approachCards", idx, {
-                        bullets: e.target.value.split("\n"),
-                      })
-                    }
-                    placeholder="Each line becomes a bullet point"
-                  />
-                  <FieldError
-                    message={fieldErrors[`approachCards.${idx}.bullets`]}
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-1 gap-3">
+                  <div>
+                    <input
+                      className={fieldInputCls(
+                        Boolean(fieldErrors[`approachCards.${idx}.titleAr`]),
+                      )}
+                      placeholder="Title (AR)"
+                      dir="rtl"
+                      value={card.titleAr ?? ""}
+                      onChange={(e) =>
+                        updateItem<ApproachCard>("approachCards", idx, {
+                          titleAr: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`approachCards.${idx}.titleAr`]}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 font-semibold mb-1">
+                      Body (EN)
+                    </label>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`approachCards.${idx}.bodyEn`]),
+                      )}
+                      rows={4}
+                      value={card.bodyEn}
+                      onChange={(e) =>
+                        updateItem<ApproachCard>("approachCards", idx, {
+                          bodyEn: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`approachCards.${idx}.bodyEn`]}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 font-semibold mb-1">
+                      Body (AR)
+                    </label>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`approachCards.${idx}.bodyAr`]),
+                      )}
+                      rows={4}
+                      dir="rtl"
+                      value={card.bodyAr ?? ""}
+                      onChange={(e) =>
+                        updateItem<ApproachCard>("approachCards", idx, {
+                          bodyAr: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`approachCards.${idx}.bodyAr`]}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 font-semibold mb-1">
+                      Bullets (EN)
+                    </label>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`approachCards.${idx}.bulletsEn`]),
+                      )}
+                      rows={4}
+                      value={splitLines(card.bulletsEn).join("\n")}
+                      onChange={(e) => {
+                        const bullets = e.target.value
+                          .split("\n")
+                          .map((line) => line.trim())
+                          .filter(Boolean);
+                        updateItem<ApproachCard>("approachCards", idx, {
+                          bulletsEn: bullets,
+                        });
+                      }}
+                      placeholder="Each line becomes a bullet point"
+                    />
+                    <FieldError
+                      message={fieldErrors[`approachCards.${idx}.bulletsEn`]}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 font-semibold mb-1">
+                      Bullets (AR)
+                    </label>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`approachCards.${idx}.bulletsAr`]),
+                      )}
+                      rows={4}
+                      dir="rtl"
+                      value={splitLines(card.bulletsAr).join("\n")}
+                      onChange={(e) => {
+                        const bullets = e.target.value
+                          .split("\n")
+                          .map((line) => line.trim())
+                          .filter(Boolean);
+                        updateItem<ApproachCard>("approachCards", idx, {
+                          bulletsAr: bullets,
+                        });
+                      }}
+                    />
+                    <FieldError
+                      message={fieldErrors[`approachCards.${idx}.bulletsAr`]}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -1572,9 +1714,16 @@ export function PortfolioPage() {
                     key={`approach-add-slot-${slot}`}
                     type="button"
                     onClick={() =>
-                      addItem("approachCards", { title: "", bullets: [""] })
+                      addItem("approachCards", {
+                        titleEn: "",
+                        titleAr: "",
+                        bodyEn: "",
+                        bodyAr: "",
+                        bulletsEn: [],
+                        bulletsAr: [],
+                      })
                     }
-                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
+                    className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
                     <Plus className="w-8 h-8" />
                     <span className="text-[13px] font-semibold">Add Card</span>
@@ -1584,15 +1733,28 @@ export function PortfolioPage() {
           </div>
         </div>
 
-        <Field label="Key Architectural Insight">
-          <textarea
-            className={textareaCls}
-            rows={3}
-            value={form.approachInsight}
-            onChange={(e) => setField("approachInsight", e.target.value)}
-            placeholder="During this phase, I gained…"
-          />
-        </Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Key Architectural Insight (EN)">
+            <textarea
+              className={textareaCls}
+              rows={3}
+              value={form.approachInsightEn}
+              onChange={(e) => {
+                setField("approachInsightEn", e.target.value);
+              }}
+              placeholder="During this phase, I gained…"
+            />
+          </Field>
+          <Field label="Key Architectural Insight (AR)">
+            <textarea
+              className={textareaCls}
+              rows={3}
+              dir="rtl"
+              value={form.approachInsightAr}
+              onChange={(e) => setField("approachInsightAr", e.target.value)}
+            />
+          </Field>
+        </div>
       </div>
     );
   }
@@ -1726,7 +1888,7 @@ export function PortfolioPage() {
                         body: "",
                       })
                     }
-                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
+                    className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
                     <Plus className="w-8 h-8" />
                     <span className="text-[13px] font-semibold">Add Card</span>
@@ -1906,7 +2068,7 @@ export function PortfolioPage() {
                         body: "",
                       })
                     }
-                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
+                    className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
                     <Plus className="w-8 h-8" />
                     <span className="text-[13px] font-semibold">Add Card</span>
@@ -2040,7 +2202,7 @@ export function PortfolioPage() {
                     onClick={() =>
                       addItem("outcomeItems", { color: "emerald", text: "" })
                     }
-                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
+                    className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
                     <Plus className="w-8 h-8" />
                     <span className="text-[13px] font-semibold">Add Item</span>
@@ -2194,7 +2356,7 @@ export function PortfolioPage() {
                       body: "",
                     })
                   }
-                  className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
+                  className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                 >
                   <Plus className="w-8 h-8" />
                   <span className="text-[13px] font-semibold">Add Skill</span>

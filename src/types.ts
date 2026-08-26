@@ -131,8 +131,12 @@ export interface ChallengeItem {
 }
 
 export interface ApproachCard {
-  title: string;
-  bullets: string[];
+  titleEn?: string;
+  titleAr?: string;
+  bodyEn?: string;
+  bodyAr?: string;
+  bulletsEn?: string[];
+  bulletsAr?: string[];
 }
 
 export interface LeadershipCard {
@@ -209,7 +213,8 @@ export interface GalleryItem {
   approachBodyEn?: string;
   approachBodyAr?: string;
   approachCards?: ApproachCard[];
-  approachInsight?: string;
+  approachInsightEn?: string;
+  approachInsightAr?: string;
 
   // Technical Leadership
   leadershipBodyEn?: string;

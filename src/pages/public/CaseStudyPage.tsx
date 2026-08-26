@@ -214,9 +214,19 @@ export function CaseStudyPage() {
     locale === "ar" ? item.approachBodyAr : item.approachBodyEn,
   );
   const approachCards = (item.approachCards ?? []).filter(
-    (card) => hasValue(card.title) || cleanArray(card.bullets).length > 0,
+    (card) =>
+      hasValue(card.titleEn ?? card.title) ||
+      hasValue(card.titleAr) ||
+      hasValue(card.bodyEn ?? card.body) ||
+      hasValue(card.bodyAr) ||
+      cleanArray(card.bulletsEn ?? card.bullets).length > 0 ||
+      cleanArray(card.bulletsAr ?? card.bullets).length > 0,
   );
-  const approachInsight = cleanText(item.approachInsight || "");
+  const approachInsight = cleanText(
+    locale === "ar"
+      ? (item.approachInsightAr ?? "")
+      : (item.approachInsightEn ?? ""),
+  );
 
   const leadershipBody = cleanText(
     locale === "ar" ? item.leadershipBodyAr : item.leadershipBodyEn,
@@ -526,13 +536,47 @@ export function CaseStudyPage() {
                           <div className="w-10 h-10 rounded-lg bg-sky-100 text-[#36BFFB] flex items-center justify-center mb-5">
                             <FileText className="w-5 h-5" />
                           </div>
-                          {cleanText(card.title) && (
+                          {cleanText(
+                            locale === "ar"
+                              ? (card.titleAr ?? card.titleEn ?? card.title)
+                              : (card.titleEn ?? card.titleAr ?? card.title),
+                          ) && (
                             <h4 className="text-[20px] font-serif font-bold mb-4 text-[#0F2E25]">
-                              {cleanText(card.title)}
+                              {cleanText(
+                                locale === "ar"
+                                  ? (card.titleAr ?? card.titleEn ?? card.title)
+                                  : (card.titleEn ??
+                                      card.titleAr ??
+                                      card.title),
+                              )}
                             </h4>
                           )}
                           <ul className="space-y-3 text-[14px] text-slate-600">
-                            {cleanArray(card.bullets).map((bullet, bIdx) => (
+                            {(cleanArray(
+                              locale === "ar"
+                                ? (card.bulletsAr ?? card.bullets)
+                                : (card.bulletsEn ?? card.bullets),
+                            ).length
+                              ? cleanArray(
+                                  locale === "ar"
+                                    ? (card.bulletsAr ?? card.bullets)
+                                    : (card.bulletsEn ?? card.bullets),
+                                )
+                              : cleanText(
+                                  locale === "ar"
+                                    ? (card.bodyAr ??
+                                        card.bodyEn ??
+                                        card.body ??
+                                        "")
+                                    : (card.bodyEn ??
+                                        card.bodyAr ??
+                                        card.body ??
+                                        ""),
+                                )
+                                  .split(/\r?\n/)
+                                  .map((line) => line.trim())
+                                  .filter(Boolean)
+                            ).map((bullet, bIdx) => (
                               <li
                                 key={bIdx}
                                 className="flex items-start gap-2.5"

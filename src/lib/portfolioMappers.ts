@@ -8,6 +8,12 @@ import type {
   SolutionCard,
 } from "../types";
 
+type LegacyApproachCard = ApproachCard & {
+  title?: string;
+  body?: string;
+  bullets?: string[];
+};
+
 /** Tab-grouped portfolio payload — matches Postman /gallery canonical shape */
 export interface PortfolioOverviewTab {
   titleEn: string;
@@ -44,7 +50,8 @@ export interface PortfolioChallengeTab {
 export interface PortfolioApproachTab {
   approachBodyEn: string;
   approachBodyAr: string;
-  approachInsight: string;
+  approachInsightEn?: string;
+  approachInsightAr?: string;
   approachCards: ApproachCard[];
 }
 
@@ -95,6 +102,49 @@ export function isTabGroupedPortfolio(
 
 function heroUrlFromItem(item: GalleryItem): string {
   return item.heroImageUrl || item.media?.url || "";
+}
+
+function splitBodyLines(value?: string): string[] {
+  if (!value) return [];
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function normalizeApproachCard(card: ApproachCard): ApproachCard {
+  const legacyCard = card as LegacyApproachCard;
+  const titleEn = legacyCard.titleEn ?? legacyCard.title ?? "";
+  const titleAr = legacyCard.titleAr ?? legacyCard.title ?? "";
+  const bodyEn =
+    legacyCard.bodyEn ??
+    legacyCard.body ??
+    legacyCard.bullets?.join("\n") ??
+    "";
+  const bodyAr =
+    legacyCard.bodyAr ??
+    legacyCard.body ??
+    legacyCard.bullets?.join("\n") ??
+    "";
+  const bulletsEn = card.bulletsEn?.length
+    ? card.bulletsEn
+    : legacyCard.bullets?.length
+      ? legacyCard.bullets
+      : splitBodyLines(bodyEn);
+  const bulletsAr = card.bulletsAr?.length
+    ? card.bulletsAr
+    : legacyCard.bullets?.length
+      ? legacyCard.bullets
+      : splitBodyLines(bodyAr);
+
+  return {
+    titleEn,
+    titleAr,
+    bodyEn,
+    bodyAr,
+    bulletsEn,
+    bulletsAr,
+  };
 }
 
 /** Map tab-grouped API item (or legacy flat item) to flat GalleryItem for admin/public UI */
@@ -177,8 +227,9 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     challengeBadgeLabel: item.challenge.challengeBadgeLabel,
     approachBodyEn: item.approach.approachBodyEn,
     approachBodyAr: item.approach.approachBodyAr,
-    approachCards: item.approach.approachCards,
-    approachInsight: item.approach.approachInsight,
+    approachCards: item.approach.approachCards.map(normalizeApproachCard),
+    approachInsightEn: item.approach.approachInsightEn ?? "",
+    approachInsightAr: item.approach.approachInsightAr ?? "",
     leadershipBodyEn: item.leadership.leadershipBodyEn,
     leadershipBodyAr: item.leadership.leadershipBodyAr,
     leadershipCards: item.leadership.leadershipCards,
@@ -232,7 +283,8 @@ export function portfolioFormToTabbedPayload(form: {
   approachBodyEn: string;
   approachBodyAr: string;
   approachCards: ApproachCard[];
-  approachInsight: string;
+  approachInsightEn: string;
+  approachInsightAr: string;
   leadershipBodyEn: string;
   leadershipBodyAr: string;
   leadershipCards: LeadershipCard[];
@@ -306,13 +358,44 @@ export function portfolioFormToTabbedPayload(form: {
     approach: {
       approachBodyEn: form.approachBodyEn.trim(),
       approachBodyAr: form.approachBodyAr.trim(),
-      approachInsight: form.approachInsight.trim(),
+      approachInsightEn: form.approachInsightEn.trim(),
+      approachInsightAr: form.approachInsightAr.trim(),
       approachCards: form.approachCards
-        .filter((c) => c.title.trim())
-        .map((c) => ({
-          title: c.title.trim(),
-          bullets: c.bullets.map((b) => b.trim()).filter(Boolean),
-        })),
+        .filter(
+          (c) =>
+            c.titleEn?.trim() ||
+            c.titleAr?.trim() ||
+            c.bodyEn?.trim() ||
+            c.bodyAr?.trim() ||
+            c.bulletsEn?.some((bullet) => bullet.trim()) ||
+            c.bulletsAr?.some((bullet) => bullet.trim()) ||
+            c.titleEn?.trim() ||
+            c.titleAr?.trim() ||
+            c.bodyEn?.trim() ||
+            c.bodyAr?.trim(),
+        )
+        .map((c) => {
+          const titleEn = c.titleEn.trim();
+          const titleAr = c.titleAr.trim();
+          const bodyEn = c.bodyEn.trim();
+          const bodyAr = c.bodyAr.trim();
+          const body = bodyEn || bodyAr;
+          const bulletsEn = c.bulletsEn
+            .map((bullet) => bullet.trim())
+            .filter(Boolean);
+          const bulletsAr = c.bulletsAr
+            .map((bullet) => bullet.trim())
+            .filter(Boolean);
+          return {
+            titleEn,
+            titleAr,
+            body,
+            bodyEn,
+            bodyAr,
+            bulletsEn,
+            bulletsAr,
+          };
+        }),
     },
     leadership: {
       leadershipBodyEn: form.leadershipBodyEn.trim(),
