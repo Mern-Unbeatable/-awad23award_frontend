@@ -232,15 +232,29 @@ export function CaseStudyPage() {
     locale === "ar" ? item.leadershipBodyAr : item.leadershipBodyEn,
   );
   const leadershipCards = (item.leadershipCards ?? []).filter(
-    (card) => hasValue(card.title) || hasValue(card.body),
+    (card) =>
+      hasValue(card.titleEn ?? card.title) ||
+      hasValue(card.titleAr) ||
+      hasValue(card.bodyEn ?? card.body) ||
+      hasValue(card.bodyAr),
   );
-  const leadershipStat = cleanText(item.leadershipBannerStat || "");
+  const leadershipStat = cleanText(
+    locale === "ar"
+      ? (item.leadershipBannerStatAr ?? item.leadershipBannerStat ?? "")
+      : (item.leadershipBannerStatEn ?? item.leadershipBannerStat ?? ""),
+  );
 
   const solutionBody = cleanText(
     locale === "ar" ? item.solutionBodyAr : item.solutionBodyEn,
   );
   const solutionCards = (item.solutionCards ?? []).filter(
-    (card) => hasValue(card.tag) || hasValue(card.title) || hasValue(card.body),
+    (card) =>
+      hasValue(card.tagEn ?? card.tag) ||
+      hasValue(card.tagAr) ||
+      hasValue(card.titleEn ?? card.title) ||
+      hasValue(card.titleAr) ||
+      hasValue(card.bodyEn ?? card.body) ||
+      hasValue(card.bodyAr),
   );
   let solutionArchImg = cleanText(item.solutionArchImageUrl || "");
   if (solutionArchImg && !isBlobUrl(solutionArchImg)) {
@@ -248,8 +262,16 @@ export function CaseStudyPage() {
   } else {
     solutionArchImg = "";
   }
-  const solutionArchTitle = cleanText(item.solutionArchTitle || "");
-  const solutionArchBody = cleanText(item.solutionArchBody || "");
+  const solutionArchTitle = cleanText(
+    locale === "ar"
+      ? (item.solutionArchTitleAr ?? item.solutionArchTitleEn ?? item.solutionArchTitle ?? "")
+      : (item.solutionArchTitleEn ?? item.solutionArchTitleAr ?? item.solutionArchTitle ?? ""),
+  );
+  const solutionArchBody = cleanText(
+    locale === "ar"
+      ? (item.solutionArchBodyAr ?? item.solutionArchBodyEn ?? item.solutionArchBody ?? "")
+      : (item.solutionArchBodyEn ?? item.solutionArchBodyAr ?? item.solutionArchBody ?? ""),
+  );
 
   const outcomeItems = (item.outcomeItems ?? []).filter((item) =>
     hasValue(item.text),
@@ -660,8 +682,16 @@ export function CaseStudyPage() {
                       {leadershipCards.map((card, idx) => {
                         const iconName = cleanText(card.iconName);
                         const Icon = iconName ? getIcon(iconName) : null;
-                        const cardTitle = cleanText(card.title);
-                        const cardBody = cleanText(card.body);
+                        const cardTitle = cleanText(
+                          locale === "ar"
+                            ? (card.titleAr ?? card.titleEn ?? card.title ?? "")
+                            : (card.titleEn ?? card.titleAr ?? card.title ?? ""),
+                        );
+                        const cardBody = cleanText(
+                          locale === "ar"
+                            ? (card.bodyAr ?? card.bodyEn ?? card.body ?? "")
+                            : (card.bodyEn ?? card.bodyAr ?? card.body ?? ""),
+                        );
                         return (
                           <div
                             key={idx}
@@ -719,9 +749,21 @@ export function CaseStudyPage() {
                         const colors =
                           SOLUTION_COLORS[card.color] || SOLUTION_COLORS.green;
                         const Icon = SOLUTION_ICONS[card.color] || ShieldCheck;
-                        const cardTag = cleanText(card.tag);
-                        const cardTitle = cleanText(card.title);
-                        const cardBody = cleanText(card.body);
+                        const cardTag = cleanText(
+                          locale === "ar"
+                            ? (card.tagAr ?? card.tagEn ?? card.tag ?? "")
+                            : (card.tagEn ?? card.tagAr ?? card.tag ?? ""),
+                        );
+                        const cardTitle = cleanText(
+                          locale === "ar"
+                            ? (card.titleAr ?? card.titleEn ?? card.title ?? "")
+                            : (card.titleEn ?? card.titleAr ?? card.title ?? ""),
+                        );
+                        const cardBody = cleanText(
+                          locale === "ar"
+                            ? (card.bodyAr ?? card.bodyEn ?? card.body ?? "")
+                            : (card.bodyEn ?? card.bodyAr ?? card.body ?? ""),
+                        );
                         return (
                           <div
                             key={idx}

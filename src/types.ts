@@ -141,15 +141,25 @@ export interface ApproachCard {
 
 export interface LeadershipCard {
   iconName: string;
-  title: string;
-  body: string;
+  title?: string;
+  titleEn?: string;
+  titleAr?: string;
+  body?: string;
+  bodyEn?: string;
+  bodyAr?: string;
 }
 
 export interface SolutionCard {
   color: "green" | "blue" | "orange" | "purple";
-  tag: string;
-  title: string;
-  body: string;
+  tag?: string;
+  tagEn?: string;
+  tagAr?: string;
+  title?: string;
+  titleEn?: string;
+  titleAr?: string;
+  body?: string;
+  bodyEn?: string;
+  bodyAr?: string;
 }
 
 export interface OutcomeItem {
@@ -221,6 +231,8 @@ export interface GalleryItem {
   leadershipBodyAr?: string;
   leadershipCards?: LeadershipCard[];
   leadershipBannerStat?: string;
+  leadershipBannerStatEn?: string;
+  leadershipBannerStatAr?: string;
 
   // Solution Delivered
   solutionBodyEn?: string;
@@ -228,7 +240,11 @@ export interface GalleryItem {
   solutionCards?: SolutionCard[];
   solutionArchImageUrl?: string;
   solutionArchTitle?: string;
+  solutionArchTitleEn?: string;
+  solutionArchTitleAr?: string;
   solutionArchBody?: string;
+  solutionArchBodyEn?: string;
+  solutionArchBodyAr?: string;
 
   // Outcome
   outcomeItems?: OutcomeItem[];

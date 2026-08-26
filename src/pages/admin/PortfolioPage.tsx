@@ -415,13 +415,16 @@ interface PortfolioForm {
   leadershipBodyEn: string;
   leadershipBodyAr: string;
   leadershipCards: LeadershipCard[];
-  leadershipBannerStat: string;
+  leadershipBannerStatEn: string;
+  leadershipBannerStatAr: string;
   solutionBodyEn: string;
   solutionBodyAr: string;
   solutionCards: SolutionCard[];
   solutionArchImageUrl: string;
-  solutionArchTitle: string;
-  solutionArchBody: string;
+  solutionArchTitleEn: string;
+  solutionArchTitleAr: string;
+  solutionArchBodyEn: string;
+  solutionArchBodyAr: string;
   outcomeItems: OutcomeItem[];
   recognitionImageUrl: string;
   recognitionLabel: string;
@@ -481,14 +484,37 @@ const EMPTY_FORM: PortfolioForm = {
   ],
   leadershipBodyEn: "",
   leadershipBodyAr: "",
-  leadershipCards: [{ iconName: "Users", title: "", body: "" }],
-  leadershipBannerStat: "",
+  leadershipCards: [
+    {
+      iconName: "Users",
+      title: "",
+      titleEn: "",
+      titleAr: "",
+      body: "",
+      bodyEn: "",
+      bodyAr: "",
+    },
+  ],
+  leadershipBannerStatEn: "",
+  leadershipBannerStatAr: "",
   solutionBodyEn: "",
   solutionBodyAr: "",
-  solutionCards: [{ color: "green", tag: "", title: "", body: "" }],
+  solutionCards: [
+    {
+      color: "green",
+      tagEn: "",
+      tagAr: "",
+      titleEn: "",
+      titleAr: "",
+      bodyEn: "",
+      bodyAr: "",
+    },
+  ],
   solutionArchImageUrl: "",
-  solutionArchTitle: "",
-  solutionArchBody: "",
+  solutionArchTitleEn: "",
+  solutionArchTitleAr: "",
+  solutionArchBodyEn: "",
+  solutionArchBodyAr: "",
   outcomeItems: [{ color: "emerald", text: "" }],
   recognitionImageUrl: "",
   recognitionLabel: "",
@@ -542,17 +568,38 @@ function formFromItem(item: GalleryItem): PortfolioForm {
     leadershipBodyEn: item.leadershipBodyEn || "",
     leadershipBodyAr: item.leadershipBodyAr || "",
     leadershipCards: item.leadershipCards?.length
-      ? item.leadershipCards
+      ? item.leadershipCards.map((card) => ({
+          iconName: card.iconName ?? "Users",
+          title: card.titleEn ?? card.title ?? "",
+          titleEn: card.titleEn ?? card.title ?? "",
+          titleAr: card.titleAr ?? "",
+          body: card.bodyEn ?? card.body ?? "",
+          bodyEn: card.bodyEn ?? card.body ?? "",
+          bodyAr: card.bodyAr ?? "",
+        }))
       : EMPTY_FORM.leadershipCards,
-    leadershipBannerStat: item.leadershipBannerStat || "",
+    leadershipBannerStatEn:
+      item.leadershipBannerStatEn ?? item.leadershipBannerStat ?? "",
+    leadershipBannerStatAr:
+      item.leadershipBannerStatAr ?? item.leadershipBannerStat ?? "",
     solutionBodyEn: item.solutionBodyEn || "",
     solutionBodyAr: item.solutionBodyAr || "",
     solutionCards: item.solutionCards?.length
-      ? item.solutionCards
+      ? item.solutionCards.map((card) => ({
+          color: card.color,
+          tagEn: card.tagEn ?? card.tag ?? "",
+          tagAr: card.tagAr ?? card.tag ?? "",
+          titleEn: card.titleEn ?? card.title ?? "",
+          titleAr: card.titleAr ?? card.title ?? "",
+          bodyEn: card.bodyEn ?? card.body ?? "",
+          bodyAr: card.bodyAr ?? card.body ?? "",
+        }))
       : EMPTY_FORM.solutionCards,
     solutionArchImageUrl: item.solutionArchImageUrl || "",
-    solutionArchTitle: item.solutionArchTitle || "",
-    solutionArchBody: item.solutionArchBody || "",
+    solutionArchTitleEn: item.solutionArchTitleEn || item.solutionArchTitle || "",
+    solutionArchTitleAr: item.solutionArchTitleAr || item.solutionArchTitle || "",
+    solutionArchBodyEn: item.solutionArchBodyEn || item.solutionArchBody || "",
+    solutionArchBodyAr: item.solutionArchBodyAr || item.solutionArchBody || "",
     outcomeItems: item.outcomeItems?.length
       ? item.outcomeItems
       : EMPTY_FORM.outcomeItems,
@@ -597,11 +644,23 @@ function isApproachCardEmpty(card: ApproachCard): boolean {
 }
 
 function isLeadershipCardEmpty(card: LeadershipCard): boolean {
-  return isBlank(card.title) && isBlank(card.body);
+  return (
+    isBlank(card.titleEn ?? card.title) &&
+    isBlank(card.titleAr) &&
+    isBlank(card.bodyEn ?? card.body) &&
+    isBlank(card.bodyAr)
+  );
 }
 
 function isSolutionCardEmpty(card: SolutionCard): boolean {
-  return isBlank(card.tag) && isBlank(card.title) && isBlank(card.body);
+  return (
+    isBlank(card.tagEn ?? card.tag) &&
+    isBlank(card.tagAr) &&
+    isBlank(card.titleEn ?? card.title) &&
+    isBlank(card.titleAr) &&
+    isBlank(card.bodyEn ?? card.body) &&
+    isBlank(card.bodyAr)
+  );
 }
 
 function isOutcomeItemEmpty(item: OutcomeItem): boolean {
@@ -657,18 +716,28 @@ function validatePortfolioForm(form: PortfolioForm): {
     if (isLeadershipCardEmpty(card)) return;
     if (isBlank(card.iconName))
       errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
-    if (isBlank(card.title))
-      errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
-    if (isBlank(card.body))
-      errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
+    if (isBlank(card.titleEn ?? card.title))
+      errors[`leadershipCards.${idx}.titleEn`] = REQUIRED_MSG;
+    if (isBlank(card.titleAr))
+      errors[`leadershipCards.${idx}.titleAr`] = REQUIRED_MSG;
+    if (isBlank(card.bodyEn ?? card.body))
+      errors[`leadershipCards.${idx}.bodyEn`] = REQUIRED_MSG;
+    if (isBlank(card.bodyAr))
+      errors[`leadershipCards.${idx}.bodyAr`] = REQUIRED_MSG;
   });
 
   form.solutionCards.forEach((card, idx) => {
     if (isSolutionCardEmpty(card)) return;
-    if (isBlank(card.tag)) errors[`solutionCards.${idx}.tag`] = REQUIRED_MSG;
-    if (isBlank(card.title))
-      errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
-    if (isBlank(card.body)) errors[`solutionCards.${idx}.body`] = REQUIRED_MSG;
+    if (isBlank(card.tagEn ?? card.tag))
+      errors[`solutionCards.${idx}.tagEn`] = REQUIRED_MSG;
+    if (isBlank(card.tagAr)) errors[`solutionCards.${idx}.tagAr`] = REQUIRED_MSG;
+    if (isBlank(card.titleEn ?? card.title))
+      errors[`solutionCards.${idx}.titleEn`] = REQUIRED_MSG;
+    if (isBlank(card.titleAr))
+      errors[`solutionCards.${idx}.titleAr`] = REQUIRED_MSG;
+    if (isBlank(card.bodyEn ?? card.body))
+      errors[`solutionCards.${idx}.bodyEn`] = REQUIRED_MSG;
+    if (isBlank(card.bodyAr)) errors[`solutionCards.${idx}.bodyAr`] = REQUIRED_MSG;
   });
 
   form.outcomeItems.forEach((item, idx) => {
@@ -757,10 +826,14 @@ function validatePortfolioStep(
     form.leadershipCards.forEach((card, idx) => {
       if (isBlank(card.iconName))
         errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
-      if (isBlank(card.title))
-        errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
-      if (isBlank(card.body))
-        errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
+      if (isBlank(card.titleEn ?? card.title))
+        errors[`leadershipCards.${idx}.titleEn`] = REQUIRED_MSG;
+      if (isBlank(card.titleAr))
+        errors[`leadershipCards.${idx}.titleAr`] = REQUIRED_MSG;
+      if (isBlank(card.bodyEn ?? card.body))
+        errors[`leadershipCards.${idx}.bodyEn`] = REQUIRED_MSG;
+      if (isBlank(card.bodyAr))
+        errors[`leadershipCards.${idx}.bodyAr`] = REQUIRED_MSG;
     });
     return errors;
   }
@@ -770,11 +843,18 @@ function validatePortfolioStep(
       errors.solutionCards = "Add 4 feature cards to continue.";
     }
     form.solutionCards.forEach((card, idx) => {
-      if (isBlank(card.tag)) errors[`solutionCards.${idx}.tag`] = REQUIRED_MSG;
-      if (isBlank(card.title))
-        errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
-      if (isBlank(card.body))
-        errors[`solutionCards.${idx}.body`] = REQUIRED_MSG;
+      if (isBlank(card.tagEn ?? card.tag))
+        errors[`solutionCards.${idx}.tagEn`] = REQUIRED_MSG;
+      if (isBlank(card.tagAr))
+        errors[`solutionCards.${idx}.tagAr`] = REQUIRED_MSG;
+      if (isBlank(card.titleEn ?? card.title))
+        errors[`solutionCards.${idx}.titleEn`] = REQUIRED_MSG;
+      if (isBlank(card.titleAr))
+        errors[`solutionCards.${idx}.titleAr`] = REQUIRED_MSG;
+      if (isBlank(card.bodyEn ?? card.body))
+        errors[`solutionCards.${idx}.bodyEn`] = REQUIRED_MSG;
+      if (isBlank(card.bodyAr))
+        errors[`solutionCards.${idx}.bodyAr`] = REQUIRED_MSG;
     });
     return errors;
   }
@@ -1843,37 +1923,84 @@ export function PortfolioPage() {
                 <FieldError
                   message={fieldErrors[`leadershipCards.${idx}.iconName`]}
                 />
-                <input
-                  className={fieldInputCls(
-                    Boolean(fieldErrors[`leadershipCards.${idx}.title`]),
-                  )}
-                  placeholder="Title"
-                  value={card.title}
-                  onChange={(e) =>
-                    updateItem<LeadershipCard>("leadershipCards", idx, {
-                      title: e.target.value,
-                    })
-                  }
-                />
-                <FieldError
-                  message={fieldErrors[`leadershipCards.${idx}.title`]}
-                />
-                <textarea
-                  className={fieldTextareaCls(
-                    Boolean(fieldErrors[`leadershipCards.${idx}.body`]),
-                  )}
-                  rows={2}
-                  placeholder="Body text"
-                  value={card.body}
-                  onChange={(e) =>
-                    updateItem<LeadershipCard>("leadershipCards", idx, {
-                      body: e.target.value,
-                    })
-                  }
-                />
-                <FieldError
-                  message={fieldErrors[`leadershipCards.${idx}.body`]}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      className={fieldInputCls(
+                        Boolean(fieldErrors[`leadershipCards.${idx}.titleEn`]),
+                      )}
+                      placeholder="Title (EN)"
+                      value={card.titleEn ?? card.title ?? ""}
+                      onChange={(e) =>
+                        updateItem<LeadershipCard>("leadershipCards", idx, {
+                          titleEn: e.target.value,
+                          title: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`leadershipCards.${idx}.titleEn`]}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      className={fieldInputCls(
+                        Boolean(fieldErrors[`leadershipCards.${idx}.titleAr`]),
+                      )}
+                      dir="rtl"
+                      placeholder="Title (AR)"
+                      value={card.titleAr ?? ""}
+                      onChange={(e) =>
+                        updateItem<LeadershipCard>("leadershipCards", idx, {
+                          titleAr: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`leadershipCards.${idx}.titleAr`]}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`leadershipCards.${idx}.bodyEn`]),
+                      )}
+                      rows={2}
+                      placeholder="Body (EN)"
+                      value={card.bodyEn ?? card.body ?? ""}
+                      onChange={(e) =>
+                        updateItem<LeadershipCard>("leadershipCards", idx, {
+                          bodyEn: e.target.value,
+                          body: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`leadershipCards.${idx}.bodyEn`]}
+                    />
+                  </div>
+                  <div>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`leadershipCards.${idx}.bodyAr`]),
+                      )}
+                      rows={2}
+                      dir="rtl"
+                      placeholder="Body (AR)"
+                      value={card.bodyAr ?? ""}
+                      onChange={(e) =>
+                        updateItem<LeadershipCard>("leadershipCards", idx, {
+                          bodyAr: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`leadershipCards.${idx}.bodyAr`]}
+                    />
+                  </div>
+                </div>
               </div>
             ))}
             {form.leadershipCards.length < 4 &&
@@ -1899,13 +2026,25 @@ export function PortfolioPage() {
           </div>
         </div>
 
-        <Field label="Banner Stat (e.g. 100% On Schedule)">
-          <input
-            className={inputCls}
-            value={form.leadershipBannerStat}
-            onChange={(e) => setField("leadershipBannerStat", e.target.value)}
-          />
-        </Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Banner Stat (EN)">
+            <input
+              className={inputCls}
+              value={form.leadershipBannerStatEn}
+              onChange={(e) => setField("leadershipBannerStatEn", e.target.value)}
+              placeholder="100% On Schedule"
+            />
+          </Field>
+          <Field label="Banner Stat (AR)">
+            <input
+              className={inputCls}
+              dir="rtl"
+              value={form.leadershipBannerStatAr}
+              onChange={(e) => setField("leadershipBannerStatAr", e.target.value)}
+              placeholder="%100 في الموعد"
+            />
+          </Field>
+        </div>
       </div>
     );
   }
@@ -1957,9 +2096,12 @@ export function PortfolioPage() {
                 onClick={() =>
                   addItem("solutionCards", {
                     color: "green",
-                    tag: "",
-                    title: "",
-                    body: "",
+                    tagEn: "",
+                    tagAr: "",
+                    titleEn: "",
+                    titleAr: "",
+                    bodyEn: "",
+                    bodyAr: "",
                   })
                 }
                 className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
@@ -1970,8 +2112,8 @@ export function PortfolioPage() {
             )}
           </div>
           <p className="text-[12px] text-slate-400 mb-3">
-            Add 4 feature cards in total. Each card needs a tag, title, and
-            body.
+            Add 4 feature cards in total. Each card needs tag, title, and body
+            in EN and AR.
           </p>
           <FieldError message={fieldErrors.solutionCards} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2011,48 +2153,87 @@ export function PortfolioPage() {
                 </div>
                 <input
                   className={fieldInputCls(
-                    Boolean(fieldErrors[`solutionCards.${idx}.tag`]),
+                    Boolean(fieldErrors[`solutionCards.${idx}.tagEn`]),
                   )}
-                  placeholder="Badge tag (e.g. Financial Sync)"
-                  value={card.tag}
+                  placeholder="Tag (EN)"
+                  value={card.tagEn ?? card.tag ?? ""}
                   onChange={(e) =>
                     updateItem<SolutionCard>("solutionCards", idx, {
-                      tag: e.target.value,
+                      tagEn: e.target.value,
                     })
                   }
                 />
-                <FieldError message={fieldErrors[`solutionCards.${idx}.tag`]} />
+                <FieldError message={fieldErrors[`solutionCards.${idx}.tagEn`]} />
                 <input
                   className={fieldInputCls(
-                    Boolean(fieldErrors[`solutionCards.${idx}.title`]),
+                    Boolean(fieldErrors[`solutionCards.${idx}.tagAr`]),
                   )}
-                  placeholder="Card Title"
-                  value={card.title}
+                  dir="rtl"
+                  placeholder="Tag (AR)"
+                  value={card.tagAr ?? ""}
                   onChange={(e) =>
                     updateItem<SolutionCard>("solutionCards", idx, {
-                      title: e.target.value,
+                      tagAr: e.target.value,
                     })
                   }
                 />
-                <FieldError
-                  message={fieldErrors[`solutionCards.${idx}.title`]}
+                <FieldError message={fieldErrors[`solutionCards.${idx}.tagAr`]} />
+                <input
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`solutionCards.${idx}.titleEn`]),
+                  )}
+                  placeholder="Title (EN)"
+                  value={card.titleEn ?? card.title ?? ""}
+                  onChange={(e) =>
+                    updateItem<SolutionCard>("solutionCards", idx, {
+                      titleEn: e.target.value,
+                    })
+                  }
                 />
+                <FieldError message={fieldErrors[`solutionCards.${idx}.titleEn`]} />
+                <input
+                  className={fieldInputCls(
+                    Boolean(fieldErrors[`solutionCards.${idx}.titleAr`]),
+                  )}
+                  dir="rtl"
+                  placeholder="Title (AR)"
+                  value={card.titleAr ?? ""}
+                  onChange={(e) =>
+                    updateItem<SolutionCard>("solutionCards", idx, {
+                      titleAr: e.target.value,
+                    })
+                  }
+                />
+                <FieldError message={fieldErrors[`solutionCards.${idx}.titleAr`]} />
                 <textarea
                   className={fieldTextareaCls(
-                    Boolean(fieldErrors[`solutionCards.${idx}.body`]),
+                    Boolean(fieldErrors[`solutionCards.${idx}.bodyEn`]),
                   )}
                   rows={2}
-                  placeholder="Card Body"
-                  value={card.body}
+                  placeholder="Body Text (EN)"
+                  value={card.bodyEn ?? card.body ?? ""}
                   onChange={(e) =>
                     updateItem<SolutionCard>("solutionCards", idx, {
-                      body: e.target.value,
+                      bodyEn: e.target.value,
                     })
                   }
                 />
-                <FieldError
-                  message={fieldErrors[`solutionCards.${idx}.body`]}
+                <FieldError message={fieldErrors[`solutionCards.${idx}.bodyEn`]} />
+                <textarea
+                  className={fieldTextareaCls(
+                    Boolean(fieldErrors[`solutionCards.${idx}.bodyAr`]),
+                  )}
+                  rows={2}
+                  dir="rtl"
+                  placeholder="Body Text (AR)"
+                  value={card.bodyAr ?? ""}
+                  onChange={(e) =>
+                    updateItem<SolutionCard>("solutionCards", idx, {
+                      bodyAr: e.target.value,
+                    })
+                  }
                 />
+                <FieldError message={fieldErrors[`solutionCards.${idx}.bodyAr`]} />
               </div>
             ))}
             {form.solutionCards.length < 4 &&
@@ -2064,9 +2245,12 @@ export function PortfolioPage() {
                     onClick={() =>
                       addItem("solutionCards", {
                         color: "green",
-                        tag: "",
-                        title: "",
-                        body: "",
+                        tagEn: "",
+                        tagAr: "",
+                        titleEn: "",
+                        titleAr: "",
+                        bodyEn: "",
+                        bodyAr: "",
                       })
                     }
                     className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
@@ -2090,21 +2274,42 @@ export function PortfolioPage() {
               value={form.solutionArchImageUrl}
               onChange={(url) => setField("solutionArchImageUrl", url)}
             />
-            <Field label="Architecture Title">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Architecture Title (EN)">
               <input
                 className={inputCls}
-                value={form.solutionArchTitle}
-                onChange={(e) => setField("solutionArchTitle", e.target.value)}
+                  value={form.solutionArchTitleEn}
+                  onChange={(e) => setField("solutionArchTitleEn", e.target.value)}
               />
-            </Field>
-            <Field label="Architecture Body">
+              </Field>
+              <Field label="Architecture Title (AR)">
+                <input
+                  className={inputCls}
+                  dir="rtl"
+                  value={form.solutionArchTitleAr}
+                  onChange={(e) => setField("solutionArchTitleAr", e.target.value)}
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Architecture Body (EN)">
               <textarea
                 className={textareaCls}
                 rows={3}
-                value={form.solutionArchBody}
-                onChange={(e) => setField("solutionArchBody", e.target.value)}
+                value={form.solutionArchBodyEn}
+                onChange={(e) => setField("solutionArchBodyEn", e.target.value)}
               />
-            </Field>
+              </Field>
+              <Field label="Architecture Body (AR)">
+                <textarea
+                  className={textareaCls}
+                  rows={3}
+                  dir="rtl"
+                  value={form.solutionArchBodyAr}
+                  onChange={(e) => setField("solutionArchBodyAr", e.target.value)}
+                />
+              </Field>
+            </div>
           </div>
         </div>
       </div>

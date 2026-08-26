@@ -8,6 +8,17 @@ import type {
   SolutionCard,
 } from "../types";
 
+type LegacySolutionCard = SolutionCard & {
+  tag?: string;
+  title?: string;
+  body?: string;
+};
+
+type LegacyLeadershipCard = LeadershipCard & {
+  title?: string;
+  body?: string;
+};
+
 /** Tab-grouped portfolio payload — matches Postman /gallery canonical shape */
 export interface PortfolioOverviewTab {
   titleEn: string;
@@ -52,7 +63,8 @@ export interface PortfolioApproachTab {
 export interface PortfolioLeadershipTab {
   leadershipBodyEn: string;
   leadershipBodyAr: string;
-  leadershipBannerStat: string;
+  leadershipBannerStatEn: string;
+  leadershipBannerStatAr: string;
   leadershipCards: LeadershipCard[];
 }
 
@@ -60,8 +72,10 @@ export interface PortfolioSolutionTab {
   solutionBodyEn: string;
   solutionBodyAr: string;
   solutionArchImageUrl: string;
-  solutionArchTitle: string;
-  solutionArchBody: string;
+  solutionArchTitleEn: string;
+  solutionArchTitleAr: string;
+  solutionArchBodyEn: string;
+  solutionArchBodyAr: string;
   solutionCards: SolutionCard[];
 }
 
@@ -114,6 +128,42 @@ function normalizeApproachCard(card: ApproachCard): ApproachCard {
     bodyAr: card.bodyAr ?? "",
     bulletsEn: card.bulletsEn ?? splitBodyLines(card.bodyEn),
     bulletsAr: card.bulletsAr ?? splitBodyLines(card.bodyAr),
+  };
+}
+
+function normalizeLeadershipCard(card: LeadershipCard): LeadershipCard {
+  const legacyCard = card as LegacyLeadershipCard;
+  const titleEn = legacyCard.titleEn ?? legacyCard.title ?? "";
+  const titleAr = legacyCard.titleAr ?? legacyCard.title ?? "";
+  const bodyEn = legacyCard.bodyEn ?? legacyCard.body ?? "";
+  const bodyAr = legacyCard.bodyAr ?? legacyCard.body ?? "";
+
+  return {
+    iconName: card.iconName ?? "Users",
+    titleEn,
+    titleAr,
+    bodyEn,
+    bodyAr,
+  };
+}
+
+function normalizeSolutionCard(card: SolutionCard): SolutionCard {
+  const legacyCard = card as LegacySolutionCard;
+  const tagEn = legacyCard.tagEn ?? legacyCard.tag ?? "";
+  const tagAr = legacyCard.tagAr ?? legacyCard.tag ?? "";
+  const titleEn = legacyCard.titleEn ?? legacyCard.title ?? "";
+  const titleAr = legacyCard.titleAr ?? legacyCard.title ?? "";
+  const bodyEn = legacyCard.bodyEn ?? legacyCard.body ?? "";
+  const bodyAr = legacyCard.bodyAr ?? legacyCard.body ?? "";
+
+  return {
+    color: card.color,
+    tagEn,
+    tagAr,
+    titleEn,
+    titleAr,
+    bodyEn,
+    bodyAr,
   };
 }
 
@@ -202,14 +252,32 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     approachInsightAr: item.approach.approachInsightAr ?? "",
     leadershipBodyEn: item.leadership.leadershipBodyEn,
     leadershipBodyAr: item.leadership.leadershipBodyAr,
-    leadershipCards: item.leadership.leadershipCards,
-    leadershipBannerStat: item.leadership.leadershipBannerStat,
+    leadershipCards: item.leadership.leadershipCards.map(normalizeLeadershipCard),
+    leadershipBannerStatEn:
+      item.leadership.leadershipBannerStatEn ??
+      item.leadership.leadershipBannerStat ??
+      "",
+    leadershipBannerStatAr:
+      item.leadership.leadershipBannerStatAr ??
+      item.leadership.leadershipBannerStat ??
+      "",
+    leadershipBannerStat:
+      item.leadership.leadershipBannerStat ??
+      item.leadership.leadershipBannerStatEn ??
+      item.leadership.leadershipBannerStatAr ??
+      "",
     solutionBodyEn: item.solution.solutionBodyEn,
     solutionBodyAr: item.solution.solutionBodyAr,
-    solutionCards: item.solution.solutionCards,
+    solutionCards: item.solution.solutionCards.map(normalizeSolutionCard),
     solutionArchImageUrl: item.solution.solutionArchImageUrl,
-    solutionArchTitle: item.solution.solutionArchTitle,
-    solutionArchBody: item.solution.solutionArchBody,
+    solutionArchTitleEn:
+      item.solution.solutionArchTitleEn ?? item.solution.solutionArchTitle ?? "",
+    solutionArchTitleAr:
+      item.solution.solutionArchTitleAr ?? item.solution.solutionArchTitle ?? "",
+    solutionArchBodyEn:
+      item.solution.solutionArchBodyEn ?? item.solution.solutionArchBody ?? "",
+    solutionArchBodyAr:
+      item.solution.solutionArchBodyAr ?? item.solution.solutionArchBody ?? "",
     outcomeItems: item.outcome.outcomeItems,
     recognitionImageUrl: item.outcome.recognitionImageUrl,
     recognitionLabel: item.outcome.recognitionLabel,
@@ -258,13 +326,16 @@ export function portfolioFormToTabbedPayload(form: {
   leadershipBodyEn: string;
   leadershipBodyAr: string;
   leadershipCards: LeadershipCard[];
-  leadershipBannerStat: string;
+  leadershipBannerStatEn: string;
+  leadershipBannerStatAr: string;
   solutionBodyEn: string;
   solutionBodyAr: string;
   solutionCards: SolutionCard[];
   solutionArchImageUrl: string;
-  solutionArchTitle: string;
-  solutionArchBody: string;
+  solutionArchTitleEn: string;
+  solutionArchTitleAr: string;
+  solutionArchBodyEn: string;
+  solutionArchBodyAr: string;
   outcomeItems: OutcomeItem[];
   recognitionImageUrl: string;
   recognitionLabel: string;
@@ -370,20 +441,62 @@ export function portfolioFormToTabbedPayload(form: {
     leadership: {
       leadershipBodyEn: form.leadershipBodyEn.trim(),
       leadershipBodyAr: form.leadershipBodyAr.trim(),
-      leadershipBannerStat: form.leadershipBannerStat.trim(),
-      leadershipCards: form.leadershipCards.filter(
-        (c) => c.title.trim() || c.body.trim(),
-      ),
+      leadershipBannerStatEn: form.leadershipBannerStatEn.trim(),
+      leadershipBannerStatAr: form.leadershipBannerStatAr.trim(),
+      leadershipCards: form.leadershipCards
+        .filter(
+          (c) =>
+            c.titleEn?.trim() ||
+            c.titleAr?.trim() ||
+            c.bodyEn?.trim() ||
+            c.bodyAr?.trim() ||
+            c.title?.trim() ||
+            c.body?.trim(),
+        )
+        .map((c) => ({
+          iconName: c.iconName.trim(),
+          titleEn: c.titleEn?.trim() || c.title?.trim() || "",
+          titleAr: c.titleAr?.trim() || c.title?.trim() || "",
+          bodyEn: c.bodyEn?.trim() || c.body?.trim() || "",
+          bodyAr: c.bodyAr?.trim() || c.body?.trim() || "",
+        })),
     },
     solution: {
       solutionBodyEn: form.solutionBodyEn.trim(),
       solutionBodyAr: form.solutionBodyAr.trim(),
       solutionArchImageUrl: form.solutionArchImageUrl.trim(),
-      solutionArchTitle: form.solutionArchTitle.trim(),
-      solutionArchBody: form.solutionArchBody.trim(),
+      solutionArchTitleEn: form.solutionArchTitleEn.trim(),
+      solutionArchTitleAr: form.solutionArchTitleAr.trim(),
+      solutionArchBodyEn: form.solutionArchBodyEn.trim(),
+      solutionArchBodyAr: form.solutionArchBodyAr.trim(),
       solutionCards: form.solutionCards.filter(
-        (c) => c.title.trim() || c.body.trim(),
-      ),
+        (c) =>
+          c.tagEn?.trim() ||
+          c.tagAr?.trim() ||
+          c.titleEn?.trim() ||
+          c.titleAr?.trim() ||
+          c.bodyEn?.trim() ||
+          c.bodyAr?.trim() ||
+          c.tag?.trim() ||
+          c.title?.trim() ||
+          c.body?.trim(),
+      ).map((c) => {
+        const tagEn = c.tagEn?.trim() || c.tag?.trim() || "";
+        const tagAr = c.tagAr?.trim() || c.tag?.trim() || "";
+        const titleEn = c.titleEn?.trim() || c.title?.trim() || "";
+        const titleAr = c.titleAr?.trim() || c.title?.trim() || "";
+        const bodyEn = c.bodyEn?.trim() || c.body?.trim() || "";
+        const bodyAr = c.bodyAr?.trim() || c.body?.trim() || "";
+        return {
+          color: c.color,
+          tagEn,
+          tagAr,
+          titleEn,
+          titleAr,
+          bodyEn,
+          bodyAr,
+        };
+      }),
     },
     outcome: {
       recognitionImageUrl: form.recognitionImageUrl.trim(),
