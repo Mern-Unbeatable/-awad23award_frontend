@@ -796,7 +796,8 @@ function validatePortfolioForm(form: PortfolioForm): {
       errors[`skillCards.${idx}.categoryAr`] = REQUIRED_MSG;
     if (isBlank(card.titleEn ?? card.title))
       errors[`skillCards.${idx}.titleEn`] = REQUIRED_MSG;
-    if (isBlank(card.titleAr)) errors[`skillCards.${idx}.titleAr`] = REQUIRED_MSG;
+    if (isBlank(card.titleAr))
+      errors[`skillCards.${idx}.titleAr`] = REQUIRED_MSG;
     if (isBlank(card.bodyEn ?? card.body))
       errors[`skillCards.${idx}.bodyEn`] = REQUIRED_MSG;
     if (isBlank(card.bodyAr)) errors[`skillCards.${idx}.bodyAr`] = REQUIRED_MSG;
@@ -936,10 +937,12 @@ function validatePortfolioStep(
         errors[`skillCards.${idx}.categoryAr`] = REQUIRED_MSG;
       if (isBlank(card.titleEn ?? card.title))
         errors[`skillCards.${idx}.titleEn`] = REQUIRED_MSG;
-      if (isBlank(card.titleAr)) errors[`skillCards.${idx}.titleAr`] = REQUIRED_MSG;
+      if (isBlank(card.titleAr))
+        errors[`skillCards.${idx}.titleAr`] = REQUIRED_MSG;
       if (isBlank(card.bodyEn ?? card.body))
         errors[`skillCards.${idx}.bodyEn`] = REQUIRED_MSG;
-      if (isBlank(card.bodyAr)) errors[`skillCards.${idx}.bodyAr`] = REQUIRED_MSG;
+      if (isBlank(card.bodyAr))
+        errors[`skillCards.${idx}.bodyAr`] = REQUIRED_MSG;
     });
   }
 

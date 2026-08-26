@@ -1000,8 +1000,14 @@ export function CaseStudyPage() {
                         {skillCards.map((sk) => {
                           const category = cleanText(
                             locale === "ar"
-                              ? (sk.categoryAr ?? sk.categoryEn ?? sk.category ?? "")
-                              : (sk.categoryEn ?? sk.categoryAr ?? sk.category ?? ""),
+                              ? (sk.categoryAr ??
+                                  sk.categoryEn ??
+                                  sk.category ??
+                                  "")
+                              : (sk.categoryEn ??
+                                  sk.categoryAr ??
+                                  sk.category ??
+                                  ""),
                           );
                           const title = cleanText(
                             locale === "ar"
