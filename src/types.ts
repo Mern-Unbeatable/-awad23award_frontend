@@ -241,6 +241,8 @@ export interface GalleryItem {
   solutionBodyAr?: string;
   solutionCards?: SolutionCard[];
   solutionArchImageUrl?: string;
+  solutionArchLabelEn?: string;
+  solutionArchLabelAr?: string;
   solutionArchTitle?: string;
   solutionArchTitleEn?: string;
   solutionArchTitleAr?: string;

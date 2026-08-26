@@ -262,6 +262,11 @@ export function CaseStudyPage() {
   } else {
     solutionArchImg = "";
   }
+  const solutionArchLabel = cleanText(
+    locale === "ar"
+      ? (item.solutionArchLabelAr ?? item.solutionArchLabelEn ?? "")
+      : (item.solutionArchLabelEn ?? item.solutionArchLabelAr ?? ""),
+  );
   const solutionArchTitle = cleanText(
     locale === "ar"
       ? (item.solutionArchTitleAr ??
@@ -330,6 +335,7 @@ export function CaseStudyPage() {
   const hasSolutionSectionContent = Boolean(
     solutionBody ||
     solutionCards.length ||
+    solutionArchLabel ||
     solutionArchTitle ||
     solutionArchBody ||
     solutionArchImg,
@@ -842,14 +848,17 @@ export function CaseStudyPage() {
                     </div>
                   )}
 
-                  {(solutionArchTitle ||
+                  {(solutionArchLabel ||
+                    solutionArchTitle ||
                     solutionArchBody ||
                     solutionArchImg) && (
                     <div className="bg-[#EBEBEF] rounded-lg p-6 md:p-8 grid lg:grid-cols-12 gap-8 items-center border border-slate-300/80 mb-16">
                       <div className="lg:col-span-5 space-y-4">
-                        <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">
-                          🛡 ENTERPRISE ECOSYSTEM INTEGRATION
-                        </span>
+                        {solutionArchLabel && (
+                          <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">
+                            🛡 {solutionArchLabel}
+                          </span>
+                        )}
                         {solutionArchTitle && (
                           <h3 className="text-[26px] md:text-[30px] font-serif font-bold text-slate-900 leading-snug">
                             {solutionArchTitle}

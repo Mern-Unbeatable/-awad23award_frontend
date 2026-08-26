@@ -76,6 +76,8 @@ export interface PortfolioSolutionTab {
   solutionBodyEn: string;
   solutionBodyAr: string;
   solutionArchImageUrl: string;
+  solutionArchLabelEn?: string;
+  solutionArchLabelAr?: string;
   solutionArchTitleEn: string;
   solutionArchTitleAr: string;
   solutionArchBodyEn: string;
@@ -289,6 +291,14 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     solutionBodyAr: item.solution.solutionBodyAr,
     solutionCards: item.solution.solutionCards.map(normalizeSolutionCard),
     solutionArchImageUrl: item.solution.solutionArchImageUrl,
+    solutionArchLabelEn:
+      item.solution.solutionArchLabelEn ??
+      item.solution.solutionArchLabel ??
+      "",
+    solutionArchLabelAr:
+      item.solution.solutionArchLabelAr ??
+      item.solution.solutionArchLabel ??
+      "",
     solutionArchTitleEn:
       item.solution.solutionArchTitleEn ??
       item.solution.solutionArchTitle ??
@@ -358,6 +368,8 @@ export function portfolioFormToTabbedPayload(form: {
   solutionBodyAr: string;
   solutionCards: SolutionCard[];
   solutionArchImageUrl: string;
+  solutionArchLabelEn: string;
+  solutionArchLabelAr: string;
   solutionArchTitleEn: string;
   solutionArchTitleAr: string;
   solutionArchBodyEn: string;
@@ -492,6 +504,8 @@ export function portfolioFormToTabbedPayload(form: {
       solutionBodyEn: form.solutionBodyEn.trim(),
       solutionBodyAr: form.solutionBodyAr.trim(),
       solutionArchImageUrl: form.solutionArchImageUrl.trim(),
+      solutionArchLabelEn: form.solutionArchLabelEn.trim(),
+      solutionArchLabelAr: form.solutionArchLabelAr.trim(),
       solutionArchTitleEn: form.solutionArchTitleEn.trim(),
       solutionArchTitleAr: form.solutionArchTitleAr.trim(),
       solutionArchBodyEn: form.solutionArchBodyEn.trim(),

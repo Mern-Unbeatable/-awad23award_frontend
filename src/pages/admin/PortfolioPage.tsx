@@ -421,6 +421,8 @@ interface PortfolioForm {
   solutionBodyAr: string;
   solutionCards: SolutionCard[];
   solutionArchImageUrl: string;
+  solutionArchLabelEn: string;
+  solutionArchLabelAr: string;
   solutionArchTitleEn: string;
   solutionArchTitleAr: string;
   solutionArchBodyEn: string;
@@ -500,6 +502,8 @@ const EMPTY_FORM: PortfolioForm = {
   leadershipBannerStatAr: "",
   solutionBodyEn: "",
   solutionBodyAr: "",
+  solutionArchLabelEn: "",
+  solutionArchLabelAr: "",
   solutionCards: [
     {
       color: "green",
@@ -586,6 +590,10 @@ function formFromItem(item: GalleryItem): PortfolioForm {
       item.leadershipBannerStatAr ?? item.leadershipBannerStat ?? "",
     solutionBodyEn: item.solutionBodyEn || "",
     solutionBodyAr: item.solutionBodyAr || "",
+    solutionArchLabelEn:
+      item.solutionArchLabelEn || item.solutionArchLabel || "",
+    solutionArchLabelAr:
+      item.solutionArchLabelAr || item.solutionArchLabel || "",
     solutionCards: item.solutionCards?.length
       ? item.solutionCards.map((card) => ({
           color: card.color,
@@ -2530,6 +2538,24 @@ export function PortfolioPage() {
               />
               <FieldError message={fieldErrors.recognitionLabelAr} />
             </div>
+          </div>
+        </Field>
+
+        <Field label="Architecture Label">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input
+              className={inputCls}
+              value={form.solutionArchLabelEn}
+              onChange={(e) => setField("solutionArchLabelEn", e.target.value)}
+              placeholder="ENTERPRISE ECOSYSTEM INTEGRATION"
+            />
+            <input
+              className={inputCls}
+              dir="rtl"
+              value={form.solutionArchLabelAr}
+              onChange={(e) => setField("solutionArchLabelAr", e.target.value)}
+              placeholder="تكامل النظام البيئي للمؤسسة"
+            />
           </div>
         </Field>
       </div>
