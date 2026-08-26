@@ -391,7 +391,11 @@ interface PortfolioForm {
   heroImageUrl: string;
   client: string;
   role: string;
+  roleEn: string;
+  roleAr: string;
   duration: string;
+  durationEn: string;
+  durationAr: string;
   screenshots: string[];
   challengeHeadingEn: string;
   challengeHeadingAr: string;
@@ -432,7 +436,11 @@ const EMPTY_FORM: PortfolioForm = {
   heroImageUrl: "",
   client: "",
   role: "",
+  roleEn: "",
+  roleAr: "",
   duration: "",
+  durationEn: "",
+  durationAr: "",
   screenshots: [],
   challengeHeadingEn: "The Challenge",
   challengeHeadingAr: "",
@@ -474,7 +482,11 @@ function formFromItem(item: GalleryItem): PortfolioForm {
     heroImageUrl: item.heroImageUrl || "",
     client: item.client || "",
     role: item.role || "",
+    roleEn: item.roleEn || item.role || "",
+    roleAr: item.roleAr || "",
     duration: item.duration || "",
+    durationEn: item.durationEn || item.duration || "",
+    durationAr: item.durationAr || "",
     screenshots: item.screenshots || [],
     challengeHeadingEn: item.challengeHeadingEn || "The Challenge",
     challengeHeadingAr: item.challengeHeadingAr || "",
@@ -1034,6 +1046,44 @@ export function PortfolioPage() {
 
         {/* Client / Role / Duration */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Role (EN)">
+            <input
+              className={inputCls}
+              value={form.roleEn}
+              onChange={(e) => setField("roleEn", e.target.value)}
+              placeholder="CRM Consultant"
+            />
+          </Field>
+          <Field label="Role (AR)">
+            <input
+              className={inputCls}
+              dir="rtl"
+              value={form.roleAr}
+              onChange={(e) => setField("roleAr", e.target.value)}
+              placeholder="مستشار CRM"
+            />
+          </Field>
+          <Field label="Duration (EN)">
+            <input
+              className={inputCls}
+              value={form.durationEn}
+              onChange={(e) => setField("durationEn", e.target.value)}
+              placeholder="6-Month Engagement"
+            />
+          </Field>
+          <Field label="Duration (AR)">
+            <input
+              className={inputCls}
+              dir="rtl"
+              value={form.durationAr}
+              onChange={(e) => setField("durationAr", e.target.value)}
+              placeholder="تفاعل لمدة 6 أشهر"
+            />
+          </Field>
+        </div>
+
+        {/* Slug & Tag */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <Field label="Client">
             <input
               className={inputCls}
@@ -1042,12 +1092,20 @@ export function PortfolioPage() {
               placeholder="REDF"
             />
           </Field>
-          <Field label="Role">
+          <Field label="Slug (URL path)" error={fieldErrors.slug}>
+            <input
+              className={fieldInputCls(Boolean(fieldErrors.slug))}
+              value={form.slug}
+              onChange={(e) => setField("slug", e.target.value)}
+              placeholder="ad-squared"
+            />
+          </Field>
+          <Field label="Tag Label">
             <input
               className={inputCls}
-              value={form.role}
-              onChange={(e) => setField("role", e.target.value)}
-              placeholder="CRM Consultant"
+              value={form.tag}
+              onChange={(e) => setField("tag", e.target.value)}
+              placeholder="Case Study / Startup / Project"
             />
           </Field>
         </div>
@@ -1078,34 +1136,6 @@ export function PortfolioPage() {
               value={form.excerptAr}
               onChange={(e) => setField("excerptAr", e.target.value)}
               placeholder="وصف قصير…"
-            />
-          </Field>
-        </div>
-
-        {/* Slug & Tag */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <Field label="Slug (URL path)" error={fieldErrors.slug}>
-            <input
-              className={fieldInputCls(Boolean(fieldErrors.slug))}
-              value={form.slug}
-              onChange={(e) => setField("slug", e.target.value)}
-              placeholder="ad-squared"
-            />
-          </Field>
-          <Field label="Tag Label">
-            <input
-              className={inputCls}
-              value={form.tag}
-              onChange={(e) => setField("tag", e.target.value)}
-              placeholder="Case Study / Startup / Project"
-            />
-          </Field>
-          <Field label="Duration">
-            <input
-              className={inputCls}
-              value={form.duration}
-              onChange={(e) => setField("duration", e.target.value)}
-              placeholder="6-Month Engagement"
             />
           </Field>
         </div>

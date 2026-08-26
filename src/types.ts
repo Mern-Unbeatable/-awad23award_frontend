@@ -1,4 +1,4 @@
-export type Locale = 'en' | 'ar';
+export type Locale = "en" | "ar";
 
 export interface SiteSettings {
   id: string;
@@ -23,7 +23,12 @@ export interface SiteSettings {
   showreelPoster?: string | null;
 }
 
-export type SchedulingPlatform = 'calendly' | 'calcom' | 'savvycal' | 'acuity' | 'custom';
+export type SchedulingPlatform =
+  | "calendly"
+  | "calcom"
+  | "savvycal"
+  | "acuity"
+  | "custom";
 
 export interface SchedulingSettings {
   id: string;
@@ -115,8 +120,6 @@ export interface Product {
   published: boolean;
 }
 
-
-
 export interface ChallengeItem {
   iconName: string;
   title: string;
@@ -135,14 +138,14 @@ export interface LeadershipCard {
 }
 
 export interface SolutionCard {
-  color: 'green' | 'blue' | 'orange' | 'purple';
+  color: "green" | "blue" | "orange" | "purple";
   tag: string;
   title: string;
   body: string;
 }
 
 export interface OutcomeItem {
-  color: 'emerald' | 'purple' | 'amber';
+  color: "emerald" | "purple" | "amber";
   text: string;
 }
 
@@ -152,8 +155,6 @@ export interface SkillCard {
   title: string;
   body: string;
 }
-
-
 
 export interface GalleryItem {
   id: string;
@@ -182,7 +183,11 @@ export interface GalleryItem {
   heroImageUrl?: string;
   client?: string;
   role?: string;
+  roleEn?: string;
+  roleAr?: string;
   duration?: string;
+  durationEn?: string;
+  durationAr?: string;
 
   // Challenge
   challengeHeadingEn?: string;
@@ -238,7 +243,11 @@ export interface Testimonial {
   order: number;
 }
 
-export type NewsletterSubscriberStatus = 'PENDING' | 'ACTIVE' | 'UNSUBSCRIBED' | 'BOUNCED';
+export type NewsletterSubscriberStatus =
+  | "PENDING"
+  | "ACTIVE"
+  | "UNSUBSCRIBED"
+  | "BOUNCED";
 
 export interface NewsletterSubscriber {
   id: string;
@@ -256,27 +265,25 @@ export interface NewsletterStats {
   latestSubscription: { email: string; date: string } | null;
 }
 
-export function formatNewsletterStatus(status: NewsletterSubscriberStatus): string {
+export function formatNewsletterStatus(
+  status: NewsletterSubscriberStatus,
+): string {
   switch (status) {
-    case 'ACTIVE':
-      return 'Active';
-    case 'PENDING':
-      return 'Pending confirmation';
-    case 'UNSUBSCRIBED':
-      return 'Unsubscribed';
-    case 'BOUNCED':
-      return 'Bounced';
+    case "ACTIVE":
+      return "Active";
+    case "PENDING":
+      return "Pending confirmation";
+    case "UNSUBSCRIBED":
+      return "Unsubscribed";
+    case "BOUNCED":
+      return "Bounced";
     default:
       return status;
   }
 }
 
-export function pick(
-  item: object,
-  locale: Locale,
-  field: string
-): string {
-  const key = `${field}${locale === 'ar' ? 'Ar' : 'En'}`;
+export function pick(item: object, locale: Locale, field: string): string {
+  const key = `${field}${locale === "ar" ? "Ar" : "En"}`;
   const value = (item as Record<string, unknown>)[key];
-  return typeof value === 'string' ? value : '';
+  return typeof value === "string" ? value : "";
 }

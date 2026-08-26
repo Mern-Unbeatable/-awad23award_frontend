@@ -6,7 +6,7 @@ import type {
   OutcomeItem,
   SkillCard,
   SolutionCard,
-} from '../types';
+} from "../types";
 
 /** Tab-grouped portfolio payload — matches Postman /gallery canonical shape */
 export interface PortfolioOverviewTab {
@@ -19,7 +19,11 @@ export interface PortfolioOverviewTab {
   heroImageUrl: string;
   client: string;
   role: string;
+  roleEn: string;
+  roleAr: string;
   duration: string;
+  durationEn: string;
+  durationAr: string;
   screenshots: string[];
   published: boolean;
 }
@@ -80,19 +84,21 @@ export interface PortfolioItemByTab {
 
 export type PortfolioTabbedPayload = PortfolioItemByTab;
 
-export function isTabGroupedPortfolio(item: unknown): item is PortfolioItemByTab & { id?: string } {
-  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
-  return 'overview' in item && 'challenge' in item && 'skills' in item;
+export function isTabGroupedPortfolio(
+  item: unknown,
+): item is PortfolioItemByTab & { id?: string } {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+  return "overview" in item && "challenge" in item && "skills" in item;
 }
 
 function heroUrlFromItem(item: GalleryItem): string {
-  return item.heroImageUrl || item.media?.url || '';
+  return item.heroImageUrl || item.media?.url || "";
 }
 
 /** Map tab-grouped API item (or legacy flat item) to flat GalleryItem for admin/public UI */
 export function tabbedToGalleryItem(raw: unknown): GalleryItem {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    throw new Error('Invalid portfolio item response from API.');
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("Invalid portfolio item response from API.");
   }
 
   if (!isTabGroupedPortfolio(raw)) {
@@ -103,10 +109,10 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
       heroImageUrl: flat.heroImageUrl || url,
       media: flat.media ?? {
         id: flat.id,
-        type: 'image',
+        type: "image",
         url,
-        altEn: flat.titleEn || '',
-        altAr: flat.titleAr || '',
+        altEn: flat.titleEn || "",
+        altAr: flat.titleAr || "",
       },
     };
   }
@@ -119,9 +125,9 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     mediaId?: string | null;
   };
 
-  const heroUrl = item.overview.heroImageUrl || '';
-  const titleEn = item.overview.titleEn || '';
-  const titleAr = item.overview.titleAr || '';
+  const heroUrl = item.overview.heroImageUrl || "";
+  const titleEn = item.overview.titleEn || "";
+  const titleAr = item.overview.titleAr || "";
 
   return {
     id: item.id,
@@ -130,13 +136,13 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     slug: item.overview.slug,
     excerptEn: item.overview.excerptEn,
     excerptAr: item.overview.excerptAr,
-    bodyEn: item.bodyEn || '',
-    bodyAr: item.bodyAr || '',
+    bodyEn: item.bodyEn || "",
+    bodyAr: item.bodyAr || "",
     order: item.order ?? 0,
     published: item.overview.published,
     media: {
       id: item.mediaId || item.id,
-      type: 'image',
+      type: "image",
       url: heroUrl,
       altEn: titleEn,
       altAr: titleAr,
@@ -145,7 +151,11 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     heroImageUrl: heroUrl,
     client: item.overview.client,
     role: item.overview.role,
+    roleEn: item.overview.roleEn || item.overview.role || "",
+    roleAr: item.overview.roleAr || "",
     duration: item.overview.duration,
+    durationEn: item.overview.durationEn || item.overview.duration || "",
+    durationAr: item.overview.durationAr || "",
     screenshots: item.overview.screenshots || [],
     challengeHeadingEn: item.challenge.challengeHeadingEn,
     challengeHeadingAr: item.challenge.challengeHeadingAr,
@@ -193,7 +203,11 @@ export function portfolioFormToTabbedPayload(form: {
   heroImageUrl: string;
   client: string;
   role: string;
+  roleEn: string;
+  roleAr: string;
   duration: string;
+  durationEn: string;
+  durationAr: string;
   screenshots: string[];
   challengeHeadingEn: string;
   challengeHeadingAr: string;
@@ -227,13 +241,17 @@ export function portfolioFormToTabbedPayload(form: {
       titleEn: form.titleEn.trim(),
       titleAr: form.titleAr.trim(),
       slug: form.slug.trim(),
-      tag: form.tag.trim() || 'Case Study',
+      tag: form.tag.trim() || "Case Study",
       excerptEn: form.excerptEn.trim(),
       excerptAr: form.excerptAr.trim(),
       heroImageUrl: form.heroImageUrl.trim(),
       client: form.client.trim(),
-      role: form.role.trim(),
-      duration: form.duration.trim(),
+      role: form.roleEn.trim() || form.role.trim(),
+      roleEn: form.roleEn.trim(),
+      roleAr: form.roleAr.trim(),
+      duration: form.durationEn.trim() || form.duration.trim(),
+      durationEn: form.durationEn.trim(),
+      durationAr: form.durationAr.trim(),
       screenshots: form.screenshots.filter(Boolean),
       published: form.published,
     },
@@ -242,10 +260,12 @@ export function portfolioFormToTabbedPayload(form: {
       challengeHeadingAr: form.challengeHeadingAr.trim(),
       challengeBodyEn: form.challengeBodyEn.trim(),
       challengeBodyAr: form.challengeBodyAr.trim(),
-      challengeBadgeLabel: form.challengeBadgeLabel.trim() || 'CRITICAL',
+      challengeBadgeLabel: form.challengeBadgeLabel.trim() || "CRITICAL",
       challengeImageUrl: form.challengeImageUrl.trim(),
       challengeCaption: form.challengeCaption.trim(),
-      challengeItems: form.challengeItems.filter((i) => i.title.trim() || i.body.trim()),
+      challengeItems: form.challengeItems.filter(
+        (i) => i.title.trim() || i.body.trim(),
+      ),
     },
     approach: {
       approachBodyEn: form.approachBodyEn.trim(),
@@ -262,7 +282,9 @@ export function portfolioFormToTabbedPayload(form: {
       leadershipBodyEn: form.leadershipBodyEn.trim(),
       leadershipBodyAr: form.leadershipBodyAr.trim(),
       leadershipBannerStat: form.leadershipBannerStat.trim(),
-      leadershipCards: form.leadershipCards.filter((c) => c.title.trim() || c.body.trim()),
+      leadershipCards: form.leadershipCards.filter(
+        (c) => c.title.trim() || c.body.trim(),
+      ),
     },
     solution: {
       solutionBodyEn: form.solutionBodyEn.trim(),
@@ -270,7 +292,9 @@ export function portfolioFormToTabbedPayload(form: {
       solutionArchImageUrl: form.solutionArchImageUrl.trim(),
       solutionArchTitle: form.solutionArchTitle.trim(),
       solutionArchBody: form.solutionArchBody.trim(),
-      solutionCards: form.solutionCards.filter((c) => c.title.trim() || c.body.trim()),
+      solutionCards: form.solutionCards.filter(
+        (c) => c.title.trim() || c.body.trim(),
+      ),
     },
     outcome: {
       recognitionImageUrl: form.recognitionImageUrl.trim(),
@@ -278,7 +302,9 @@ export function portfolioFormToTabbedPayload(form: {
       outcomeItems: form.outcomeItems.filter((o) => o.text.trim()),
     },
     skills: {
-      skillCards: form.skillCards.filter((s) => s.title.trim() || s.body.trim()),
+      skillCards: form.skillCards.filter(
+        (s) => s.title.trim() || s.body.trim(),
+      ),
     },
   };
 }
