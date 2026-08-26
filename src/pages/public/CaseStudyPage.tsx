@@ -311,10 +311,24 @@ export function CaseStudyPage() {
           ""),
   );
 
-  const skillCards = (item.skillCards ?? []).filter(
-    (card) =>
-      hasValue(card.category) || hasValue(card.title) || hasValue(card.body),
-  );
+  const skillCards = (item.skillCards ?? []).filter((card) => {
+    const category = cleanText(
+      locale === "ar"
+        ? (card.categoryAr ?? card.categoryEn ?? card.category ?? "")
+        : (card.categoryEn ?? card.categoryAr ?? card.category ?? ""),
+    );
+    const title = cleanText(
+      locale === "ar"
+        ? (card.titleAr ?? card.titleEn ?? card.title ?? "")
+        : (card.titleEn ?? card.titleAr ?? card.title ?? ""),
+    );
+    const body = cleanText(
+      locale === "ar"
+        ? (card.bodyAr ?? card.bodyEn ?? card.body ?? "")
+        : (card.bodyEn ?? card.bodyAr ?? card.body ?? ""),
+    );
+    return hasValue(category) || hasValue(title) || hasValue(body);
+  });
 
   const hasChallengeSectionContent = Boolean(
     challengeHeading ||
@@ -983,52 +997,70 @@ export function CaseStudyPage() {
                       </div>
 
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {skillCards.map((sk) => (
-                          <div
-                            key={sk.num}
-                            className="bg-[#111A24] text-white rounded-lg p-6 shadow-md border border-slate-800 flex flex-col justify-between min-h-52"
-                          >
-                            <div>
-                              <div className="flex items-center justify-between mb-4">
-                                {hasValue(sk.num) && (
-                                  <div className="w-8 h-8 rounded-lg bg-slate-800 text-[#36BFFB] flex items-center justify-center text-[13px] font-bold">
-                                    {sk.num}
-                                  </div>
+                        {skillCards.map((sk) => {
+                          const category = cleanText(
+                            locale === "ar"
+                              ? (sk.categoryAr ?? sk.categoryEn ?? sk.category ?? "")
+                              : (sk.categoryEn ?? sk.categoryAr ?? sk.category ?? ""),
+                          );
+                          const title = cleanText(
+                            locale === "ar"
+                              ? (sk.titleAr ?? sk.titleEn ?? sk.title ?? "")
+                              : (sk.titleEn ?? sk.titleAr ?? sk.title ?? ""),
+                          );
+                          const body = cleanText(
+                            locale === "ar"
+                              ? (sk.bodyAr ?? sk.bodyEn ?? sk.body ?? "")
+                              : (sk.bodyEn ?? sk.bodyAr ?? sk.body ?? ""),
+                          );
+
+                          return (
+                            <div
+                              key={sk.num}
+                              className="bg-[#111A24] text-white rounded-lg p-6 shadow-md border border-slate-800 flex flex-col justify-between min-h-52"
+                            >
+                              <div>
+                                <div className="flex items-center justify-between mb-4">
+                                  {hasValue(sk.num) && (
+                                    <div className="w-8 h-8 rounded-lg bg-slate-800 text-[#36BFFB] flex items-center justify-center text-[13px] font-bold">
+                                      {sk.num}
+                                    </div>
+                                  )}
+                                  {hasValue(category) && (
+                                    <span className="text-[10px] bg-slate-800 text-slate-300 font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                                      {category}
+                                    </span>
+                                  )}
+                                </div>
+                                {hasValue(title) && (
+                                  <h4 className="font-serif font-bold text-[17px] text-white mb-2 leading-snug">
+                                    {title}
+                                  </h4>
                                 )}
-                                {hasValue(sk.category) && (
-                                  <span className="text-[10px] bg-slate-800 text-slate-300 font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                                    {sk.category}
-                                  </span>
+                                {hasValue(body) && (
+                                  <p className="text-[13px] text-slate-300 leading-relaxed font-normal">
+                                    {body}
+                                  </p>
                                 )}
                               </div>
-                              {hasValue(sk.title) && (
-                                <h4 className="font-serif font-bold text-[17px] text-white mb-2 leading-snug">
-                                  {sk.title}
-                                </h4>
-                              )}
-                              {hasValue(sk.body) && (
-                                <p className="text-[13px] text-slate-300 leading-relaxed font-normal">
-                                  {sk.body}
-                                </p>
+                              {(hasValue(sk.num) ||
+                                hasValue(category) ||
+                                hasValue(title) ||
+                                hasValue(body)) && (
+                                <div className="flex items-center justify-between pt-4 border-t border-slate-800/80 text-[12px] text-slate-400">
+                                  {hasValue(sk.num) ? (
+                                    <span>Skill #{sk.num}</span>
+                                  ) : (
+                                    <span />
+                                  )}
+                                  <span className="text-[#36BFFB] font-semibold">
+                                    Verified
+                                  </span>
+                                </div>
                               )}
                             </div>
-                            {(hasValue(sk.num) ||
-                              hasValue(sk.category) ||
-                              hasValue(sk.title) ||
-                              hasValue(sk.body)) && (
-                              <div className="flex items-center justify-between pt-4 border-t border-slate-800/80 text-[12px] text-slate-400">
-                                {hasValue(sk.num) ? (
-                                  <span>Skill #{sk.num}</span>
-                                ) : (
-                                  <span />
-                                )}
-                                <span className="text-[#36BFFB] font-semibold">
-                                  Verified
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

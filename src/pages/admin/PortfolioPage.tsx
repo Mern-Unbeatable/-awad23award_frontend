@@ -623,7 +623,15 @@ function formFromItem(item: GalleryItem): PortfolioForm {
     recognitionLabelEn: item.recognitionLabelEn || item.recognitionLabel || "",
     recognitionLabelAr: item.recognitionLabelAr || item.recognitionLabel || "",
     skillCards: item.skillCards?.length
-      ? item.skillCards
+      ? item.skillCards.map((card) => ({
+          num: card.num,
+          categoryEn: card.categoryEn ?? card.category ?? "",
+          categoryAr: card.categoryAr ?? card.category ?? "",
+          titleEn: card.titleEn ?? card.title ?? "",
+          titleAr: card.titleAr ?? card.title ?? "",
+          bodyEn: card.bodyEn ?? card.body ?? "",
+          bodyAr: card.bodyAr ?? card.body ?? "",
+        }))
       : EMPTY_FORM.skillCards,
   };
 }
@@ -685,7 +693,14 @@ function isOutcomeItemEmpty(item: OutcomeItem): boolean {
 }
 
 function isSkillCardEmpty(card: SkillCard): boolean {
-  return isBlank(card.category) && isBlank(card.title) && isBlank(card.body);
+  return (
+    isBlank(card.categoryEn ?? card.category) &&
+    isBlank(card.categoryAr) &&
+    isBlank(card.titleEn ?? card.title) &&
+    isBlank(card.titleAr) &&
+    isBlank(card.bodyEn ?? card.body) &&
+    isBlank(card.bodyAr)
+  );
 }
 
 type PortfolioFieldErrors = Record<string, string>;
@@ -775,10 +790,16 @@ function validatePortfolioForm(form: PortfolioForm): {
   form.skillCards.forEach((card, idx) => {
     if (isSkillCardEmpty(card)) return;
     if (isBlank(card.num)) errors[`skillCards.${idx}.num`] = REQUIRED_MSG;
-    if (isBlank(card.category))
-      errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
-    if (isBlank(card.title)) errors[`skillCards.${idx}.title`] = REQUIRED_MSG;
-    if (isBlank(card.body)) errors[`skillCards.${idx}.body`] = REQUIRED_MSG;
+    if (isBlank(card.categoryEn ?? card.category))
+      errors[`skillCards.${idx}.categoryEn`] = REQUIRED_MSG;
+    if (isBlank(card.categoryAr))
+      errors[`skillCards.${idx}.categoryAr`] = REQUIRED_MSG;
+    if (isBlank(card.titleEn ?? card.title))
+      errors[`skillCards.${idx}.titleEn`] = REQUIRED_MSG;
+    if (isBlank(card.titleAr)) errors[`skillCards.${idx}.titleAr`] = REQUIRED_MSG;
+    if (isBlank(card.bodyEn ?? card.body))
+      errors[`skillCards.${idx}.bodyEn`] = REQUIRED_MSG;
+    if (isBlank(card.bodyAr)) errors[`skillCards.${idx}.bodyAr`] = REQUIRED_MSG;
   });
 
   const keys = Object.keys(errors);
@@ -909,10 +930,16 @@ function validatePortfolioStep(
     }
     form.skillCards.forEach((card, idx) => {
       if (isBlank(card.num)) errors[`skillCards.${idx}.num`] = REQUIRED_MSG;
-      if (isBlank(card.category))
-        errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
-      if (isBlank(card.title)) errors[`skillCards.${idx}.title`] = REQUIRED_MSG;
-      if (isBlank(card.body)) errors[`skillCards.${idx}.body`] = REQUIRED_MSG;
+      if (isBlank(card.categoryEn ?? card.category))
+        errors[`skillCards.${idx}.categoryEn`] = REQUIRED_MSG;
+      if (isBlank(card.categoryAr))
+        errors[`skillCards.${idx}.categoryAr`] = REQUIRED_MSG;
+      if (isBlank(card.titleEn ?? card.title))
+        errors[`skillCards.${idx}.titleEn`] = REQUIRED_MSG;
+      if (isBlank(card.titleAr)) errors[`skillCards.${idx}.titleAr`] = REQUIRED_MSG;
+      if (isBlank(card.bodyEn ?? card.body))
+        errors[`skillCards.${idx}.bodyEn`] = REQUIRED_MSG;
+      if (isBlank(card.bodyAr)) errors[`skillCards.${idx}.bodyAr`] = REQUIRED_MSG;
     });
   }
 
@@ -2575,9 +2602,12 @@ export function PortfolioPage() {
               onClick={() =>
                 addItem("skillCards", {
                   num: String(form.skillCards.length + 1),
-                  category: "",
-                  title: "",
-                  body: "",
+                  categoryEn: "",
+                  categoryAr: "",
+                  titleEn: "",
+                  titleAr: "",
+                  bodyEn: "",
+                  bodyAr: "",
                 })
               }
               className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
@@ -2626,51 +2656,123 @@ export function PortfolioPage() {
                   />
                   <FieldError message={fieldErrors[`skillCards.${idx}.num`]} />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <input
                     className={fieldInputCls(
-                      Boolean(fieldErrors[`skillCards.${idx}.category`]),
+                      Boolean(fieldErrors[`skillCards.${idx}.categoryEn`]),
                     )}
-                    placeholder="Category (e.g. CORE DOMAIN)"
-                    value={sk.category}
+                    placeholder="Category (EN)"
+                    value={sk.categoryEn ?? sk.category ?? ""}
                     onChange={(e) =>
                       updateItem<SkillCard>("skillCards", idx, {
-                        category: e.target.value,
+                        categoryEn: e.target.value,
                       })
                     }
                   />
                   <FieldError
-                    message={fieldErrors[`skillCards.${idx}.category`]}
+                    message={fieldErrors[`skillCards.${idx}.categoryEn`]}
+                  />
+                </div>
+                <div>
+                  <input
+                    className={fieldInputCls(
+                      Boolean(fieldErrors[`skillCards.${idx}.categoryAr`]),
+                    )}
+                    dir="rtl"
+                    placeholder="الفئة (AR)"
+                    value={sk.categoryAr ?? sk.category ?? ""}
+                    onChange={(e) =>
+                      updateItem<SkillCard>("skillCards", idx, {
+                        categoryAr: e.target.value,
+                      })
+                    }
+                  />
+                  <FieldError
+                    message={fieldErrors[`skillCards.${idx}.categoryAr`]}
                   />
                 </div>
               </div>
-              <input
-                className={fieldInputCls(
-                  Boolean(fieldErrors[`skillCards.${idx}.title`]),
-                )}
-                placeholder="Skill Title"
-                value={sk.title}
-                onChange={(e) =>
-                  updateItem<SkillCard>("skillCards", idx, {
-                    title: e.target.value,
-                  })
-                }
-              />
-              <FieldError message={fieldErrors[`skillCards.${idx}.title`]} />
-              <textarea
-                className={fieldTextareaCls(
-                  Boolean(fieldErrors[`skillCards.${idx}.body`]),
-                )}
-                rows={2}
-                placeholder="Description"
-                value={sk.body}
-                onChange={(e) =>
-                  updateItem<SkillCard>("skillCards", idx, {
-                    body: e.target.value,
-                  })
-                }
-              />
-              <FieldError message={fieldErrors[`skillCards.${idx}.body`]} />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <input
+                    className={fieldInputCls(
+                      Boolean(fieldErrors[`skillCards.${idx}.titleEn`]),
+                    )}
+                    placeholder="Skill Title (EN)"
+                    value={sk.titleEn ?? sk.title ?? ""}
+                    onChange={(e) =>
+                      updateItem<SkillCard>("skillCards", idx, {
+                        titleEn: e.target.value,
+                      })
+                    }
+                  />
+                  <FieldError
+                    message={fieldErrors[`skillCards.${idx}.titleEn`]}
+                  />
+                </div>
+                <div>
+                  <input
+                    className={fieldInputCls(
+                      Boolean(fieldErrors[`skillCards.${idx}.titleAr`]),
+                    )}
+                    dir="rtl"
+                    placeholder="عنوان المهارة (AR)"
+                    value={sk.titleAr ?? sk.title ?? ""}
+                    onChange={(e) =>
+                      updateItem<SkillCard>("skillCards", idx, {
+                        titleAr: e.target.value,
+                      })
+                    }
+                  />
+                  <FieldError
+                    message={fieldErrors[`skillCards.${idx}.titleAr`]}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <textarea
+                    className={fieldTextareaCls(
+                      Boolean(fieldErrors[`skillCards.${idx}.bodyEn`]),
+                    )}
+                    rows={2}
+                    placeholder="Description (EN)"
+                    value={sk.bodyEn ?? sk.body ?? ""}
+                    onChange={(e) =>
+                      updateItem<SkillCard>("skillCards", idx, {
+                        bodyEn: e.target.value,
+                      })
+                    }
+                  />
+                  <FieldError
+                    message={fieldErrors[`skillCards.${idx}.bodyEn`]}
+                  />
+                </div>
+                <div>
+                  <textarea
+                    className={fieldTextareaCls(
+                      Boolean(fieldErrors[`skillCards.${idx}.bodyAr`]),
+                    )}
+                    dir="rtl"
+                    rows={2}
+                    placeholder="الوصف (AR)"
+                    value={sk.bodyAr ?? sk.body ?? ""}
+                    onChange={(e) =>
+                      updateItem<SkillCard>("skillCards", idx, {
+                        bodyAr: e.target.value,
+                      })
+                    }
+                  />
+                  <FieldError
+                    message={fieldErrors[`skillCards.${idx}.bodyAr`]}
+                  />
+                </div>
+              </div>
             </div>
           ))}
           {form.skillCards.length < 7 &&
@@ -2682,9 +2784,12 @@ export function PortfolioPage() {
                   onClick={() =>
                     addItem("skillCards", {
                       num: String(form.skillCards.length + 1),
-                      category: "",
-                      title: "",
-                      body: "",
+                      categoryEn: "",
+                      categoryAr: "",
+                      titleEn: "",
+                      titleAr: "",
+                      bodyEn: "",
+                      bodyAr: "",
                     })
                   }
                   className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"

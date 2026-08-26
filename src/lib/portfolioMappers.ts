@@ -23,6 +23,12 @@ type LegacyLeadershipCard = LeadershipCard & {
   body?: string;
 };
 
+type LegacySkillCard = SkillCard & {
+  category?: string;
+  title?: string;
+  body?: string;
+};
+
 /** Tab-grouped portfolio payload — matches Postman /gallery canonical shape */
 export interface PortfolioOverviewTab {
   titleEn: string;
@@ -186,6 +192,26 @@ function normalizeOutcomeItem(item: OutcomeItem): OutcomeItem {
   };
 }
 
+function normalizeSkillCard(card: SkillCard): SkillCard {
+  const legacyCard = card as LegacySkillCard;
+  const categoryEn = legacyCard.categoryEn ?? legacyCard.category ?? "";
+  const categoryAr = legacyCard.categoryAr ?? legacyCard.category ?? "";
+  const titleEn = legacyCard.titleEn ?? legacyCard.title ?? "";
+  const titleAr = legacyCard.titleAr ?? legacyCard.title ?? "";
+  const bodyEn = legacyCard.bodyEn ?? legacyCard.body ?? "";
+  const bodyAr = legacyCard.bodyAr ?? legacyCard.body ?? "";
+
+  return {
+    num: card.num,
+    categoryEn,
+    categoryAr,
+    titleEn,
+    titleAr,
+    bodyEn,
+    bodyAr,
+  };
+}
+
 /** Map tab-grouped API item (or legacy flat item) to flat GalleryItem for admin/public UI */
 export function tabbedToGalleryItem(raw: unknown): GalleryItem {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
@@ -317,7 +343,7 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
       item.outcome.recognitionLabelEn ?? item.outcome.recognitionLabel ?? "",
     recognitionLabelAr:
       item.outcome.recognitionLabelAr ?? item.outcome.recognitionLabel ?? "",
-    skillCards: item.skills.skillCards,
+    skillCards: item.skills.skillCards.map(normalizeSkillCard),
   };
 }
 
@@ -554,9 +580,28 @@ export function portfolioFormToTabbedPayload(form: {
         })),
     },
     skills: {
-      skillCards: form.skillCards.filter(
-        (s) => s.title.trim() || s.body.trim(),
-      ),
+      skillCards: form.skillCards
+        .filter(
+          (s) =>
+            s.title?.trim() ||
+            s.titleEn?.trim() ||
+            s.titleAr?.trim() ||
+            s.body?.trim() ||
+            s.bodyEn?.trim() ||
+            s.bodyAr?.trim() ||
+            s.category?.trim() ||
+            s.categoryEn?.trim() ||
+            s.categoryAr?.trim(),
+        )
+        .map((s) => ({
+          num: s.num,
+          categoryEn: s.categoryEn?.trim() || "",
+          categoryAr: s.categoryAr?.trim() || "",
+          titleEn: s.titleEn?.trim() || "",
+          titleAr: s.titleAr?.trim() || "",
+          bodyEn: s.bodyEn?.trim() || "",
+          bodyAr: s.bodyAr?.trim() || "",
+        })),
     },
   };
 }

@@ -171,9 +171,15 @@ export interface OutcomeItem {
 
 export interface SkillCard {
   num: string;
-  category: string;
-  title: string;
-  body: string;
+  category?: string;
+  categoryEn?: string;
+  categoryAr?: string;
+  title?: string;
+  titleEn?: string;
+  titleAr?: string;
+  body?: string;
+  bodyEn?: string;
+  bodyAr?: string;
 }
 
 export interface GalleryItem {
