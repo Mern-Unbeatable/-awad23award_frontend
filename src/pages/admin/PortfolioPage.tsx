@@ -585,15 +585,23 @@ function formFromItem(item: GalleryItem): PortfolioForm {
         }))
       : EMPTY_FORM.leadershipCards,
     leadershipBannerStatEn:
-      item.leadershipBannerStatEn ?? item.leadershipBannerStat ?? "",
+      item.leadershipBannerStatEn ??
+      (item as typeof item & { leadershipBannerStat?: string }).leadershipBannerStat ??
+      "",
     leadershipBannerStatAr:
-      item.leadershipBannerStatAr ?? item.leadershipBannerStat ?? "",
+      item.leadershipBannerStatAr ??
+      (item as typeof item & { leadershipBannerStat?: string }).leadershipBannerStat ??
+      "",
     solutionBodyEn: item.solutionBodyEn || "",
     solutionBodyAr: item.solutionBodyAr || "",
     solutionArchLabelEn:
-      item.solutionArchLabelEn || item.solutionArchLabel || "",
+      item.solutionArchLabelEn ??
+      (item as typeof item & { solutionArchLabel?: string }).solutionArchLabel ??
+      "",
     solutionArchLabelAr:
-      item.solutionArchLabelAr || item.solutionArchLabel || "",
+      item.solutionArchLabelAr ??
+      (item as typeof item & { solutionArchLabel?: string }).solutionArchLabel ??
+      "",
     solutionCards: item.solutionCards?.length
       ? item.solutionCards.map((card) => ({
           color: card.color,

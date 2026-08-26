@@ -302,14 +302,14 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     ),
     leadershipBannerStatEn:
       item.leadership.leadershipBannerStatEn ??
-      item.leadership.leadershipBannerStat ??
+      (item.leadership as { leadershipBannerStat?: string }).leadershipBannerStat ??
       "",
     leadershipBannerStatAr:
       item.leadership.leadershipBannerStatAr ??
-      item.leadership.leadershipBannerStat ??
+      (item.leadership as { leadershipBannerStat?: string }).leadershipBannerStat ??
       "",
     leadershipBannerStat:
-      item.leadership.leadershipBannerStat ??
+      (item.leadership as { leadershipBannerStat?: string }).leadershipBannerStat ??
       item.leadership.leadershipBannerStatEn ??
       item.leadership.leadershipBannerStatAr ??
       "",
@@ -319,30 +319,38 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     solutionArchImageUrl: item.solution.solutionArchImageUrl,
     solutionArchLabelEn:
       item.solution.solutionArchLabelEn ??
-      item.solution.solutionArchLabel ??
+      (item.solution as { solutionArchLabel?: string }).solutionArchLabel ??
       "",
     solutionArchLabelAr:
       item.solution.solutionArchLabelAr ??
-      item.solution.solutionArchLabel ??
+      (item.solution as { solutionArchLabel?: string }).solutionArchLabel ??
       "",
     solutionArchTitleEn:
       item.solution.solutionArchTitleEn ??
-      item.solution.solutionArchTitle ??
+      (item.solution as { solutionArchTitle?: string }).solutionArchTitle ??
       "",
     solutionArchTitleAr:
       item.solution.solutionArchTitleAr ??
-      item.solution.solutionArchTitle ??
+      (item.solution as { solutionArchTitle?: string }).solutionArchTitle ??
       "",
     solutionArchBodyEn:
-      item.solution.solutionArchBodyEn ?? item.solution.solutionArchBody ?? "",
+      item.solution.solutionArchBodyEn ??
+      (item.solution as { solutionArchBody?: string }).solutionArchBody ??
+      "",
     solutionArchBodyAr:
-      item.solution.solutionArchBodyAr ?? item.solution.solutionArchBody ?? "",
+      item.solution.solutionArchBodyAr ??
+      (item.solution as { solutionArchBody?: string }).solutionArchBody ??
+      "",
     outcomeItems: item.outcome.outcomeItems.map(normalizeOutcomeItem),
     recognitionImageUrl: item.outcome.recognitionImageUrl,
     recognitionLabelEn:
-      item.outcome.recognitionLabelEn ?? item.outcome.recognitionLabel ?? "",
+      item.outcome.recognitionLabelEn ??
+      (item.outcome as { recognitionLabel?: string }).recognitionLabel ??
+      "",
     recognitionLabelAr:
-      item.outcome.recognitionLabelAr ?? item.outcome.recognitionLabel ?? "",
+      item.outcome.recognitionLabelAr ??
+      (item.outcome as { recognitionLabel?: string }).recognitionLabel ??
+      "",
     skillCards: item.skills.skillCards.map(normalizeSkillCard),
   };
 }
