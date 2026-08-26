@@ -1,24 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams, useMatch } from 'react-router-dom';
-import { Plus, ChevronRight, Upload, X, ImageIcon, Lock, Check } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams, useMatch } from "react-router-dom";
+import {
+  Plus,
+  ChevronRight,
+  Upload,
+  X,
+  ImageIcon,
+  Lock,
+  Check,
+} from "lucide-react";
 import {
   adminApi,
   extractUploadedUrl,
   resolveMediaUrl,
   isBlobUrl,
-} from '../../lib/api';
-import { portfolioFormToTabbedPayload } from '../../lib/portfolioMappers';
-import { confirmDelete, showSuccessToast } from '../../lib/swal';
-import { AdminContentCard } from '../../components/admin/AdminContentCard';
-import { usePortfolioAdmin } from '../../features/admin/portfolio/portfolioHooks';
+} from "../../lib/api";
+import { portfolioFormToTabbedPayload } from "../../lib/portfolioMappers";
+import { confirmDelete, showSuccessToast } from "../../lib/swal";
+import { AdminContentCard } from "../../components/admin/AdminContentCard";
+import { usePortfolioAdmin } from "../../features/admin/portfolio/portfolioHooks";
 
-import { AdminPaginationBar } from '../../components/admin/AdminPaginationBar';
-import { usePagination } from '../../hooks/usePagination';
+import { AdminPaginationBar } from "../../components/admin/AdminPaginationBar";
+import { usePagination } from "../../hooks/usePagination";
 import {
   ADMIN_ROUTES,
   ADMIN_PORTFOLIO_NEW,
   adminPortfolioEditPath,
-} from '../../Router/adminRoutes';
+} from "../../Router/adminRoutes";
 import type {
   GalleryItem,
   ChallengeItem,
@@ -27,13 +35,13 @@ import type {
   SolutionCard,
   OutcomeItem,
   SkillCard,
-} from '../../types';
+} from "../../types";
 
 function ImageUpload({
   label,
   value,
   onChange,
-  height = 'h-36',
+  height = "h-36",
 }: {
   label?: string;
   value: string;
@@ -42,7 +50,7 @@ function ImageUpload({
 }) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(value);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -51,25 +59,25 @@ function ImageUpload({
   }, [value]);
 
   async function processFile(file: File) {
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file (PNG, JPG, WebP, GIF).');
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file (PNG, JPG, WebP, GIF).");
       return;
     }
-    setError('');
+    setError("");
     // Show local preview immediately — no waiting for upload
     const localUrl = URL.createObjectURL(file);
     setPreview(localUrl);
     setUploading(true);
     try {
       const response = await adminApi.uploadMedia(file);
-      const uploaded = extractUploadedUrl(response) ?? '';
+      const uploaded = extractUploadedUrl(response) ?? "";
       if (!uploaded)
-        throw new Error('Upload succeeded but no URL was returned');
+        throw new Error("Upload succeeded but no URL was returned");
       const persisted = resolveMediaUrl(uploaded);
       setPreview(persisted || uploaded);
       onChange(uploaded);
     } catch {
-      setError('Upload failed. Please try again.');
+      setError("Upload failed. Please try again.");
       setPreview(value);
     } finally {
       setUploading(false);
@@ -77,21 +85,21 @@ function ImageUpload({
   }
 
   return (
-    <div className='w-full'>
+    <div className="w-full">
       {label && (
-        <label className='block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5'>
+        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
           {label}
         </label>
       )}
       <input
         ref={inputRef}
-        type='file'
-        accept='image/*'
-        className='hidden'
+        type="file"
+        accept="image/*"
+        className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) processFile(f);
-          e.target.value = '';
+          e.target.value = "";
         }}
       />
 
@@ -102,14 +110,14 @@ function ImageUpload({
         >
           <img
             src={isBlobUrl(preview) ? preview : resolveMediaUrl(preview)}
-            alt=''
-            className='w-full h-full object-cover'
+            alt=""
+            className="w-full h-full object-cover"
           />
 
           {uploading && (
-            <div className='absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-2'>
-              <div className='w-9 h-9 border-[3px] border-white border-t-transparent rounded-full animate-spin' />
-              <span className='text-white text-[12px] font-semibold'>
+            <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-2">
+              <div className="w-9 h-9 border-[3px] border-white border-t-transparent rounded-full animate-spin" />
+              <span className="text-white text-[12px] font-semibold">
                 Uploading…
               </span>
             </div>
@@ -119,31 +127,31 @@ function ImageUpload({
             <>
               {/* Hover overlay — click anywhere to change */}
               <div
-                role='button'
+                role="button"
                 tabIndex={0}
                 onClick={() => inputRef.current?.click()}
                 onKeyDown={(e) =>
-                  e.key === 'Enter' && inputRef.current?.click()
+                  e.key === "Enter" && inputRef.current?.click()
                 }
-                className='absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-all duration-200 flex items-center justify-center cursor-pointer'
+                className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-all duration-200 flex items-center justify-center cursor-pointer"
               >
-                <span className='opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-2 bg-white text-slate-800 text-[12.5px] font-semibold px-4 py-2 rounded-lg shadow-md pointer-events-none'>
-                  <Upload className='w-3.5 h-3.5' />
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-2 bg-white text-slate-800 text-[12.5px] font-semibold px-4 py-2 rounded-lg shadow-md pointer-events-none">
+                  <Upload className="w-3.5 h-3.5" />
                   Change Image
                 </span>
               </div>
               {/* Remove button — top-right */}
               <button
-                type='button'
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setPreview('');
-                  onChange('');
+                  setPreview("");
+                  onChange("");
                 }}
-                className='absolute top-2.5 right-2.5 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md'
-                title='Remove image'
+                className="absolute top-2.5 right-2.5 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md"
+                title="Remove image"
               >
-                <X className='w-3.5 h-3.5' />
+                <X className="w-3.5 h-3.5" />
               </button>
             </>
           )}
@@ -151,10 +159,10 @@ function ImageUpload({
       ) : (
         /* ── Empty / dropzone state ── */
         <div
-          role='button'
+          role="button"
           tabIndex={0}
           onClick={() => !uploading && inputRef.current?.click()}
-          onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+          onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
           onDragOver={(e) => {
             e.preventDefault();
             setDragging(true);
@@ -171,37 +179,37 @@ function ImageUpload({
           }}
           className={`w-full ${height} rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all duration-200 select-none ${
             uploading
-              ? 'border-[#38BDF8] bg-sky-50/60 cursor-wait'
+              ? "border-[#38BDF8] bg-sky-50/60 cursor-wait"
               : dragging
-                ? 'border-[#38BDF8] bg-sky-50 scale-[1.005]'
-                : 'border-slate-200 bg-slate-50 hover:border-[#38BDF8] hover:bg-sky-50/30 cursor-pointer'
+                ? "border-[#38BDF8] bg-sky-50 scale-[1.005]"
+                : "border-slate-200 bg-slate-50 hover:border-[#38BDF8] hover:bg-sky-50/30 cursor-pointer"
           }`}
         >
           {uploading ? (
-            <div className='flex flex-col items-center gap-3'>
-              <div className='w-9 h-9 border-[3px] border-[#38BDF8] border-t-transparent rounded-full animate-spin' />
-              <p className='text-[12px] text-[#38BDF8] font-semibold'>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-9 h-9 border-[3px] border-[#38BDF8] border-t-transparent rounded-full animate-spin" />
+              <p className="text-[12px] text-[#38BDF8] font-semibold">
                 Uploading…
               </p>
             </div>
           ) : (
-            <div className='flex flex-col items-center gap-2.5 px-4 text-center pointer-events-none'>
+            <div className="flex flex-col items-center gap-2.5 px-4 text-center pointer-events-none">
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${dragging ? 'bg-sky-100' : 'bg-slate-100'}`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${dragging ? "bg-sky-100" : "bg-slate-100"}`}
               >
                 {dragging ? (
-                  <ImageIcon className='w-6 h-6 text-[#38BDF8]' />
+                  <ImageIcon className="w-6 h-6 text-[#38BDF8]" />
                 ) : (
-                  <Upload className='w-5 h-5 text-slate-400' />
+                  <Upload className="w-5 h-5 text-slate-400" />
                 )}
               </div>
               <div>
-                <p className='text-[13px] font-semibold text-slate-600'>
+                <p className="text-[13px] font-semibold text-slate-600">
                   {dragging
-                    ? 'Drop to upload'
-                    : 'Click to upload or drag & drop'}
+                    ? "Drop to upload"
+                    : "Click to upload or drag & drop"}
                 </p>
-                <p className='text-[11px] text-slate-400 mt-0.5'>
+                <p className="text-[11px] text-slate-400 mt-0.5">
                   PNG, JPG, WebP, GIF · max 10 MB
                 </p>
               </div>
@@ -211,7 +219,7 @@ function ImageUpload({
       )}
 
       {error && (
-        <p className='text-[11.5px] text-red-500 mt-1.5 font-medium'>{error}</p>
+        <p className="text-[11.5px] text-red-500 mt-1.5 font-medium">{error}</p>
       )}
     </div>
   );
@@ -229,7 +237,7 @@ function MultiImageUpload({
   max?: number;
 }) {
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [draggingAdd, setDraggingAdd] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -237,11 +245,11 @@ function MultiImageUpload({
     const remaining = max - values.length;
     if (remaining <= 0) return;
     const fileArray = Array.from(files)
-      .filter((f) => f.type.startsWith('image/'))
+      .filter((f) => f.type.startsWith("image/"))
       .slice(0, remaining);
     if (!fileArray.length) return;
 
-    setError('');
+    setError("");
     setUploading(true);
 
     // Show local previews immediately while uploading in parallel
@@ -256,7 +264,7 @@ function MultiImageUpload({
     const serverUrls: string[] = [];
     let hadError = false;
     for (const result of results) {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         const url = extractUploadedUrl(result.value);
         if (url) serverUrls.push(url);
         else hadError = true;
@@ -265,7 +273,7 @@ function MultiImageUpload({
       }
     }
 
-    if (hadError) setError('Some images could not be uploaded.');
+    if (hadError) setError("Some images could not be uploaded.");
 
     onChange([...values.slice(0, startCount), ...serverUrls]);
     setUploading(false);
@@ -278,11 +286,11 @@ function MultiImageUpload({
   const canAdd = values.length < max;
 
   return (
-    <div className='w-full'>
+    <div className="w-full">
       {label && (
-        <label className='block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5'>
+        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
           {label}
-          <span className='ml-2 text-slate-400 font-normal normal-case'>
+          <span className="ml-2 text-slate-400 font-normal normal-case">
             ({values.length}/{max})
           </span>
         </label>
@@ -290,35 +298,35 @@ function MultiImageUpload({
 
       <input
         ref={inputRef}
-        type='file'
-        accept='image/*'
+        type="file"
+        accept="image/*"
         multiple
-        className='hidden'
+        className="hidden"
         onChange={(e) => {
           if (e.target.files?.length) processFiles(e.target.files);
-          e.target.value = '';
+          e.target.value = "";
         }}
       />
 
-      <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5'>
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
         {values.map((url, idx) => (
           <div
             key={idx}
-            className='relative group h-24 rounded-xl overflow-hidden border border-slate-200 bg-slate-100'
+            className="relative group h-24 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"
           >
             <img
               src={isBlobUrl(url) ? url : resolveMediaUrl(url)}
               alt={`Screenshot ${idx + 1}`}
-              className='w-full h-full object-cover'
+              className="w-full h-full object-cover"
             />
-            <div className='absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 pointer-events-none rounded-xl' />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 pointer-events-none rounded-xl" />
             <button
-              type='button'
+              type="button"
               onClick={() => removeImage(idx)}
-              className='absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-sm'
-              title='Remove'
+              className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-sm"
+              title="Remove"
             >
-              <X className='w-2.5 h-2.5' />
+              <X className="w-2.5 h-2.5" />
             </button>
           </div>
         ))}
@@ -326,10 +334,10 @@ function MultiImageUpload({
         {/* Add button */}
         {canAdd && (
           <div
-            role='button'
+            role="button"
             tabIndex={0}
             onClick={() => !uploading && inputRef.current?.click()}
-            onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+            onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
             onDragOver={(e) => {
               e.preventDefault();
               setDraggingAdd(true);
@@ -343,21 +351,21 @@ function MultiImageUpload({
             }}
             className={`h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-all duration-200 select-none ${
               uploading
-                ? 'border-[#38BDF8] bg-sky-50 cursor-wait'
+                ? "border-[#38BDF8] bg-sky-50 cursor-wait"
                 : draggingAdd
-                  ? 'border-[#38BDF8] bg-sky-50'
-                  : 'border-slate-200 bg-slate-50 hover:border-[#38BDF8] hover:bg-sky-50/30 cursor-pointer'
+                  ? "border-[#38BDF8] bg-sky-50"
+                  : "border-slate-200 bg-slate-50 hover:border-[#38BDF8] hover:bg-sky-50/30 cursor-pointer"
             }`}
           >
             {uploading ? (
-              <div className='w-5 h-5 border-2 border-[#38BDF8] border-t-transparent rounded-full animate-spin' />
+              <div className="w-5 h-5 border-2 border-[#38BDF8] border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <Plus
-                  className={`w-4 h-4 ${draggingAdd ? 'text-[#38BDF8]' : 'text-slate-400'}`}
+                  className={`w-4 h-4 ${draggingAdd ? "text-[#38BDF8]" : "text-slate-400"}`}
                 />
-                <span className='text-[9px] font-semibold text-slate-400'>
-                  {draggingAdd ? 'Drop' : 'Add'}
+                <span className="text-[9px] font-semibold text-slate-400">
+                  {draggingAdd ? "Drop" : "Add"}
                 </span>
               </>
             )}
@@ -366,7 +374,7 @@ function MultiImageUpload({
       </div>
 
       {error && (
-        <p className='text-[11.5px] text-red-500 mt-2 font-medium'>{error}</p>
+        <p className="text-[11.5px] text-red-500 mt-2 font-medium">{error}</p>
       )}
     </div>
   );
@@ -414,44 +422,44 @@ interface PortfolioForm {
 }
 
 const EMPTY_FORM: PortfolioForm = {
-  titleEn: '',
-  titleAr: '',
-  slug: '',
-  tag: 'Case Study',
+  titleEn: "",
+  titleAr: "",
+  slug: "",
+  tag: "Case Study",
   published: false,
-  excerptEn: '',
-  excerptAr: '',
-  heroImageUrl: '',
-  client: '',
-  role: '',
-  duration: '',
+  excerptEn: "",
+  excerptAr: "",
+  heroImageUrl: "",
+  client: "",
+  role: "",
+  duration: "",
   screenshots: [],
-  challengeHeadingEn: 'The Challenge',
-  challengeHeadingAr: '',
-  challengeBodyEn: '',
-  challengeBodyAr: '',
-  challengeItems: [{ iconName: 'AlertTriangle', title: '', body: '' }],
-  challengeImageUrl: '',
-  challengeCaption: '',
-  challengeBadgeLabel: 'CRITICAL',
-  approachBodyEn: '',
-  approachBodyAr: '',
-  approachCards: [{ title: '', bullets: [''] }],
-  approachInsight: '',
-  leadershipBodyEn: '',
-  leadershipBodyAr: '',
-  leadershipCards: [{ iconName: 'Users', title: '', body: '' }],
-  leadershipBannerStat: '',
-  solutionBodyEn: '',
-  solutionBodyAr: '',
-  solutionCards: [{ color: 'green', tag: '', title: '', body: '' }],
-  solutionArchImageUrl: '',
-  solutionArchTitle: '',
-  solutionArchBody: '',
-  outcomeItems: [{ color: 'emerald', text: '' }],
-  recognitionImageUrl: '',
-  recognitionLabel: '',
-  skillCards: [{ num: '1', category: '', title: '', body: '' }],
+  challengeHeadingEn: "The Challenge",
+  challengeHeadingAr: "",
+  challengeBodyEn: "",
+  challengeBodyAr: "",
+  challengeItems: [{ iconName: "AlertTriangle", title: "", body: "" }],
+  challengeImageUrl: "",
+  challengeCaption: "",
+  challengeBadgeLabel: "CRITICAL",
+  approachBodyEn: "",
+  approachBodyAr: "",
+  approachCards: [{ title: "", bullets: [""] }],
+  approachInsight: "",
+  leadershipBodyEn: "",
+  leadershipBodyAr: "",
+  leadershipCards: [{ iconName: "Users", title: "", body: "" }],
+  leadershipBannerStat: "",
+  solutionBodyEn: "",
+  solutionBodyAr: "",
+  solutionCards: [{ color: "green", tag: "", title: "", body: "" }],
+  solutionArchImageUrl: "",
+  solutionArchTitle: "",
+  solutionArchBody: "",
+  outcomeItems: [{ color: "emerald", text: "" }],
+  recognitionImageUrl: "",
+  recognitionLabel: "",
+  skillCards: [{ num: "1", category: "", title: "", body: "" }],
 };
 
 function formFromItem(item: GalleryItem): PortfolioForm {
@@ -459,61 +467,61 @@ function formFromItem(item: GalleryItem): PortfolioForm {
     titleEn: item.titleEn,
     titleAr: item.titleAr,
     slug: item.slug,
-    tag: item.tag || 'Case Study',
+    tag: item.tag || "Case Study",
     published: item.published,
     excerptEn: item.excerptEn,
     excerptAr: item.excerptAr,
-    heroImageUrl: item.heroImageUrl || '',
-    client: item.client || '',
-    role: item.role || '',
-    duration: item.duration || '',
+    heroImageUrl: item.heroImageUrl || "",
+    client: item.client || "",
+    role: item.role || "",
+    duration: item.duration || "",
     screenshots: item.screenshots || [],
-    challengeHeadingEn: item.challengeHeadingEn || 'The Challenge',
-    challengeHeadingAr: item.challengeHeadingAr || '',
-    challengeBodyEn: item.challengeBodyEn || '',
-    challengeBodyAr: item.challengeBodyAr || '',
+    challengeHeadingEn: item.challengeHeadingEn || "The Challenge",
+    challengeHeadingAr: item.challengeHeadingAr || "",
+    challengeBodyEn: item.challengeBodyEn || "",
+    challengeBodyAr: item.challengeBodyAr || "",
     challengeItems: item.challengeItems?.length
       ? item.challengeItems
       : EMPTY_FORM.challengeItems,
-    challengeImageUrl: item.challengeImageUrl || '',
-    challengeCaption: item.challengeCaption || '',
-    challengeBadgeLabel: item.challengeBadgeLabel || 'CRITICAL',
-    approachBodyEn: item.approachBodyEn || '',
-    approachBodyAr: item.approachBodyAr || '',
+    challengeImageUrl: item.challengeImageUrl || "",
+    challengeCaption: item.challengeCaption || "",
+    challengeBadgeLabel: item.challengeBadgeLabel || "CRITICAL",
+    approachBodyEn: item.approachBodyEn || "",
+    approachBodyAr: item.approachBodyAr || "",
     approachCards: item.approachCards?.length
       ? item.approachCards
       : EMPTY_FORM.approachCards,
-    approachInsight: item.approachInsight || '',
-    leadershipBodyEn: item.leadershipBodyEn || '',
-    leadershipBodyAr: item.leadershipBodyAr || '',
+    approachInsight: item.approachInsight || "",
+    leadershipBodyEn: item.leadershipBodyEn || "",
+    leadershipBodyAr: item.leadershipBodyAr || "",
     leadershipCards: item.leadershipCards?.length
       ? item.leadershipCards
       : EMPTY_FORM.leadershipCards,
-    leadershipBannerStat: item.leadershipBannerStat || '',
-    solutionBodyEn: item.solutionBodyEn || '',
-    solutionBodyAr: item.solutionBodyAr || '',
+    leadershipBannerStat: item.leadershipBannerStat || "",
+    solutionBodyEn: item.solutionBodyEn || "",
+    solutionBodyAr: item.solutionBodyAr || "",
     solutionCards: item.solutionCards?.length
       ? item.solutionCards
       : EMPTY_FORM.solutionCards,
-    solutionArchImageUrl: item.solutionArchImageUrl || '',
-    solutionArchTitle: item.solutionArchTitle || '',
-    solutionArchBody: item.solutionArchBody || '',
+    solutionArchImageUrl: item.solutionArchImageUrl || "",
+    solutionArchTitle: item.solutionArchTitle || "",
+    solutionArchBody: item.solutionArchBody || "",
     outcomeItems: item.outcomeItems?.length
       ? item.outcomeItems
       : EMPTY_FORM.outcomeItems,
-    recognitionImageUrl: item.recognitionImageUrl || '',
-    recognitionLabel: item.recognitionLabel || '',
+    recognitionImageUrl: item.recognitionImageUrl || "",
+    recognitionLabel: item.recognitionLabel || "",
     skillCards: item.skillCards?.length
       ? item.skillCards
       : EMPTY_FORM.skillCards,
   };
 }
 
-const REQUIRED_MSG = 'This field is required.';
+const REQUIRED_MSG = "This field is required.";
 
 function isBlank(value: unknown): boolean {
   if (value == null) return true;
-  if (typeof value === 'string') return value.trim() === '';
+  if (typeof value === "string") return value.trim() === "";
   return false;
 }
 
@@ -558,28 +566,36 @@ function validatePortfolioForm(form: PortfolioForm): {
 
   form.challengeItems.forEach((item, idx) => {
     if (isChallengeItemEmpty(item)) return;
-    if (isBlank(item.iconName)) errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
-    if (isBlank(item.title)) errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
+    if (isBlank(item.iconName))
+      errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
+    if (isBlank(item.title))
+      errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
     if (isBlank(item.body)) errors[`challengeItems.${idx}.body`] = REQUIRED_MSG;
   });
 
   form.approachCards.forEach((card, idx) => {
     if (isApproachCardEmpty(card)) return;
-    if (isBlank(card.title)) errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
-    if (!hasNonBlankLine(card.bullets)) errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
+    if (isBlank(card.title))
+      errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
+    if (!hasNonBlankLine(card.bullets))
+      errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
   });
 
   form.leadershipCards.forEach((card, idx) => {
     if (isLeadershipCardEmpty(card)) return;
-    if (isBlank(card.iconName)) errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
-    if (isBlank(card.title)) errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
-    if (isBlank(card.body)) errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
+    if (isBlank(card.iconName))
+      errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
+    if (isBlank(card.title))
+      errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
+    if (isBlank(card.body))
+      errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
   });
 
   form.solutionCards.forEach((card, idx) => {
     if (isSolutionCardEmpty(card)) return;
     if (isBlank(card.tag)) errors[`solutionCards.${idx}.tag`] = REQUIRED_MSG;
-    if (isBlank(card.title)) errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
+    if (isBlank(card.title))
+      errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
     if (isBlank(card.body)) errors[`solutionCards.${idx}.body`] = REQUIRED_MSG;
   });
 
@@ -591,20 +607,21 @@ function validatePortfolioForm(form: PortfolioForm): {
   form.skillCards.forEach((card, idx) => {
     if (isSkillCardEmpty(card)) return;
     if (isBlank(card.num)) errors[`skillCards.${idx}.num`] = REQUIRED_MSG;
-    if (isBlank(card.category)) errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
+    if (isBlank(card.category))
+      errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
     if (isBlank(card.title)) errors[`skillCards.${idx}.title`] = REQUIRED_MSG;
     if (isBlank(card.body)) errors[`skillCards.${idx}.body`] = REQUIRED_MSG;
   });
 
   const keys = Object.keys(errors);
   let firstTab = 0;
-  if (keys.some((key) => key.startsWith('skillCards.'))) firstTab = 6;
-  if (keys.some((key) => key.startsWith('outcomeItems.'))) firstTab = 5;
-  if (keys.some((key) => key.startsWith('solutionCards.'))) firstTab = 4;
-  if (keys.some((key) => key.startsWith('leadershipCards.'))) firstTab = 3;
-  if (keys.some((key) => key.startsWith('approachCards.'))) firstTab = 2;
-  if (keys.some((key) => key.startsWith('challengeItems.'))) firstTab = 1;
-  if (keys.some((key) => key === 'titleEn' || key === 'slug')) firstTab = 0;
+  if (keys.some((key) => key.startsWith("skillCards."))) firstTab = 6;
+  if (keys.some((key) => key.startsWith("outcomeItems."))) firstTab = 5;
+  if (keys.some((key) => key.startsWith("solutionCards."))) firstTab = 4;
+  if (keys.some((key) => key.startsWith("leadershipCards."))) firstTab = 3;
+  if (keys.some((key) => key.startsWith("approachCards."))) firstTab = 2;
+  if (keys.some((key) => key.startsWith("challengeItems."))) firstTab = 1;
+  if (keys.some((key) => key === "titleEn" || key === "slug")) firstTab = 0;
 
   return { errors, firstTab };
 }
@@ -623,54 +640,64 @@ function validatePortfolioStep(
 
   if (tabIndex === 1) {
     if (form.challengeItems.length < 5) {
-      errors.challengeItems = 'Add 5 challenge items to continue.';
+      errors.challengeItems = "Add 5 challenge items to continue.";
     }
     form.challengeItems.forEach((item, idx) => {
-      if (isBlank(item.iconName)) errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
-      if (isBlank(item.title)) errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
-      if (isBlank(item.body)) errors[`challengeItems.${idx}.body`] = REQUIRED_MSG;
+      if (isBlank(item.iconName))
+        errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
+      if (isBlank(item.title))
+        errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
+      if (isBlank(item.body))
+        errors[`challengeItems.${idx}.body`] = REQUIRED_MSG;
     });
     return errors;
   }
 
   if (tabIndex === 2) {
     if (form.approachCards.length < 4) {
-      errors.approachCards = 'Add 4 approach cards to continue.';
+      errors.approachCards = "Add 4 approach cards to continue.";
     }
     form.approachCards.forEach((card, idx) => {
-      if (isBlank(card.title)) errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
-      if (!hasNonBlankLine(card.bullets)) errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
+      if (isBlank(card.title))
+        errors[`approachCards.${idx}.title`] = REQUIRED_MSG;
+      if (!hasNonBlankLine(card.bullets))
+        errors[`approachCards.${idx}.bullets`] = REQUIRED_MSG;
     });
     return errors;
   }
 
   if (tabIndex === 3) {
     if (form.leadershipCards.length < 4) {
-      errors.leadershipCards = 'Add 4 leadership cards to continue.';
+      errors.leadershipCards = "Add 4 leadership cards to continue.";
     }
     form.leadershipCards.forEach((card, idx) => {
-      if (isBlank(card.iconName)) errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
-      if (isBlank(card.title)) errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
-      if (isBlank(card.body)) errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
+      if (isBlank(card.iconName))
+        errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
+      if (isBlank(card.title))
+        errors[`leadershipCards.${idx}.title`] = REQUIRED_MSG;
+      if (isBlank(card.body))
+        errors[`leadershipCards.${idx}.body`] = REQUIRED_MSG;
     });
     return errors;
   }
 
   if (tabIndex === 4) {
     if (form.solutionCards.length < 4) {
-      errors.solutionCards = 'Add 4 feature cards to continue.';
+      errors.solutionCards = "Add 4 feature cards to continue.";
     }
     form.solutionCards.forEach((card, idx) => {
       if (isBlank(card.tag)) errors[`solutionCards.${idx}.tag`] = REQUIRED_MSG;
-      if (isBlank(card.title)) errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
-      if (isBlank(card.body)) errors[`solutionCards.${idx}.body`] = REQUIRED_MSG;
+      if (isBlank(card.title))
+        errors[`solutionCards.${idx}.title`] = REQUIRED_MSG;
+      if (isBlank(card.body))
+        errors[`solutionCards.${idx}.body`] = REQUIRED_MSG;
     });
     return errors;
   }
 
   if (tabIndex === 5) {
     if (form.outcomeItems.length < 3) {
-      errors.outcomeItems = 'Add 3 outcome items to continue.';
+      errors.outcomeItems = "Add 3 outcome items to continue.";
     }
     form.outcomeItems.forEach((item, idx) => {
       if (isBlank(item.text)) errors[`outcomeItems.${idx}.text`] = REQUIRED_MSG;
@@ -680,11 +707,12 @@ function validatePortfolioStep(
 
   if (tabIndex === 6) {
     if (form.skillCards.length < 7) {
-      errors.skillCards = 'Add 7 skill cards to continue.';
+      errors.skillCards = "Add 7 skill cards to continue.";
     }
     form.skillCards.forEach((card, idx) => {
       if (isBlank(card.num)) errors[`skillCards.${idx}.num`] = REQUIRED_MSG;
-      if (isBlank(card.category)) errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
+      if (isBlank(card.category))
+        errors[`skillCards.${idx}.category`] = REQUIRED_MSG;
       if (isBlank(card.title)) errors[`skillCards.${idx}.title`] = REQUIRED_MSG;
       if (isBlank(card.body)) errors[`skillCards.${idx}.body`] = REQUIRED_MSG;
     });
@@ -693,11 +721,17 @@ function validatePortfolioStep(
   return errors;
 }
 
-function isPortfolioStepComplete(form: PortfolioForm, tabIndex: number): boolean {
+function isPortfolioStepComplete(
+  form: PortfolioForm,
+  tabIndex: number,
+): boolean {
   return Object.keys(validatePortfolioStep(form, tabIndex)).length === 0;
 }
 
-function isPortfolioStepUnlocked(form: PortfolioForm, tabIndex: number): boolean {
+function isPortfolioStepUnlocked(
+  form: PortfolioForm,
+  tabIndex: number,
+): boolean {
   if (tabIndex <= 0) return true;
   for (let step = 0; step < tabIndex; step += 1) {
     if (!isPortfolioStepComplete(form, step)) return false;
@@ -708,7 +742,7 @@ function isPortfolioStepUnlocked(form: PortfolioForm, tabIndex: number): boolean
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p className='text-[11.5px] text-red-500 mt-1.5 font-medium'>{message}</p>
+    <p className="text-[11.5px] text-red-500 mt-1.5 font-medium">{message}</p>
   );
 }
 
@@ -723,7 +757,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className='block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5'>
+      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
         {label}
       </label>
       {children}
@@ -733,32 +767,36 @@ function Field({
 }
 
 const inputCls =
-  'w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13.5px] text-slate-800 focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all';
+  "w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13.5px] text-slate-800 focus:outline-none focus:border-[#38BDF8] focus:bg-white transition-all";
 const textareaCls = `${inputCls} resize-none`;
 
 function fieldInputCls(hasError?: boolean) {
-  return hasError ? `${inputCls} border-red-400 focus:border-red-500` : inputCls;
+  return hasError
+    ? `${inputCls} border-red-400 focus:border-red-500`
+    : inputCls;
 }
 
 function fieldTextareaCls(hasError?: boolean) {
-  return hasError ? `${textareaCls} border-red-400 focus:border-red-500` : textareaCls;
+  return hasError
+    ? `${textareaCls} border-red-400 focus:border-red-500`
+    : textareaCls;
 }
 
 const TABS = [
-  'Overview',
-  'Challenge',
-  'Approach',
-  'Leadership',
-  'Solution',
-  'Outcome',
-  'Skills',
+  "Overview",
+  "Challenge",
+  "Approach",
+  "Leadership",
+  "Solution",
+  "Outcome",
+  "Skills",
 ];
 
 const PORTFOLIO_PAGE_SIZE = 8;
 
 /** Returns true if any image field still holds a local blob URL (upload in progress). */
 function portfolioHasPendingUploads(form: PortfolioForm): boolean {
-  const isBlobUrl = (u: string) => u.startsWith('blob:');
+  const isBlobUrl = (u: string) => u.startsWith("blob:");
   return (
     isBlobUrl(form.heroImageUrl) ||
     isBlobUrl(form.challengeImageUrl) ||
@@ -772,10 +810,10 @@ export function PortfolioPage() {
   const navigate = useNavigate();
   const { itemId } = useParams<{ itemId: string }>();
   const isNewPage = Boolean(
-    useMatch({ path: '/admin/portfolio/new', end: true }),
+    useMatch({ path: "/admin/portfolio/new", end: true }),
   );
   const isEditPage = Boolean(
-    useMatch({ path: '/admin/portfolio/:itemId/edit', end: true }),
+    useMatch({ path: "/admin/portfolio/:itemId/edit", end: true }),
   );
   const isFormMode = isNewPage || isEditPage;
 
@@ -797,7 +835,7 @@ export function PortfolioPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [form, setForm] = useState<PortfolioForm>(EMPTY_FORM);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<PortfolioFieldErrors>({});
   const [showFieldErrors, setShowFieldErrors] = useState(false);
 
@@ -809,7 +847,7 @@ export function PortfolioPage() {
       setForm(EMPTY_FORM);
       setEditingId(null);
       setActiveTab(0);
-      setError('');
+      setError("");
       setFieldErrors({});
       setShowFieldErrors(false);
       return;
@@ -820,7 +858,7 @@ export function PortfolioPage() {
         setForm(formFromItem(item));
         setEditingId(item.id);
         setActiveTab(0);
-        setError('');
+        setError("");
         setFieldErrors({});
         setShowFieldErrors(false);
       } else {
@@ -834,7 +872,7 @@ export function PortfolioPage() {
     const errors = validatePortfolioStep(form, activeTab);
     setFieldErrors(errors);
     if (Object.keys(errors).length === 0) {
-      setError('');
+      setError("");
       setShowFieldErrors(false);
     }
   }, [form, showFieldErrors, activeTab]);
@@ -864,14 +902,14 @@ export function PortfolioPage() {
         setFieldErrors(stepErrors);
         setShowFieldErrors(true);
         setActiveTab(step);
-        setError('Please complete this step before continuing.');
+        setError("Please complete this step before continuing.");
         return;
       }
     }
 
     setFieldErrors({});
     setShowFieldErrors(false);
-    setError('');
+    setError("");
     setActiveTab(target);
   }
 
@@ -889,14 +927,14 @@ export function PortfolioPage() {
 
   async function handleDelete(id: string) {
     const confirmed = await confirmDelete(
-      'Delete Portfolio Item?',
-      'Are you sure you want to delete this item?',
+      "Delete Portfolio Item?",
+      "Are you sure you want to delete this item?",
     );
     if (!confirmed) return;
     try {
       await removePortfolioItem(id);
     } catch (err) {
-      console.error('Failed to delete portfolio item:', err);
+      console.error("Failed to delete portfolio item:", err);
     }
   }
 
@@ -906,37 +944,42 @@ export function PortfolioPage() {
       setFieldErrors(validation.errors);
       setShowFieldErrors(true);
       setActiveTab(validation.firstTab);
-      setError('Please fill in all required fields.');
+      setError("Please fill in all required fields.");
       return;
     }
     setFieldErrors({});
     setShowFieldErrors(false);
 
     if (!form.titleEn.trim() || !form.slug.trim()) {
-      setError('Title (EN) and Slug are required.');
+      setError("Title (EN) and Slug are required.");
       setActiveTab(0);
       return;
     }
     if (portfolioHasPendingUploads(form)) {
-      setError('Some images are still uploading. Please wait and try again.');
+      setError("Some images are still uploading. Please wait and try again.");
       return;
     }
-    setError('');
+    setError("");
     try {
       const payload = portfolioFormToTabbedPayload(form);
       if (editingId) {
-        await savePortfolioItem(editingId, payload as unknown as Record<string, unknown>);
+        await savePortfolioItem(
+          editingId,
+          payload as unknown as Record<string, unknown>,
+        );
       } else {
-        await createPortfolioItem(payload as unknown as Record<string, unknown>);
+        await createPortfolioItem(
+          payload as unknown as Record<string, unknown>,
+        );
       }
       void showSuccessToast(
-        editingId ? 'Portfolio item updated' : 'Portfolio item created',
+        editingId ? "Portfolio item updated" : "Portfolio item created",
       );
       navigate(ADMIN_ROUTES.portfolio);
     } catch (err) {
-      console.error('Failed to save portfolio item:', err);
+      console.error("Failed to save portfolio item:", err);
       setError(
-        'Failed to save. Check required fields and that the API is running.',
+        "Failed to save. Check required fields and that the API is running.",
       );
     }
   }
@@ -967,135 +1010,135 @@ export function PortfolioPage() {
 
   function renderOverview() {
     return (
-      <div className='space-y-6'>
+      <div className="space-y-6">
         {/* Titles */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Title (EN)' error={fieldErrors.titleEn}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Title (EN)" error={fieldErrors.titleEn}>
             <input
               className={fieldInputCls(Boolean(fieldErrors.titleEn))}
               value={form.titleEn}
-              onChange={(e) => setField('titleEn', e.target.value)}
-              placeholder='AD Squared'
+              onChange={(e) => setField("titleEn", e.target.value)}
+              placeholder="AD Squared"
             />
           </Field>
-          <Field label='Title (AR)'>
+          <Field label="Title (AR)">
             <input
               className={inputCls}
-              dir='rtl'
+              dir="rtl"
               value={form.titleAr}
-              onChange={(e) => setField('titleAr', e.target.value)}
-              placeholder='اد سكوار'
+              onChange={(e) => setField("titleAr", e.target.value)}
+              placeholder="اد سكوار"
             />
           </Field>
         </div>
 
-        {/* Slug & Tag */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Slug (URL path)' error={fieldErrors.slug}>
-            <input
-              className={fieldInputCls(Boolean(fieldErrors.slug))}
-              value={form.slug}
-              onChange={(e) => setField('slug', e.target.value)}
-              placeholder='ad-squared'
-            />
-          </Field>
-          <Field label='Tag Label'>
+        {/* Client / Role / Duration */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Client">
             <input
               className={inputCls}
-              value={form.tag}
-              onChange={(e) => setField('tag', e.target.value)}
-              placeholder='Case Study / Startup / Project'
+              value={form.client}
+              onChange={(e) => setField("client", e.target.value)}
+              placeholder="REDF"
             />
           </Field>
-        </div>
-
-        {/* Excerpts */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Excerpt (EN)'>
-            <textarea
-              className={textareaCls}
-              rows={3}
-              value={form.excerptEn}
-              onChange={(e) => setField('excerptEn', e.target.value)}
-              placeholder='Short description shown in hero…'
-            />
-          </Field>
-          <Field label='Excerpt (AR)'>
-            <textarea
-              className={textareaCls}
-              rows={3}
-              dir='rtl'
-              value={form.excerptAr}
-              onChange={(e) => setField('excerptAr', e.target.value)}
-              placeholder='وصف قصير…'
+          <Field label="Role">
+            <input
+              className={inputCls}
+              value={form.role}
+              onChange={(e) => setField("role", e.target.value)}
+              placeholder="CRM Consultant"
             />
           </Field>
         </div>
 
         {/* Hero Image Upload */}
         <ImageUpload
-          label='Hero / Cover Image'
+          label="Hero / Cover Image"
           value={form.heroImageUrl}
-          onChange={(url) => setField('heroImageUrl', url)}
+          onChange={(url) => setField("heroImageUrl", url)}
         />
 
-        {/* Client / Role / Duration */}
-        <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-          <Field label='Client'>
-            <input
-              className={inputCls}
-              value={form.client}
-              onChange={(e) => setField('client', e.target.value)}
-              placeholder='REDF'
+        {/* Excerpts */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Excerpt (EN)">
+            <textarea
+              className={textareaCls}
+              rows={3}
+              value={form.excerptEn}
+              onChange={(e) => setField("excerptEn", e.target.value)}
+              placeholder="Short description shown in hero…"
             />
           </Field>
-          <Field label='Role'>
-            <input
-              className={inputCls}
-              value={form.role}
-              onChange={(e) => setField('role', e.target.value)}
-              placeholder='CRM Consultant'
+          <Field label="Excerpt (AR)">
+            <textarea
+              className={textareaCls}
+              rows={3}
+              dir="rtl"
+              value={form.excerptAr}
+              onChange={(e) => setField("excerptAr", e.target.value)}
+              placeholder="وصف قصير…"
             />
           </Field>
-          <Field label='Duration'>
+        </div>
+
+        {/* Slug & Tag */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <Field label="Slug (URL path)" error={fieldErrors.slug}>
+            <input
+              className={fieldInputCls(Boolean(fieldErrors.slug))}
+              value={form.slug}
+              onChange={(e) => setField("slug", e.target.value)}
+              placeholder="ad-squared"
+            />
+          </Field>
+          <Field label="Tag Label">
+            <input
+              className={inputCls}
+              value={form.tag}
+              onChange={(e) => setField("tag", e.target.value)}
+              placeholder="Case Study / Startup / Project"
+            />
+          </Field>
+          <Field label="Duration">
             <input
               className={inputCls}
               value={form.duration}
-              onChange={(e) => setField('duration', e.target.value)}
-              placeholder='6-Month Engagement'
+              onChange={(e) => setField("duration", e.target.value)}
+              placeholder="6-Month Engagement"
             />
           </Field>
         </div>
 
         {/* Screenshots — multi-upload */}
         <MultiImageUpload
-          label='Project Screenshots'
+          label="Project Screenshots"
           values={form.screenshots}
-          onChange={(urls) => setField('screenshots', urls)}
+          onChange={(urls) => setField("screenshots", urls)}
           max={8}
         />
 
         {/* Published toggle */}
-        <div className='flex items-center gap-3 pt-1'>
+        <div className="flex items-center gap-3 pt-1">
           <button
-            type='button'
-            role='switch'
+            type="button"
+            role="switch"
             aria-checked={form.published}
-            onClick={() => setField('published', !form.published)}
+            onClick={() => setField("published", !form.published)}
             className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer ${
-              form.published ? 'bg-[#38BDF8]' : 'bg-slate-200'
+              form.published ? "bg-[#38BDF8]" : "bg-slate-200"
             }`}
           >
             <span
               className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
-                form.published ? 'translate-x-6' : 'translate-x-1'
+                form.published ? "translate-x-6" : "translate-x-1"
               }`}
             />
           </button>
-          <span className='text-[13px] font-medium text-slate-700'>
+          <span className="text-[13px] font-medium text-slate-700">
             {form.published
-              ? 'Published — visible on site'
-              : 'Draft — hidden from site'}
+              ? "Published — visible on site"
+              : "Draft — hidden from site"}
           </span>
         </div>
       </div>
@@ -1104,98 +1147,98 @@ export function PortfolioPage() {
 
   function renderChallenge() {
     return (
-      <div className='space-y-6'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Section Heading (EN)'>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Section Heading (EN)">
             <input
               className={inputCls}
               value={form.challengeHeadingEn}
-              onChange={(e) => setField('challengeHeadingEn', e.target.value)}
-              placeholder='The Challenge'
+              onChange={(e) => setField("challengeHeadingEn", e.target.value)}
+              placeholder="The Challenge"
             />
           </Field>
-          <Field label='Section Heading (AR)'>
+          <Field label="Section Heading (AR)">
             <input
               className={inputCls}
-              dir='rtl'
+              dir="rtl"
               value={form.challengeHeadingAr}
-              onChange={(e) => setField('challengeHeadingAr', e.target.value)}
-              placeholder='التحدي'
+              onChange={(e) => setField("challengeHeadingAr", e.target.value)}
+              placeholder="التحدي"
             />
           </Field>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Section Body (EN)'>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Section Body (EN)">
             <textarea
               className={textareaCls}
               rows={3}
               value={form.challengeBodyEn}
-              onChange={(e) => setField('challengeBodyEn', e.target.value)}
+              onChange={(e) => setField("challengeBodyEn", e.target.value)}
             />
           </Field>
-          <Field label='Section Body (AR)'>
+          <Field label="Section Body (AR)">
             <textarea
               className={textareaCls}
               rows={3}
-              dir='rtl'
+              dir="rtl"
               value={form.challengeBodyAr}
-              onChange={(e) => setField('challengeBodyAr', e.target.value)}
+              onChange={(e) => setField("challengeBodyAr", e.target.value)}
             />
           </Field>
         </div>
 
-        <Field label='Badge Label'>
+        <Field label="Badge Label">
           <input
             className={inputCls}
             value={form.challengeBadgeLabel}
-            onChange={(e) => setField('challengeBadgeLabel', e.target.value)}
-            placeholder='CRITICAL'
+            onChange={(e) => setField("challengeBadgeLabel", e.target.value)}
+            placeholder="CRITICAL"
           />
         </Field>
 
         {/* Challenge items */}
         <div>
-          <div className='flex items-center justify-between mb-1.5'>
-            <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Challenge Items ({form.challengeItems.length}/5)
             </label>
             {form.challengeItems.length < 5 && (
               <button
-                type='button'
+                type="button"
                 onClick={() =>
-                  addItem('challengeItems', {
-                    iconName: 'AlertTriangle',
-                    title: '',
-                    body: '',
+                  addItem("challengeItems", {
+                    iconName: "AlertTriangle",
+                    title: "",
+                    body: "",
                   })
                 }
-                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
+                className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
               >
-                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
-                <Plus className='w-3.5 h-3.5' /> Add Item
+                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white" />
+                <Plus className="w-3.5 h-3.5" /> Add Item
               </button>
             )}
           </div>
-          <p className='text-[12px] text-slate-400 mb-3'>
+          <p className="text-[12px] text-slate-400 mb-3">
             Add 5 challenge items in total. Each item needs an icon, title, and
             body.
           </p>
           <FieldError message={fieldErrors.challengeItems} />
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {form.challengeItems.map((ci, idx) => (
               <div
                 key={idx}
-                className='bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3'
+                className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3"
               >
-                <div className='flex items-center justify-between'>
-                  <span className='text-[11px] font-bold text-slate-400 uppercase'>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">
                     Item #{idx + 1}
                   </span>
                   <button
-                    type='button'
-                    onClick={() => removeItem('challengeItems', idx)}
-                    className='text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer'
+                    type="button"
+                    onClick={() => removeItem("challengeItems", idx)}
+                    className="text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
@@ -1204,10 +1247,10 @@ export function PortfolioPage() {
                   className={fieldInputCls(
                     Boolean(fieldErrors[`challengeItems.${idx}.iconName`]),
                   )}
-                  placeholder='Icon name (Users, AlertTriangle, FileText, Code2, BookOpen)'
+                  placeholder="Icon name (Users, AlertTriangle, FileText, Code2, BookOpen)"
                   value={ci.iconName}
                   onChange={(e) =>
-                    updateItem<ChallengeItem>('challengeItems', idx, {
+                    updateItem<ChallengeItem>("challengeItems", idx, {
                       iconName: e.target.value,
                     })
                   }
@@ -1219,10 +1262,10 @@ export function PortfolioPage() {
                   className={fieldInputCls(
                     Boolean(fieldErrors[`challengeItems.${idx}.title`]),
                   )}
-                  placeholder='Title'
+                  placeholder="Title"
                   value={ci.title}
                   onChange={(e) =>
-                    updateItem<ChallengeItem>('challengeItems', idx, {
+                    updateItem<ChallengeItem>("challengeItems", idx, {
                       title: e.target.value,
                     })
                   }
@@ -1235,10 +1278,10 @@ export function PortfolioPage() {
                     Boolean(fieldErrors[`challengeItems.${idx}.body`]),
                   )}
                   rows={2}
-                  placeholder='Body text'
+                  placeholder="Body text"
                   value={ci.body}
                   onChange={(e) =>
-                    updateItem<ChallengeItem>('challengeItems', idx, {
+                    updateItem<ChallengeItem>("challengeItems", idx, {
                       body: e.target.value,
                     })
                   }
@@ -1253,18 +1296,18 @@ export function PortfolioPage() {
                 (_, slot) => (
                   <button
                     key={`challenge-add-slot-${slot}`}
-                    type='button'
+                    type="button"
                     onClick={() =>
-                      addItem('challengeItems', {
-                        iconName: 'AlertTriangle',
-                        title: '',
-                        body: '',
+                      addItem("challengeItems", {
+                        iconName: "AlertTriangle",
+                        title: "",
+                        body: "",
                       })
                     }
-                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
-                    <Plus className='w-8 h-8' />
-                    <span className='text-[13px] font-semibold'>Add Item</span>
+                    <Plus className="w-8 h-8" />
+                    <span className="text-[13px] font-semibold">Add Item</span>
                   </button>
                 ),
               )}
@@ -1273,17 +1316,17 @@ export function PortfolioPage() {
 
         {/* Challenge image upload */}
         <ImageUpload
-          label='Right Column Image'
+          label="Right Column Image"
           value={form.challengeImageUrl}
-          onChange={(url) => setField('challengeImageUrl', url)}
+          onChange={(url) => setField("challengeImageUrl", url)}
         />
 
-        <Field label='Right Column Caption'>
+        <Field label="Right Column Caption">
           <textarea
             className={textareaCls}
             rows={2}
             value={form.challengeCaption}
-            onChange={(e) => setField('challengeCaption', e.target.value)}
+            onChange={(e) => setField("challengeCaption", e.target.value)}
           />
         </Field>
       </div>
@@ -1292,65 +1335,65 @@ export function PortfolioPage() {
 
   function renderApproach() {
     return (
-      <div className='space-y-6'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Section Intro (EN)'>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Section Intro (EN)">
             <textarea
               className={textareaCls}
               rows={3}
               value={form.approachBodyEn}
-              onChange={(e) => setField('approachBodyEn', e.target.value)}
-              placeholder='To rebuild the missing knowledge, I:'
+              onChange={(e) => setField("approachBodyEn", e.target.value)}
+              placeholder="To rebuild the missing knowledge, I:"
             />
           </Field>
-          <Field label='Section Intro (AR)'>
+          <Field label="Section Intro (AR)">
             <textarea
               className={textareaCls}
               rows={3}
-              dir='rtl'
+              dir="rtl"
               value={form.approachBodyAr}
-              onChange={(e) => setField('approachBodyAr', e.target.value)}
+              onChange={(e) => setField("approachBodyAr", e.target.value)}
             />
           </Field>
         </div>
 
         <div>
-          <div className='flex items-center justify-between mb-1.5'>
-            <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Approach Cards ({form.approachCards.length}/4)
             </label>
             {form.approachCards.length < 4 && (
               <button
-                type='button'
+                type="button"
                 onClick={() =>
-                  addItem('approachCards', { title: '', bullets: [''] })
+                  addItem("approachCards", { title: "", bullets: [""] })
                 }
-                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
+                className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
               >
-                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
-                <Plus className='w-3.5 h-3.5' /> Add Card
+                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white" />
+                <Plus className="w-3.5 h-3.5" /> Add Card
               </button>
             )}
           </div>
-          <p className='text-[12px] text-slate-400 mb-3'>
+          <p className="text-[12px] text-slate-400 mb-3">
             Add 4 approach cards in total. Each card needs a title and bullet
             points.
           </p>
           <FieldError message={fieldErrors.approachCards} />
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {form.approachCards.map((card, idx) => (
               <div
                 key={idx}
-                className='bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3'
+                className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3"
               >
-                <div className='flex items-center justify-between'>
-                  <span className='text-[11px] font-bold text-slate-400 uppercase'>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">
                     Card #{idx + 1}
                   </span>
                   <button
-                    type='button'
-                    onClick={() => removeItem('approachCards', idx)}
-                    className='text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer'
+                    type="button"
+                    onClick={() => removeItem("approachCards", idx)}
+                    className="text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
@@ -1359,10 +1402,10 @@ export function PortfolioPage() {
                   className={fieldInputCls(
                     Boolean(fieldErrors[`approachCards.${idx}.title`]),
                   )}
-                  placeholder='Card Title (e.g. Technical Archaeology)'
+                  placeholder="Card Title (e.g. Technical Archaeology)"
                   value={card.title}
                   onChange={(e) =>
-                    updateItem<ApproachCard>('approachCards', idx, {
+                    updateItem<ApproachCard>("approachCards", idx, {
                       title: e.target.value,
                     })
                   }
@@ -1371,7 +1414,7 @@ export function PortfolioPage() {
                   message={fieldErrors[`approachCards.${idx}.title`]}
                 />
                 <div>
-                  <label className='block text-[11px] text-slate-400 font-semibold mb-1'>
+                  <label className="block text-[11px] text-slate-400 font-semibold mb-1">
                     Bullet Points (one per line)
                   </label>
                   <textarea
@@ -1379,13 +1422,13 @@ export function PortfolioPage() {
                       Boolean(fieldErrors[`approachCards.${idx}.bullets`]),
                     )}
                     rows={4}
-                    value={card.bullets.join('\n')}
+                    value={card.bullets.join("\n")}
                     onChange={(e) =>
-                      updateItem<ApproachCard>('approachCards', idx, {
-                        bullets: e.target.value.split('\n'),
+                      updateItem<ApproachCard>("approachCards", idx, {
+                        bullets: e.target.value.split("\n"),
                       })
                     }
-                    placeholder='Each line becomes a bullet point'
+                    placeholder="Each line becomes a bullet point"
                   />
                   <FieldError
                     message={fieldErrors[`approachCards.${idx}.bullets`]}
@@ -1398,27 +1441,27 @@ export function PortfolioPage() {
                 (_, slot) => (
                   <button
                     key={`approach-add-slot-${slot}`}
-                    type='button'
+                    type="button"
                     onClick={() =>
-                      addItem('approachCards', { title: '', bullets: [''] })
+                      addItem("approachCards", { title: "", bullets: [""] })
                     }
-                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
-                    <Plus className='w-8 h-8' />
-                    <span className='text-[13px] font-semibold'>Add Card</span>
+                    <Plus className="w-8 h-8" />
+                    <span className="text-[13px] font-semibold">Add Card</span>
                   </button>
                 ),
               )}
           </div>
         </div>
 
-        <Field label='Key Architectural Insight'>
+        <Field label="Key Architectural Insight">
           <textarea
             className={textareaCls}
             rows={3}
             value={form.approachInsight}
-            onChange={(e) => setField('approachInsight', e.target.value)}
-            placeholder='During this phase, I gained…'
+            onChange={(e) => setField("approachInsight", e.target.value)}
+            placeholder="During this phase, I gained…"
           />
         </Field>
       </div>
@@ -1427,68 +1470,68 @@ export function PortfolioPage() {
 
   function renderLeadership() {
     return (
-      <div className='space-y-6'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Section Body (EN)'>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Section Body (EN)">
             <textarea
               className={textareaCls}
               rows={3}
               value={form.leadershipBodyEn}
-              onChange={(e) => setField('leadershipBodyEn', e.target.value)}
+              onChange={(e) => setField("leadershipBodyEn", e.target.value)}
             />
           </Field>
-          <Field label='Section Body (AR)'>
+          <Field label="Section Body (AR)">
             <textarea
               className={textareaCls}
               rows={3}
-              dir='rtl'
+              dir="rtl"
               value={form.leadershipBodyAr}
-              onChange={(e) => setField('leadershipBodyAr', e.target.value)}
+              onChange={(e) => setField("leadershipBodyAr", e.target.value)}
             />
           </Field>
         </div>
 
         <div>
-          <div className='flex items-center justify-between mb-1.5'>
-            <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Leadership Cards ({form.leadershipCards.length}/4)
             </label>
             {form.leadershipCards.length < 4 && (
               <button
-                type='button'
+                type="button"
                 onClick={() =>
-                  addItem('leadershipCards', {
-                    iconName: 'Users',
-                    title: '',
-                    body: '',
+                  addItem("leadershipCards", {
+                    iconName: "Users",
+                    title: "",
+                    body: "",
                   })
                 }
-                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
+                className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
               >
-                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
-                <Plus className='w-3.5 h-3.5' /> Add Card
+                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white" />
+                <Plus className="w-3.5 h-3.5" /> Add Card
               </button>
             )}
           </div>
-          <p className='text-[12px] text-slate-400 mb-3'>
+          <p className="text-[12px] text-slate-400 mb-3">
             Add 4 leadership cards in total. Each card needs an icon, title, and
             body.
           </p>
           <FieldError message={fieldErrors.leadershipCards} />
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {form.leadershipCards.map((card, idx) => (
               <div
                 key={idx}
-                className='bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3'
+                className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3"
               >
-                <div className='flex items-center justify-between'>
-                  <span className='text-[11px] font-bold text-slate-400 uppercase'>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">
                     Card #{idx + 1}
                   </span>
                   <button
-                    type='button'
-                    onClick={() => removeItem('leadershipCards', idx)}
-                    className='text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer'
+                    type="button"
+                    onClick={() => removeItem("leadershipCards", idx)}
+                    className="text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
@@ -1497,10 +1540,10 @@ export function PortfolioPage() {
                   className={fieldInputCls(
                     Boolean(fieldErrors[`leadershipCards.${idx}.iconName`]),
                   )}
-                  placeholder='Icon (Users, Cpu, GitBranch, ShieldCheck)'
+                  placeholder="Icon (Users, Cpu, GitBranch, ShieldCheck)"
                   value={card.iconName}
                   onChange={(e) =>
-                    updateItem<LeadershipCard>('leadershipCards', idx, {
+                    updateItem<LeadershipCard>("leadershipCards", idx, {
                       iconName: e.target.value,
                     })
                   }
@@ -1512,10 +1555,10 @@ export function PortfolioPage() {
                   className={fieldInputCls(
                     Boolean(fieldErrors[`leadershipCards.${idx}.title`]),
                   )}
-                  placeholder='Title'
+                  placeholder="Title"
                   value={card.title}
                   onChange={(e) =>
-                    updateItem<LeadershipCard>('leadershipCards', idx, {
+                    updateItem<LeadershipCard>("leadershipCards", idx, {
                       title: e.target.value,
                     })
                   }
@@ -1528,10 +1571,10 @@ export function PortfolioPage() {
                     Boolean(fieldErrors[`leadershipCards.${idx}.body`]),
                   )}
                   rows={2}
-                  placeholder='Body text'
+                  placeholder="Body text"
                   value={card.body}
                   onChange={(e) =>
-                    updateItem<LeadershipCard>('leadershipCards', idx, {
+                    updateItem<LeadershipCard>("leadershipCards", idx, {
                       body: e.target.value,
                     })
                   }
@@ -1546,29 +1589,29 @@ export function PortfolioPage() {
                 (_, slot) => (
                   <button
                     key={`leadership-add-slot-${slot}`}
-                    type='button'
+                    type="button"
                     onClick={() =>
-                      addItem('leadershipCards', {
-                        iconName: 'Users',
-                        title: '',
-                        body: '',
+                      addItem("leadershipCards", {
+                        iconName: "Users",
+                        title: "",
+                        body: "",
                       })
                     }
-                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
-                    <Plus className='w-8 h-8' />
-                    <span className='text-[13px] font-semibold'>Add Card</span>
+                    <Plus className="w-8 h-8" />
+                    <span className="text-[13px] font-semibold">Add Card</span>
                   </button>
                 ),
               )}
           </div>
         </div>
 
-        <Field label='Banner Stat (e.g. 100% On Schedule)'>
+        <Field label="Banner Stat (e.g. 100% On Schedule)">
           <input
             className={inputCls}
             value={form.leadershipBannerStat}
-            onChange={(e) => setField('leadershipBannerStat', e.target.value)}
+            onChange={(e) => setField("leadershipBannerStat", e.target.value)}
           />
         </Field>
       </div>
@@ -1576,83 +1619,83 @@ export function PortfolioPage() {
   }
 
   function renderSolution() {
-    const colorOptions: SolutionCard['color'][] = [
-      'green',
-      'blue',
-      'orange',
-      'purple',
+    const colorOptions: SolutionCard["color"][] = [
+      "green",
+      "blue",
+      "orange",
+      "purple",
     ];
-    const colorStyles: Record<SolutionCard['color'], string> = {
-      green: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      blue: 'bg-sky-50 text-sky-700 border-sky-200',
-      orange: 'bg-amber-50 text-amber-700 border-amber-200',
-      purple: 'bg-purple-50 text-purple-700 border-purple-200',
+    const colorStyles: Record<SolutionCard["color"], string> = {
+      green: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      blue: "bg-sky-50 text-sky-700 border-sky-200",
+      orange: "bg-amber-50 text-amber-700 border-amber-200",
+      purple: "bg-purple-50 text-purple-700 border-purple-200",
     };
 
     return (
-      <div className='space-y-6'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <Field label='Section Body (EN)'>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Section Body (EN)">
             <textarea
               className={textareaCls}
               rows={3}
               value={form.solutionBodyEn}
-              onChange={(e) => setField('solutionBodyEn', e.target.value)}
+              onChange={(e) => setField("solutionBodyEn", e.target.value)}
             />
           </Field>
-          <Field label='Section Body (AR)'>
+          <Field label="Section Body (AR)">
             <textarea
               className={textareaCls}
               rows={3}
-              dir='rtl'
+              dir="rtl"
               value={form.solutionBodyAr}
-              onChange={(e) => setField('solutionBodyAr', e.target.value)}
+              onChange={(e) => setField("solutionBodyAr", e.target.value)}
             />
           </Field>
         </div>
 
         <div>
-          <div className='flex items-center justify-between mb-1.5'>
-            <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Feature Cards ({form.solutionCards.length}/4)
             </label>
             {form.solutionCards.length < 4 && (
               <button
-                type='button'
+                type="button"
                 onClick={() =>
-                  addItem('solutionCards', {
-                    color: 'green',
-                    tag: '',
-                    title: '',
-                    body: '',
+                  addItem("solutionCards", {
+                    color: "green",
+                    tag: "",
+                    title: "",
+                    body: "",
                   })
                 }
-                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
+                className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
               >
-                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
-                <Plus className='w-3.5 h-3.5' /> Add Card
+                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white" />
+                <Plus className="w-3.5 h-3.5" /> Add Card
               </button>
             )}
           </div>
-          <p className='text-[12px] text-slate-400 mb-3'>
+          <p className="text-[12px] text-slate-400 mb-3">
             Add 4 feature cards in total. Each card needs a tag, title, and
             body.
           </p>
           <FieldError message={fieldErrors.solutionCards} />
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {form.solutionCards.map((card, idx) => (
               <div
                 key={idx}
-                className='bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3'
+                className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3"
               >
-                <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2'>
-                  <div className='flex gap-2 flex-wrap'>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {colorOptions.map((c) => (
                       <button
                         key={c}
-                        type='button'
+                        type="button"
                         onClick={() =>
-                          updateItem<SolutionCard>('solutionCards', idx, {
+                          updateItem<SolutionCard>("solutionCards", idx, {
                             color: c,
                           })
                         }
@@ -1667,9 +1710,9 @@ export function PortfolioPage() {
                     ))}
                   </div>
                   <button
-                    type='button'
-                    onClick={() => removeItem('solutionCards', idx)}
-                    className='text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer self-start sm:self-auto'
+                    type="button"
+                    onClick={() => removeItem("solutionCards", idx)}
+                    className="text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer self-start sm:self-auto"
                   >
                     Remove
                   </button>
@@ -1678,25 +1721,23 @@ export function PortfolioPage() {
                   className={fieldInputCls(
                     Boolean(fieldErrors[`solutionCards.${idx}.tag`]),
                   )}
-                  placeholder='Badge tag (e.g. Financial Sync)'
+                  placeholder="Badge tag (e.g. Financial Sync)"
                   value={card.tag}
                   onChange={(e) =>
-                    updateItem<SolutionCard>('solutionCards', idx, {
+                    updateItem<SolutionCard>("solutionCards", idx, {
                       tag: e.target.value,
                     })
                   }
                 />
-                <FieldError
-                  message={fieldErrors[`solutionCards.${idx}.tag`]}
-                />
+                <FieldError message={fieldErrors[`solutionCards.${idx}.tag`]} />
                 <input
                   className={fieldInputCls(
                     Boolean(fieldErrors[`solutionCards.${idx}.title`]),
                   )}
-                  placeholder='Card Title'
+                  placeholder="Card Title"
                   value={card.title}
                   onChange={(e) =>
-                    updateItem<SolutionCard>('solutionCards', idx, {
+                    updateItem<SolutionCard>("solutionCards", idx, {
                       title: e.target.value,
                     })
                   }
@@ -1709,10 +1750,10 @@ export function PortfolioPage() {
                     Boolean(fieldErrors[`solutionCards.${idx}.body`]),
                   )}
                   rows={2}
-                  placeholder='Card Body'
+                  placeholder="Card Body"
                   value={card.body}
                   onChange={(e) =>
-                    updateItem<SolutionCard>('solutionCards', idx, {
+                    updateItem<SolutionCard>("solutionCards", idx, {
                       body: e.target.value,
                     })
                   }
@@ -1727,49 +1768,49 @@ export function PortfolioPage() {
                 (_, slot) => (
                   <button
                     key={`solution-add-slot-${slot}`}
-                    type='button'
+                    type="button"
                     onClick={() =>
-                      addItem('solutionCards', {
-                        color: 'green',
-                        tag: '',
-                        title: '',
-                        body: '',
+                      addItem("solutionCards", {
+                        color: "green",
+                        tag: "",
+                        title: "",
+                        body: "",
                       })
                     }
-                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
-                    <Plus className='w-8 h-8' />
-                    <span className='text-[13px] font-semibold'>Add Card</span>
+                    <Plus className="w-8 h-8" />
+                    <span className="text-[13px] font-semibold">Add Card</span>
                   </button>
                 ),
               )}
           </div>
         </div>
 
-        <div className='pt-2 border-t border-slate-100'>
-          <p className='text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4'>
+        <div className="pt-2 border-t border-slate-100">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">
             Architecture Section
           </p>
-          <div className='space-y-4'>
+          <div className="space-y-4">
             {/* Architecture diagram image upload */}
             <ImageUpload
-              label='Architecture Diagram Image'
+              label="Architecture Diagram Image"
               value={form.solutionArchImageUrl}
-              onChange={(url) => setField('solutionArchImageUrl', url)}
+              onChange={(url) => setField("solutionArchImageUrl", url)}
             />
-            <Field label='Architecture Title'>
+            <Field label="Architecture Title">
               <input
                 className={inputCls}
                 value={form.solutionArchTitle}
-                onChange={(e) => setField('solutionArchTitle', e.target.value)}
+                onChange={(e) => setField("solutionArchTitle", e.target.value)}
               />
             </Field>
-            <Field label='Architecture Body'>
+            <Field label="Architecture Body">
               <textarea
                 className={textareaCls}
                 rows={3}
                 value={form.solutionArchBody}
-                onChange={(e) => setField('solutionArchBody', e.target.value)}
+                onChange={(e) => setField("solutionArchBody", e.target.value)}
               />
             </Field>
           </div>
@@ -1779,58 +1820,58 @@ export function PortfolioPage() {
   }
 
   function renderOutcome() {
-    const colorOptions: OutcomeItem['color'][] = ['emerald', 'purple', 'amber'];
-    const colorStyles: Record<OutcomeItem['color'], string> = {
-      emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      purple: 'bg-purple-50 text-purple-700 border-purple-200',
-      amber: 'bg-amber-50 text-amber-700 border-amber-200',
+    const colorOptions: OutcomeItem["color"][] = ["emerald", "purple", "amber"];
+    const colorStyles: Record<OutcomeItem["color"], string> = {
+      emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      purple: "bg-purple-50 text-purple-700 border-purple-200",
+      amber: "bg-amber-50 text-amber-700 border-amber-200",
     };
 
     return (
-      <div className='space-y-6'>
+      <div className="space-y-6">
         <div>
-          <div className='flex items-center justify-between mb-1.5'>
-            <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Outcome Items ({form.outcomeItems.length}/3)
             </label>
             {form.outcomeItems.length < 3 && (
               <button
-                type='button'
+                type="button"
                 onClick={() =>
-                  addItem('outcomeItems', { color: 'emerald', text: '' })
+                  addItem("outcomeItems", { color: "emerald", text: "" })
                 }
-                className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
+                className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
               >
-                <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
-                <Plus className='w-3.5 h-3.5' /> Add Item
+                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white" />
+                <Plus className="w-3.5 h-3.5" /> Add Item
               </button>
             )}
           </div>
-          <p className='text-[12px] text-slate-400 mb-3'>
+          <p className="text-[12px] text-slate-400 mb-3">
             Add 3 outcome items in total. Each item needs outcome text.
           </p>
           <FieldError message={fieldErrors.outcomeItems} />
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {form.outcomeItems.map((item, idx) => (
               <div
                 key={idx}
-                className='bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3'
+                className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3"
               >
-                <div className='flex flex-wrap items-center justify-between gap-2'>
-                  <div className='flex gap-2 flex-wrap'>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {colorOptions.map((c) => (
                       <button
                         key={c}
-                        type='button'
+                        type="button"
                         onClick={() =>
-                          updateItem<OutcomeItem>('outcomeItems', idx, {
+                          updateItem<OutcomeItem>("outcomeItems", idx, {
                             color: c,
                           })
                         }
                         className={`px-3 py-1 rounded-lg text-[12px] font-semibold border cursor-pointer transition-all capitalize ${
                           item.color === c
                             ? `ring-2 ring-[#38BDF8] ${colorStyles[c]}`
-                            : 'border-slate-200 bg-white text-slate-500'
+                            : "border-slate-200 bg-white text-slate-500"
                         }`}
                       >
                         {c}
@@ -1838,9 +1879,9 @@ export function PortfolioPage() {
                     ))}
                   </div>
                   <button
-                    type='button'
-                    onClick={() => removeItem('outcomeItems', idx)}
-                    className='text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer'
+                    type="button"
+                    onClick={() => removeItem("outcomeItems", idx)}
+                    className="text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
@@ -1850,17 +1891,15 @@ export function PortfolioPage() {
                     Boolean(fieldErrors[`outcomeItems.${idx}.text`]),
                   )}
                   rows={3}
-                  placeholder='Outcome paragraph'
+                  placeholder="Outcome paragraph"
                   value={item.text}
                   onChange={(e) =>
-                    updateItem<OutcomeItem>('outcomeItems', idx, {
+                    updateItem<OutcomeItem>("outcomeItems", idx, {
                       text: e.target.value,
                     })
                   }
                 />
-                <FieldError
-                  message={fieldErrors[`outcomeItems.${idx}.text`]}
-                />
+                <FieldError message={fieldErrors[`outcomeItems.${idx}.text`]} />
               </div>
             ))}
             {form.outcomeItems.length < 3 &&
@@ -1868,14 +1907,14 @@ export function PortfolioPage() {
                 (_, slot) => (
                   <button
                     key={`outcome-add-slot-${slot}`}
-                    type='button'
+                    type="button"
                     onClick={() =>
-                      addItem('outcomeItems', { color: 'emerald', text: '' })
+                      addItem("outcomeItems", { color: "emerald", text: "" })
                     }
-                    className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                    className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
-                    <Plus className='w-8 h-8' />
-                    <span className='text-[13px] font-semibold'>Add Item</span>
+                    <Plus className="w-8 h-8" />
+                    <span className="text-[13px] font-semibold">Add Item</span>
                   </button>
                 ),
               )}
@@ -1884,17 +1923,17 @@ export function PortfolioPage() {
 
         {/* Recognition image upload */}
         <ImageUpload
-          label='Recognition / Award Image'
+          label="Recognition / Award Image"
           value={form.recognitionImageUrl}
-          onChange={(url) => setField('recognitionImageUrl', url)}
+          onChange={(url) => setField("recognitionImageUrl", url)}
         />
 
-        <Field label='Recognition Label'>
+        <Field label="Recognition Label">
           <input
             className={inputCls}
             value={form.recognitionLabel}
-            onChange={(e) => setField('recognitionLabel', e.target.value)}
-            placeholder='Formal Letter of Recognition'
+            onChange={(e) => setField("recognitionLabel", e.target.value)}
+            placeholder="Formal Letter of Recognition"
           />
         </Field>
       </div>
@@ -1903,79 +1942,77 @@ export function PortfolioPage() {
 
   function renderSkills() {
     return (
-      <div className='space-y-5'>
-        <div className='flex items-center justify-between mb-1.5'>
-          <label className='text-[11px] font-bold text-slate-500 uppercase tracking-wider'>
+      <div className="space-y-5">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Skill Cards ({form.skillCards.length}/7)
           </label>
           {form.skillCards.length < 7 && (
             <button
-              type='button'
+              type="button"
               onClick={() =>
-                addItem('skillCards', {
+                addItem("skillCards", {
                   num: String(form.skillCards.length + 1),
-                  category: '',
-                  title: '',
-                  body: '',
+                  category: "",
+                  title: "",
+                  body: "",
                 })
               }
-              className='relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50'
+              className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
             >
-              <span className='absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white' />
-              <Plus className='w-3.5 h-3.5' /> Add Skill
+              <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 border-2 border-white" />
+              <Plus className="w-3.5 h-3.5" /> Add Skill
             </button>
           )}
         </div>
-        <p className='text-[12px] text-slate-400 -mt-2'>
+        <p className="text-[12px] text-slate-400 -mt-2">
           Add 7 skill cards in total. Each card needs a number, category, title,
           and description.
         </p>
         <FieldError message={fieldErrors.skillCards} />
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {form.skillCards.map((sk, idx) => (
             <div
               key={idx}
-              className='bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3'
+              className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3"
             >
-              <div className='flex items-center justify-between'>
-                <span className='text-[11px] font-bold text-slate-400 uppercase'>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 uppercase">
                   Skill #{idx + 1}
                 </span>
                 <button
-                  type='button'
-                  onClick={() => removeItem('skillCards', idx)}
-                  className='text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer'
+                  type="button"
+                  onClick={() => removeItem("skillCards", idx)}
+                  className="text-red-400 hover:text-red-600 text-[11px] font-semibold cursor-pointer"
                 >
                   Remove
                 </button>
               </div>
-              <div className='grid grid-cols-2 gap-3'>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <input
                     className={fieldInputCls(
                       Boolean(fieldErrors[`skillCards.${idx}.num`]),
                     )}
-                    placeholder='Number'
+                    placeholder="Number"
                     value={sk.num}
                     onChange={(e) =>
-                      updateItem<SkillCard>('skillCards', idx, {
+                      updateItem<SkillCard>("skillCards", idx, {
                         num: e.target.value,
                       })
                     }
                   />
-                  <FieldError
-                    message={fieldErrors[`skillCards.${idx}.num`]}
-                  />
+                  <FieldError message={fieldErrors[`skillCards.${idx}.num`]} />
                 </div>
                 <div>
                   <input
                     className={fieldInputCls(
                       Boolean(fieldErrors[`skillCards.${idx}.category`]),
                     )}
-                    placeholder='Category (e.g. CORE DOMAIN)'
+                    placeholder="Category (e.g. CORE DOMAIN)"
                     value={sk.category}
                     onChange={(e) =>
-                      updateItem<SkillCard>('skillCards', idx, {
+                      updateItem<SkillCard>("skillCards", idx, {
                         category: e.target.value,
                       })
                     }
@@ -1989,10 +2026,10 @@ export function PortfolioPage() {
                 className={fieldInputCls(
                   Boolean(fieldErrors[`skillCards.${idx}.title`]),
                 )}
-                placeholder='Skill Title'
+                placeholder="Skill Title"
                 value={sk.title}
                 onChange={(e) =>
-                  updateItem<SkillCard>('skillCards', idx, {
+                  updateItem<SkillCard>("skillCards", idx, {
                     title: e.target.value,
                   })
                 }
@@ -2003,10 +2040,10 @@ export function PortfolioPage() {
                   Boolean(fieldErrors[`skillCards.${idx}.body`]),
                 )}
                 rows={2}
-                placeholder='Description'
+                placeholder="Description"
                 value={sk.body}
                 onChange={(e) =>
-                  updateItem<SkillCard>('skillCards', idx, {
+                  updateItem<SkillCard>("skillCards", idx, {
                     body: e.target.value,
                   })
                 }
@@ -2019,19 +2056,19 @@ export function PortfolioPage() {
               (_, slot) => (
                 <button
                   key={`skill-add-slot-${slot}`}
-                  type='button'
+                  type="button"
                   onClick={() =>
-                    addItem('skillCards', {
+                    addItem("skillCards", {
                       num: String(form.skillCards.length + 1),
-                      category: '',
-                      title: '',
-                      body: '',
+                      category: "",
+                      title: "",
+                      body: "",
                     })
                   }
-                  className='min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors'
+                  className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                 >
-                  <Plus className='w-8 h-8' />
-                  <span className='text-[13px] font-semibold'>Add Skill</span>
+                  <Plus className="w-8 h-8" />
+                  <span className="text-[13px] font-semibold">Add Skill</span>
                 </button>
               ),
             )}
@@ -2063,127 +2100,127 @@ export function PortfolioPage() {
 
   if (isFormMode) {
     return (
-      <div className='space-y-5 pb-10'>
+      <div className="space-y-5 pb-10">
         {/* Header */}
-        <div className='flex flex-col sm:flex-row sm:items-start justify-between gap-3'>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
-            <h1 className='text-[24px] sm:text-[28px] font-extrabold text-slate-900 tracking-tight'>
-              {editingId ? 'Edit Portfolio Item' : 'New Portfolio Item'}
+            <h1 className="text-[24px] sm:text-[28px] font-extrabold text-slate-900 tracking-tight">
+              {editingId ? "Edit Portfolio Item" : "New Portfolio Item"}
             </h1>
-            <p className='text-[13px] text-slate-400 mt-0.5'>
+            <p className="text-[13px] text-slate-400 mt-0.5">
               Fill out each section to build the full case study page.
             </p>
           </div>
-          <div className='flex items-center gap-2 shrink-0'>
+          <div className="flex items-center gap-2 shrink-0">
             <button
-              type='button'
+              type="button"
               onClick={closeForm}
-              className='px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-[13px] font-semibold transition-colors cursor-pointer'
+              className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-[13px] font-semibold transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
-              type='button'
+              type="button"
               onClick={handleSave}
               disabled={saving}
-              className='px-5 py-2 rounded-lg bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold transition-colors shadow-xs cursor-pointer disabled:opacity-60'
+              className="px-5 py-2 rounded-lg bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold transition-colors shadow-xs cursor-pointer disabled:opacity-60"
             >
-              {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Create Item'}
+              {saving ? "Saving…" : editingId ? "Save Changes" : "Create Item"}
             </button>
           </div>
         </div>
 
         {error && (
-          <div className='bg-red-50 border border-red-200 text-red-700 text-[13px] font-medium px-4 py-3 rounded-xl'>
+          <div className="bg-red-50 border border-red-200 text-red-700 text-[13px] font-medium px-4 py-3 rounded-xl">
             {error}
           </div>
         )}
 
-        <div className='bg-white rounded-2xl border border-slate-100 shadow-2xs overflow-hidden'>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-2xs overflow-hidden">
           {/* ── Tab Bar ── */}
-          <div className='flex overflow-x-auto border-b border-slate-100 scrollbar-hide'>
+          <div className="flex overflow-x-auto border-b border-slate-100 scrollbar-hide">
             {TABS.map((tab, idx) => {
               const unlocked = isPortfolioStepUnlocked(form, idx);
               const complete = isPortfolioStepComplete(form, idx);
               const locked = !unlocked;
               return (
-              <button
-                key={tab}
-                type='button'
-                onClick={() => goToTab(idx)}
-                disabled={locked}
-                className={`flex items-center gap-1.5 px-3 sm:px-5 py-3 sm:py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors border-b-2 shrink-0 ${
-                  locked
-                    ? 'border-transparent text-slate-400 cursor-not-allowed'
-                    : activeTab === idx
-                    ? 'border-[#38BDF8] text-[#38BDF8] bg-sky-50/60 cursor-pointer'
-                    : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 cursor-pointer'
-                }`}
-              >
-                <span
-                  className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => goToTab(idx)}
+                  disabled={locked}
+                  className={`flex items-center gap-1.5 px-3 sm:px-5 py-3 sm:py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors border-b-2 shrink-0 ${
                     locked
-                      ? 'bg-slate-100 text-slate-400'
-                      : complete
-                      ? activeTab === idx
-                        ? 'bg-[#38BDF8] text-white'
-                        : 'bg-emerald-500 text-white'
+                      ? "border-transparent text-slate-400 cursor-not-allowed"
                       : activeTab === idx
-                      ? 'bg-[#38BDF8] text-white'
-                      : 'bg-slate-100 text-slate-500'
+                        ? "border-[#38BDF8] text-[#38BDF8] bg-sky-50/60 cursor-pointer"
+                        : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 cursor-pointer"
                   }`}
                 >
-                  {locked ? (
-                    <Lock className='w-3 h-3' />
-                  ) : complete ? (
-                    <Check className='w-3.5 h-3.5' strokeWidth={3} />
-                  ) : (
-                    idx + 1
-                  )}
-                </span>
-                <span className='hidden sm:inline text-[13px]'>{tab}</span>
-              </button>
+                  <span
+                    className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
+                      locked
+                        ? "bg-slate-100 text-slate-400"
+                        : complete
+                          ? activeTab === idx
+                            ? "bg-[#38BDF8] text-white"
+                            : "bg-emerald-500 text-white"
+                          : activeTab === idx
+                            ? "bg-[#38BDF8] text-white"
+                            : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {locked ? (
+                      <Lock className="w-3 h-3" />
+                    ) : complete ? (
+                      <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                    ) : (
+                      idx + 1
+                    )}
+                  </span>
+                  <span className="hidden sm:inline text-[13px]">{tab}</span>
+                </button>
               );
             })}
           </div>
 
           {/* ── Tab Content ── */}
-          <div className='p-4 sm:p-6'>{renderTab()}</div>
+          <div className="p-4 sm:p-6">{renderTab()}</div>
 
           {/* ── Tab Navigation Footer ── */}
-          <div className='px-4 sm:px-6 pb-5 pt-4 flex items-center justify-between border-t border-slate-50'>
+          <div className="px-4 sm:px-6 pb-5 pt-4 flex items-center justify-between border-t border-slate-50">
             <button
-              type='button'
+              type="button"
               onClick={() => setActiveTab((t) => Math.max(0, t - 1))}
               disabled={activeTab === 0}
-              className='px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed'
+              className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
               ← Previous
             </button>
-            <span className='text-[11px] text-slate-400 font-medium hidden sm:block'>
+            <span className="text-[11px] text-slate-400 font-medium hidden sm:block">
               {activeTab + 1} of {TABS.length} — {TABS[activeTab]}
             </span>
             {activeTab < TABS.length - 1 ? (
               <button
-                type='button'
+                type="button"
                 onClick={goToNextStep}
                 disabled={!isPortfolioStepComplete(form, activeTab)}
-                className='px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-slate-100'
+                className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-slate-100"
               >
-                Next <ChevronRight className='w-3.5 h-3.5' />
+                Next <ChevronRight className="w-3.5 h-3.5" />
               </button>
             ) : (
               <button
-                type='button'
+                type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className='px-5 py-2 rounded-lg bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-60'
+                className="px-5 py-2 rounded-lg bg-[#38BDF8] hover:bg-[#20B0F0] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-60"
               >
                 {saving
-                  ? 'Saving…'
+                  ? "Saving…"
                   : editingId
-                    ? 'Save Changes'
-                    : 'Create Item'}
+                    ? "Save Changes"
+                    : "Create Item"}
               </button>
             )}
           </div>
@@ -2193,90 +2230,90 @@ export function PortfolioPage() {
   }
 
   return (
-    <div className='space-y-6 sm:space-y-8'>
-      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className='text-[28px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight'>
+          <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 tracking-tight">
             Portfolio
           </h1>
-          <p className='text-[13.5px] text-slate-500 mt-0.5'>
+          <p className="text-[13.5px] text-slate-500 mt-0.5">
             Manage portfolio projects and case studies.
           </p>
         </div>
         <button
-          type='button'
+          type="button"
           onClick={openCreate}
-          className='inline-flex items-center gap-2 bg-[#38BDF8] hover:bg-[#20B0F0] text-white rounded-sm px-5 py-2.5 text-[13.5px] font-semibold transition-colors shadow-xs self-start sm:self-auto cursor-pointer font-sans'
+          className="inline-flex items-center gap-2 bg-[#38BDF8] hover:bg-[#20B0F0] text-white rounded-sm px-5 py-2.5 text-[13.5px] font-semibold transition-colors shadow-xs self-start sm:self-auto cursor-pointer font-sans"
         >
-          <Plus className='w-4 h-4' />
+          <Plus className="w-4 h-4" />
           New Item
         </button>
       </div>
 
       {loadError && (
-        <div className='p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-[13px] font-medium'>
+        <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-[13px] font-medium">
           {loadError}
         </div>
       )}
 
       {loading ? (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className='bg-white rounded-xl p-4 border border-slate-200 animate-pulse'
+              className="bg-white rounded-xl p-4 border border-slate-200 animate-pulse"
             >
-              <div className='bg-slate-100 rounded-xl aspect-video mb-4' />
-              <div className='h-4 bg-slate-100 rounded mb-2 w-3/4' />
-              <div className='h-3 bg-slate-100 rounded w-1/2 mb-4' />
-              <div className='h-9 bg-slate-100 rounded' />
+              <div className="bg-slate-100 rounded-xl aspect-video mb-4" />
+              <div className="h-4 bg-slate-100 rounded mb-2 w-3/4" />
+              <div className="h-3 bg-slate-100 rounded w-1/2 mb-4" />
+              <div className="h-9 bg-slate-100 rounded" />
             </div>
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className='bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 sm:p-16 text-center'>
-          <div className='w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4'>
-            <ImageIcon className='w-7 h-7 text-slate-400' />
+        <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 sm:p-16 text-center">
+          <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <ImageIcon className="w-7 h-7 text-slate-400" />
           </div>
-          <p className='text-slate-500 font-semibold mb-1'>
+          <p className="text-slate-500 font-semibold mb-1">
             No portfolio items yet
           </p>
-          <p className='text-slate-400 text-[13px] mb-5'>
+          <p className="text-slate-400 text-[13px] mb-5">
             Create your first case study to get started.
           </p>
           <button
-            type='button'
+            type="button"
             onClick={openCreate}
-            className='inline-flex items-center gap-2 bg-[#38BDF8] text-white rounded-sm px-5 py-2.5 text-[13.5px] font-semibold cursor-pointer hover:bg-[#20B0F0] transition-colors font-sans'
+            className="inline-flex items-center gap-2 bg-[#38BDF8] text-white rounded-sm px-5 py-2.5 text-[13.5px] font-semibold cursor-pointer hover:bg-[#20B0F0] transition-colors font-sans"
           >
-            <Plus className='w-4 h-4' /> Create First Item
+            <Plus className="w-4 h-4" /> Create First Item
           </button>
         </div>
       ) : (
-        <div className='space-y-5'>
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {paginatedItems.map((item) => {
               const cover = item.heroImageUrl || item.media?.url;
               return (
                 <AdminContentCard
                   key={item.id}
-                  title={item.titleEn || 'Untitled'}
+                  title={item.titleEn || "Untitled"}
                   description={item.excerptEn}
                   imageUrl={cover}
-                  imageAlt={item.titleEn || 'Portfolio item'}
-                  imageAspectClass='aspect-video'
+                  imageAlt={item.titleEn || "Portfolio item"}
+                  imageAspectClass="aspect-video"
                   imageFallback={
-                    <div className='w-full h-full flex items-center justify-center'>
-                      <ImageIcon className='w-8 h-8 text-slate-300' />
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-slate-300" />
                     </div>
                   }
                   imageOverlay={
                     <>
-                      <span className='absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white text-slate-800 shadow-xs'>
-                        {item.tag || 'Portfolio'}
+                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white text-slate-800 shadow-xs">
+                        {item.tag || "Portfolio"}
                       </span>
                       {!item.published && (
-                        <span className='absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-slate-300'>
+                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-slate-300">
                           Draft
                         </span>
                       )}
@@ -2295,7 +2332,7 @@ export function PortfolioPage() {
             totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={setPage}
-            itemLabel='portfolio items'
+            itemLabel="portfolio items"
           />
         </div>
       )}
