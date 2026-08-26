@@ -466,6 +466,22 @@ export function CaseStudyPage() {
               {/* ── SECTION 4: TECHNICAL LEADERSHIP ─────────────────── */}
               <div className="pb-20 border-b border-slate-200/80">
                 <div className="grid lg:grid-cols-12 gap-8 items-start mb-12">
+                  <div className="lg:col-span-5 pt-2">
+                    <span className="inline-flex items-center gap-1.5 bg-[#EAF7FF] text-[#36BFFB] border border-sky-200 font-semibold text-[12px] px-3.5 py-1 rounded-full uppercase tracking-wider mb-4">
+                      👥{" "}
+                      {t(
+                        "PAGE 04 • TECHNICAL LEADERSHIP",
+                        "الصفحة 04 • القيادة التقنية",
+                      )}
+                    </span>
+                    <h2 className="text-[38px] md:text-[46px] font-serif font-bold text-[#0F2E25] tracking-tight leading-snug mb-4">
+                      {t("Technical Leadership", "القيادة التقنية")}
+                    </h2>
+                    <p className="text-[16px] text-slate-500 leading-relaxed max-w-md">
+                      {leadershipBody}
+                    </p>
+                  </div>
+
                   <div className="lg:col-span-7 rounded-md bg-[#0A0E17] text-white overflow-hidden flex flex-col justify-between">
                     {heroImage && (
                       <div className="p-6 md:p-8">
@@ -495,22 +511,6 @@ export function CaseStudyPage() {
                         </div>
                       </div>
                     )}
-                  </div>
-
-                  <div className="lg:col-span-5 pt-2">
-                    <span className="inline-flex items-center gap-1.5 bg-[#EAF7FF] text-[#36BFFB] border border-sky-200 font-semibold text-[12px] px-3.5 py-1 rounded-full uppercase tracking-wider mb-4">
-                      👥{" "}
-                      {t(
-                        "PAGE 04 • TECHNICAL LEADERSHIP",
-                        "الصفحة 04 • القيادة التقنية",
-                      )}
-                    </span>
-                    <h2 className="text-[38px] md:text-[46px] font-serif font-bold text-[#0F2E25] tracking-tight leading-snug mb-4">
-                      {t("Technical Leadership", "القيادة التقنية")}
-                    </h2>
-                    <p className="text-[16px] text-slate-500 leading-relaxed max-w-md">
-                      {leadershipBody}
-                    </p>
                   </div>
                 </div>
 
