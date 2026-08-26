@@ -302,14 +302,17 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     ),
     leadershipBannerStatEn:
       item.leadership.leadershipBannerStatEn ??
-      (item.leadership as { leadershipBannerStat?: string }).leadershipBannerStat ??
+      (item.leadership as { leadershipBannerStat?: string })
+        .leadershipBannerStat ??
       "",
     leadershipBannerStatAr:
       item.leadership.leadershipBannerStatAr ??
-      (item.leadership as { leadershipBannerStat?: string }).leadershipBannerStat ??
+      (item.leadership as { leadershipBannerStat?: string })
+        .leadershipBannerStat ??
       "",
     leadershipBannerStat:
-      (item.leadership as { leadershipBannerStat?: string }).leadershipBannerStat ??
+      (item.leadership as { leadershipBannerStat?: string })
+        .leadershipBannerStat ??
       item.leadership.leadershipBannerStatEn ??
       item.leadership.leadershipBannerStatAr ??
       "",

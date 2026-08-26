@@ -586,21 +586,25 @@ function formFromItem(item: GalleryItem): PortfolioForm {
       : EMPTY_FORM.leadershipCards,
     leadershipBannerStatEn:
       item.leadershipBannerStatEn ??
-      (item as typeof item & { leadershipBannerStat?: string }).leadershipBannerStat ??
+      (item as typeof item & { leadershipBannerStat?: string })
+        .leadershipBannerStat ??
       "",
     leadershipBannerStatAr:
       item.leadershipBannerStatAr ??
-      (item as typeof item & { leadershipBannerStat?: string }).leadershipBannerStat ??
+      (item as typeof item & { leadershipBannerStat?: string })
+        .leadershipBannerStat ??
       "",
     solutionBodyEn: item.solutionBodyEn || "",
     solutionBodyAr: item.solutionBodyAr || "",
     solutionArchLabelEn:
       item.solutionArchLabelEn ??
-      (item as typeof item & { solutionArchLabel?: string }).solutionArchLabel ??
+      (item as typeof item & { solutionArchLabel?: string })
+        .solutionArchLabel ??
       "",
     solutionArchLabelAr:
       item.solutionArchLabelAr ??
-      (item as typeof item & { solutionArchLabel?: string }).solutionArchLabel ??
+      (item as typeof item & { solutionArchLabel?: string })
+        .solutionArchLabel ??
       "",
     solutionCards: item.solutionCards?.length
       ? item.solutionCards.map((card) => ({
