@@ -35,7 +35,9 @@ export interface PortfolioChallengeTab {
   challengeBodyAr: string;
   challengeBadgeLabel: string;
   challengeImageUrl: string;
-  challengeCaption: string;
+  challengeCaption?: string;
+  challengeCaptionEn?: string;
+  challengeCaptionAr?: string;
   challengeItems: ChallengeItem[];
 }
 
@@ -163,7 +165,9 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     challengeBodyAr: item.challenge.challengeBodyAr,
     challengeItems: item.challenge.challengeItems,
     challengeImageUrl: item.challenge.challengeImageUrl,
-    challengeCaption: item.challenge.challengeCaption,
+    challengeCaption: item.challenge.challengeCaption ?? item.challenge.challengeCaptionEn ?? '',
+    challengeCaptionEn: item.challenge.challengeCaptionEn ?? item.challenge.challengeCaption ?? '',
+    challengeCaptionAr: item.challenge.challengeCaptionAr ?? '',
     challengeBadgeLabel: item.challenge.challengeBadgeLabel,
     approachBodyEn: item.approach.approachBodyEn,
     approachBodyAr: item.approach.approachBodyAr,
@@ -216,6 +220,8 @@ export function portfolioFormToTabbedPayload(form: {
   challengeItems: ChallengeItem[];
   challengeImageUrl: string;
   challengeCaption: string;
+  challengeCaptionEn: string;
+  challengeCaptionAr: string;
   challengeBadgeLabel: string;
   approachBodyEn: string;
   approachBodyAr: string;
@@ -262,10 +268,33 @@ export function portfolioFormToTabbedPayload(form: {
       challengeBodyAr: form.challengeBodyAr.trim(),
       challengeBadgeLabel: form.challengeBadgeLabel.trim() || "CRITICAL",
       challengeImageUrl: form.challengeImageUrl.trim(),
-      challengeCaption: form.challengeCaption.trim(),
-      challengeItems: form.challengeItems.filter(
-        (i) => i.title.trim() || i.body.trim(),
-      ),
+      challengeCaption: form.challengeCaptionEn.trim() || form.challengeCaption.trim(),
+      challengeCaptionEn: form.challengeCaptionEn.trim(),
+      challengeCaptionAr: form.challengeCaptionAr.trim(),
+      challengeItems: form.challengeItems
+        .filter((i) => {
+          const iconName = (i.iconName ?? "").trim();
+          const titleEn = (i.titleEn ?? i.title ?? "").trim();
+          const titleAr = (i.titleAr ?? "").trim();
+          const bodyEn = (i.bodyEn ?? i.body ?? "").trim();
+          const bodyAr = (i.bodyAr ?? "").trim();
+          return iconName || titleEn || titleAr || bodyEn || bodyAr;
+        })
+        .map((i) => {
+          const titleEn = (i.titleEn ?? i.title ?? "").trim();
+          const titleAr = (i.titleAr ?? "").trim();
+          const bodyEn = (i.bodyEn ?? i.body ?? "").trim();
+          const bodyAr = (i.bodyAr ?? "").trim();
+          return {
+            iconName: (i.iconName ?? "").trim(),
+            title: titleEn,
+            titleEn,
+            titleAr,
+            body: bodyEn,
+            bodyEn,
+            bodyAr,
+          };
+        }),
     },
     approach: {
       approachBodyEn: form.approachBodyEn.trim(),

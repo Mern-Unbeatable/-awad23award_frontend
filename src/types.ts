@@ -122,8 +122,12 @@ export interface Product {
 
 export interface ChallengeItem {
   iconName: string;
-  title: string;
-  body: string;
+  title?: string;
+  titleEn?: string;
+  titleAr?: string;
+  body?: string;
+  bodyEn?: string;
+  bodyAr?: string;
 }
 
 export interface ApproachCard {
@@ -197,6 +201,8 @@ export interface GalleryItem {
   challengeItems?: ChallengeItem[];
   challengeImageUrl?: string;
   challengeCaption?: string;
+  challengeCaptionEn?: string;
+  challengeCaptionAr?: string;
   challengeBadgeLabel?: string;
 
   // Approach

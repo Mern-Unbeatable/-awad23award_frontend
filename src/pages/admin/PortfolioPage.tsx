@@ -404,6 +404,8 @@ interface PortfolioForm {
   challengeItems: ChallengeItem[];
   challengeImageUrl: string;
   challengeCaption: string;
+  challengeCaptionEn: string;
+  challengeCaptionAr: string;
   challengeBadgeLabel: string;
   approachBodyEn: string;
   approachBodyAr: string;
@@ -446,9 +448,11 @@ const EMPTY_FORM: PortfolioForm = {
   challengeHeadingAr: "",
   challengeBodyEn: "",
   challengeBodyAr: "",
-  challengeItems: [{ iconName: "AlertTriangle", title: "", body: "" }],
+  challengeItems: [{ iconName: "AlertTriangle", title: "", titleEn: "", titleAr: "", body: "", bodyEn: "", bodyAr: "" }],
   challengeImageUrl: "",
   challengeCaption: "",
+  challengeCaptionEn: "",
+  challengeCaptionAr: "",
   challengeBadgeLabel: "CRITICAL",
   approachBodyEn: "",
   approachBodyAr: "",
@@ -496,7 +500,9 @@ function formFromItem(item: GalleryItem): PortfolioForm {
       ? item.challengeItems
       : EMPTY_FORM.challengeItems,
     challengeImageUrl: item.challengeImageUrl || "",
-    challengeCaption: item.challengeCaption || "",
+    challengeCaption: item.challengeCaption || item.challengeCaptionEn || "",
+    challengeCaptionEn: item.challengeCaptionEn || item.challengeCaption || "",
+    challengeCaptionAr: item.challengeCaptionAr || "",
     challengeBadgeLabel: item.challengeBadgeLabel || "CRITICAL",
     approachBodyEn: item.approachBodyEn || "",
     approachBodyAr: item.approachBodyAr || "",
@@ -542,7 +548,12 @@ function hasNonBlankLine(lines: string[] | undefined): boolean {
 }
 
 function isChallengeItemEmpty(item: ChallengeItem): boolean {
-  return isBlank(item.title) && isBlank(item.body);
+  return (
+    isBlank(item.titleEn ?? item.title) &&
+    isBlank(item.titleAr) &&
+    isBlank(item.bodyEn ?? item.body) &&
+    isBlank(item.bodyAr)
+  );
 }
 
 function isApproachCardEmpty(card: ApproachCard): boolean {
@@ -580,9 +591,14 @@ function validatePortfolioForm(form: PortfolioForm): {
     if (isChallengeItemEmpty(item)) return;
     if (isBlank(item.iconName))
       errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
-    if (isBlank(item.title))
-      errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
-    if (isBlank(item.body)) errors[`challengeItems.${idx}.body`] = REQUIRED_MSG;
+    if (isBlank(item.titleEn ?? item.title))
+      errors[`challengeItems.${idx}.titleEn`] = REQUIRED_MSG;
+    if (isBlank(item.titleAr))
+      errors[`challengeItems.${idx}.titleAr`] = REQUIRED_MSG;
+    if (isBlank(item.bodyEn ?? item.body))
+      errors[`challengeItems.${idx}.bodyEn`] = REQUIRED_MSG;
+    if (isBlank(item.bodyAr))
+      errors[`challengeItems.${idx}.bodyAr`] = REQUIRED_MSG;
   });
 
   form.approachCards.forEach((card, idx) => {
@@ -657,10 +673,14 @@ function validatePortfolioStep(
     form.challengeItems.forEach((item, idx) => {
       if (isBlank(item.iconName))
         errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
-      if (isBlank(item.title))
-        errors[`challengeItems.${idx}.title`] = REQUIRED_MSG;
-      if (isBlank(item.body))
-        errors[`challengeItems.${idx}.body`] = REQUIRED_MSG;
+      if (isBlank(item.titleEn ?? item.title))
+        errors[`challengeItems.${idx}.titleEn`] = REQUIRED_MSG;
+      if (isBlank(item.titleAr))
+        errors[`challengeItems.${idx}.titleAr`] = REQUIRED_MSG;
+      if (isBlank(item.bodyEn ?? item.body))
+        errors[`challengeItems.${idx}.bodyEn`] = REQUIRED_MSG;
+      if (isBlank(item.bodyAr))
+        errors[`challengeItems.${idx}.bodyAr`] = REQUIRED_MSG;
     });
     return errors;
   }
@@ -1240,7 +1260,11 @@ export function PortfolioPage() {
                   addItem("challengeItems", {
                     iconName: "AlertTriangle",
                     title: "",
+                    titleEn: "",
+                    titleAr: "",
                     body: "",
+                    bodyEn: "",
+                    bodyAr: "",
                   })
                 }
                 className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
@@ -1288,37 +1312,84 @@ export function PortfolioPage() {
                 <FieldError
                   message={fieldErrors[`challengeItems.${idx}.iconName`]}
                 />
-                <input
-                  className={fieldInputCls(
-                    Boolean(fieldErrors[`challengeItems.${idx}.title`]),
-                  )}
-                  placeholder="Title"
-                  value={ci.title}
-                  onChange={(e) =>
-                    updateItem<ChallengeItem>("challengeItems", idx, {
-                      title: e.target.value,
-                    })
-                  }
-                />
-                <FieldError
-                  message={fieldErrors[`challengeItems.${idx}.title`]}
-                />
-                <textarea
-                  className={fieldTextareaCls(
-                    Boolean(fieldErrors[`challengeItems.${idx}.body`]),
-                  )}
-                  rows={2}
-                  placeholder="Body text"
-                  value={ci.body}
-                  onChange={(e) =>
-                    updateItem<ChallengeItem>("challengeItems", idx, {
-                      body: e.target.value,
-                    })
-                  }
-                />
-                <FieldError
-                  message={fieldErrors[`challengeItems.${idx}.body`]}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      className={fieldInputCls(
+                        Boolean(fieldErrors[`challengeItems.${idx}.titleEn`]),
+                      )}
+                      placeholder="Title (EN)"
+                      value={ci.titleEn ?? ci.title ?? ""}
+                      onChange={(e) =>
+                        updateItem<ChallengeItem>("challengeItems", idx, {
+                          titleEn: e.target.value,
+                          title: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`challengeItems.${idx}.titleEn`]}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      className={fieldInputCls(
+                        Boolean(fieldErrors[`challengeItems.${idx}.titleAr`]),
+                      )}
+                      dir="rtl"
+                      placeholder="Title (AR)"
+                      value={ci.titleAr ?? ""}
+                      onChange={(e) =>
+                        updateItem<ChallengeItem>("challengeItems", idx, {
+                          titleAr: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`challengeItems.${idx}.titleAr`]}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`challengeItems.${idx}.bodyEn`]),
+                      )}
+                      rows={2}
+                      placeholder="Body Text (EN)"
+                      value={ci.bodyEn ?? ci.body ?? ""}
+                      onChange={(e) =>
+                        updateItem<ChallengeItem>("challengeItems", idx, {
+                          bodyEn: e.target.value,
+                          body: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`challengeItems.${idx}.bodyEn`]}
+                    />
+                  </div>
+                  <div>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`challengeItems.${idx}.bodyAr`]),
+                      )}
+                      rows={2}
+                      dir="rtl"
+                      placeholder="Body Text (AR)"
+                      value={ci.bodyAr ?? ""}
+                      onChange={(e) =>
+                        updateItem<ChallengeItem>("challengeItems", idx, {
+                          bodyAr: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`challengeItems.${idx}.bodyAr`]}
+                    />
+                  </div>
+                </div>
               </div>
             ))}
             {form.challengeItems.length < 5 &&
@@ -1331,7 +1402,11 @@ export function PortfolioPage() {
                       addItem("challengeItems", {
                         iconName: "AlertTriangle",
                         title: "",
+                        titleEn: "",
+                        titleAr: "",
                         body: "",
+                        bodyEn: "",
+                        bodyAr: "",
                       })
                     }
                     className="min-h-[220px] rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
@@ -1351,14 +1426,28 @@ export function PortfolioPage() {
           onChange={(url) => setField("challengeImageUrl", url)}
         />
 
-        <Field label="Right Column Caption">
-          <textarea
-            className={textareaCls}
-            rows={2}
-            value={form.challengeCaption}
-            onChange={(e) => setField("challengeCaption", e.target.value)}
-          />
-        </Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Right Column Caption (EN)">
+            <textarea
+              className={textareaCls}
+              rows={2}
+              value={form.challengeCaptionEn}
+              onChange={(e) => {
+                setField("challengeCaptionEn", e.target.value);
+                setField("challengeCaption", e.target.value);
+              }}
+            />
+          </Field>
+          <Field label="Right Column Caption (AR)">
+            <textarea
+              className={textareaCls}
+              rows={2}
+              dir="rtl"
+              value={form.challengeCaptionAr}
+              onChange={(e) => setField("challengeCaptionAr", e.target.value)}
+            />
+          </Field>
+        </div>
       </div>
     );
   }

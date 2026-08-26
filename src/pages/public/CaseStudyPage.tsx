@@ -192,7 +192,11 @@ export function CaseStudyPage() {
     locale === "ar" ? item.challengeBodyAr : item.challengeBodyEn,
   );
   const challengeItems = (item.challengeItems ?? []).filter(
-    (ci) => hasValue(ci.title) || hasValue(ci.body),
+    (ci) =>
+      hasValue(ci.titleEn ?? ci.title) ||
+      hasValue(ci.titleAr) ||
+      hasValue(ci.bodyEn ?? ci.body) ||
+      hasValue(ci.bodyAr),
   );
   let challengeImage = cleanText(item.challengeImageUrl || "");
   if (challengeImage && !isBlobUrl(challengeImage)) {
@@ -200,7 +204,11 @@ export function CaseStudyPage() {
   } else {
     challengeImage = "";
   }
-  const challengeCaption = cleanText(item.challengeCaption || "");
+  const challengeCaption = cleanText(
+    locale === "ar"
+      ? item.challengeCaptionAr ?? item.challengeCaption ?? ""
+      : item.challengeCaptionEn ?? item.challengeCaption ?? "",
+  );
 
   const approachBody = cleanText(
     locale === "ar" ? item.approachBodyAr : item.approachBodyEn,
@@ -424,8 +432,16 @@ export function CaseStudyPage() {
                         {challengeItems.map((ci, idx) => {
                           const iconName = cleanText(ci.iconName);
                           const Icon = iconName ? getIcon(iconName) : null;
-                          const itemTitle = cleanText(ci.title);
-                          const itemBody = cleanText(ci.body);
+                          const itemTitle = cleanText(
+                            locale === "ar"
+                              ? ci.titleAr ?? ci.titleEn ?? ci.title
+                              : ci.titleEn ?? ci.title,
+                          );
+                          const itemBody = cleanText(
+                            locale === "ar"
+                              ? ci.bodyAr ?? ci.bodyEn ?? ci.body
+                              : ci.bodyEn ?? ci.body,
+                          );
                           return (
                             <div
                               key={idx}
