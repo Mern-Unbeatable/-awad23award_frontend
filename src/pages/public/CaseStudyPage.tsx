@@ -286,7 +286,7 @@ export function CaseStudyPage() {
   );
 
   const outcomeItems = (item.outcomeItems ?? []).filter((item) =>
-    hasValue(item.text),
+    hasValue(item.textEn ?? item.text) || hasValue(item.textAr),
   );
   let recognitionImage = cleanText(item.recognitionImageUrl || "");
   if (recognitionImage && !isBlobUrl(recognitionImage)) {
@@ -294,7 +294,11 @@ export function CaseStudyPage() {
   } else {
     recognitionImage = "";
   }
-  const recognitionLabel = cleanText(item.recognitionLabel || "");
+  const recognitionLabel = cleanText(
+    locale === "ar"
+      ? (item.recognitionLabelAr ?? item.recognitionLabelEn ?? item.recognitionLabel ?? "")
+      : (item.recognitionLabelEn ?? item.recognitionLabelAr ?? item.recognitionLabel ?? ""),
+  );
 
   const skillCards = (item.skillCards ?? []).filter(
     (card) =>
@@ -884,7 +888,11 @@ export function CaseStudyPage() {
                                 OUTCOME_COLORS.emerald;
                               const Icon =
                                 OUTCOME_ICONS[oi.color] || CheckCircle2;
-                              const outcomeText = cleanText(oi.text);
+                              const outcomeText = cleanText(
+                                locale === "ar"
+                                  ? (oi.textAr ?? oi.textEn ?? oi.text ?? "")
+                                  : (oi.textEn ?? oi.textAr ?? oi.text ?? ""),
+                              );
                               return (
                                 <div
                                   key={idx}

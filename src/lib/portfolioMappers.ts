@@ -14,6 +14,10 @@ type LegacySolutionCard = SolutionCard & {
   body?: string;
 };
 
+type LegacyOutcomeItem = OutcomeItem & {
+  text?: string;
+};
+
 type LegacyLeadershipCard = LeadershipCard & {
   title?: string;
   body?: string;
@@ -81,7 +85,8 @@ export interface PortfolioSolutionTab {
 
 export interface PortfolioOutcomeTab {
   recognitionImageUrl: string;
-  recognitionLabel: string;
+  recognitionLabelEn: string;
+  recognitionLabelAr: string;
   outcomeItems: OutcomeItem[];
 }
 
@@ -164,6 +169,18 @@ function normalizeSolutionCard(card: SolutionCard): SolutionCard {
     titleAr,
     bodyEn,
     bodyAr,
+  };
+}
+
+function normalizeOutcomeItem(item: OutcomeItem): OutcomeItem {
+  const legacyItem = item as LegacyOutcomeItem;
+  const textEn = legacyItem.textEn ?? legacyItem.text ?? "";
+  const textAr = legacyItem.textAr ?? legacyItem.text ?? "";
+
+  return {
+    color: item.color,
+    textEn,
+    textAr,
   };
 }
 
@@ -284,9 +301,12 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
       item.solution.solutionArchBodyEn ?? item.solution.solutionArchBody ?? "",
     solutionArchBodyAr:
       item.solution.solutionArchBodyAr ?? item.solution.solutionArchBody ?? "",
-    outcomeItems: item.outcome.outcomeItems,
+    outcomeItems: item.outcome.outcomeItems.map(normalizeOutcomeItem),
     recognitionImageUrl: item.outcome.recognitionImageUrl,
-    recognitionLabel: item.outcome.recognitionLabel,
+    recognitionLabelEn:
+      item.outcome.recognitionLabelEn ?? item.outcome.recognitionLabel ?? "",
+    recognitionLabelAr:
+      item.outcome.recognitionLabelAr ?? item.outcome.recognitionLabel ?? "",
     skillCards: item.skills.skillCards,
   };
 }
@@ -344,7 +364,8 @@ export function portfolioFormToTabbedPayload(form: {
   solutionArchBodyAr: string;
   outcomeItems: OutcomeItem[];
   recognitionImageUrl: string;
-  recognitionLabel: string;
+  recognitionLabelEn: string;
+  recognitionLabelAr: string;
   skillCards: SkillCard[];
 }): PortfolioTabbedPayload {
   return {
@@ -508,8 +529,15 @@ export function portfolioFormToTabbedPayload(form: {
     },
     outcome: {
       recognitionImageUrl: form.recognitionImageUrl.trim(),
-      recognitionLabel: form.recognitionLabel.trim(),
-      outcomeItems: form.outcomeItems.filter((o) => o.text.trim()),
+      recognitionLabelEn: form.recognitionLabelEn.trim(),
+      recognitionLabelAr: form.recognitionLabelAr.trim(),
+      outcomeItems: form.outcomeItems
+        .filter((o) => o.textEn?.trim() || o.textAr?.trim() || o.text?.trim())
+        .map((o) => ({
+          color: o.color,
+          textEn: o.textEn?.trim() || o.text?.trim() || "",
+          textAr: o.textAr?.trim() || o.text?.trim() || "",
+        })),
     },
     skills: {
       skillCards: form.skillCards.filter(

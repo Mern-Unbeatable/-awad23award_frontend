@@ -164,7 +164,9 @@ export interface SolutionCard {
 
 export interface OutcomeItem {
   color: "emerald" | "purple" | "amber";
-  text: string;
+  text?: string;
+  textEn?: string;
+  textAr?: string;
 }
 
 export interface SkillCard {
@@ -250,6 +252,8 @@ export interface GalleryItem {
   outcomeItems?: OutcomeItem[];
   recognitionImageUrl?: string;
   recognitionLabel?: string;
+  recognitionLabelEn?: string;
+  recognitionLabelAr?: string;
 
   // Key Skills
   skillCards?: SkillCard[];

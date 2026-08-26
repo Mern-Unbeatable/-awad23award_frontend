@@ -427,7 +427,8 @@ interface PortfolioForm {
   solutionArchBodyAr: string;
   outcomeItems: OutcomeItem[];
   recognitionImageUrl: string;
-  recognitionLabel: string;
+  recognitionLabelEn: string;
+  recognitionLabelAr: string;
   skillCards: SkillCard[];
 }
 
@@ -515,9 +516,10 @@ const EMPTY_FORM: PortfolioForm = {
   solutionArchTitleAr: "",
   solutionArchBodyEn: "",
   solutionArchBodyAr: "",
-  outcomeItems: [{ color: "emerald", text: "" }],
+  outcomeItems: [{ color: "emerald", textEn: "", textAr: "" }],
   recognitionImageUrl: "",
-  recognitionLabel: "",
+  recognitionLabelEn: "",
+  recognitionLabelAr: "",
   skillCards: [{ num: "1", category: "", title: "", body: "" }],
 };
 
@@ -603,10 +605,15 @@ function formFromItem(item: GalleryItem): PortfolioForm {
     solutionArchBodyEn: item.solutionArchBodyEn || item.solutionArchBody || "",
     solutionArchBodyAr: item.solutionArchBodyAr || item.solutionArchBody || "",
     outcomeItems: item.outcomeItems?.length
-      ? item.outcomeItems
+      ? item.outcomeItems.map((outcomeItem) => ({
+          color: outcomeItem.color,
+          textEn: outcomeItem.textEn ?? outcomeItem.text ?? "",
+          textAr: outcomeItem.textAr ?? outcomeItem.text ?? "",
+        }))
       : EMPTY_FORM.outcomeItems,
     recognitionImageUrl: item.recognitionImageUrl || "",
-    recognitionLabel: item.recognitionLabel || "",
+    recognitionLabelEn: item.recognitionLabelEn || item.recognitionLabel || "",
+    recognitionLabelAr: item.recognitionLabelAr || item.recognitionLabel || "",
     skillCards: item.skillCards?.length
       ? item.skillCards
       : EMPTY_FORM.skillCards,
@@ -666,7 +673,7 @@ function isSolutionCardEmpty(card: SolutionCard): boolean {
 }
 
 function isOutcomeItemEmpty(item: OutcomeItem): boolean {
-  return isBlank(item.text);
+  return isBlank(item.textEn ?? item.text) && isBlank(item.textAr);
 }
 
 function isSkillCardEmpty(card: SkillCard): boolean {
@@ -746,8 +753,13 @@ function validatePortfolioForm(form: PortfolioForm): {
 
   form.outcomeItems.forEach((item, idx) => {
     if (isOutcomeItemEmpty(item)) return;
-    if (isBlank(item.text)) errors[`outcomeItems.${idx}.text`] = REQUIRED_MSG;
+    if (isBlank(item.textEn ?? item.text))
+      errors[`outcomeItems.${idx}.textEn`] = REQUIRED_MSG;
+    if (isBlank(item.textAr)) errors[`outcomeItems.${idx}.textAr`] = REQUIRED_MSG;
   });
+
+  if (isBlank(form.recognitionLabelEn)) errors.recognitionLabelEn = REQUIRED_MSG;
+  if (isBlank(form.recognitionLabelAr)) errors.recognitionLabelAr = REQUIRED_MSG;
 
   form.skillCards.forEach((card, idx) => {
     if (isSkillCardEmpty(card)) return;
@@ -868,8 +880,13 @@ function validatePortfolioStep(
       errors.outcomeItems = "Add 3 outcome items to continue.";
     }
     form.outcomeItems.forEach((item, idx) => {
-      if (isBlank(item.text)) errors[`outcomeItems.${idx}.text`] = REQUIRED_MSG;
+      if (isBlank(item.textEn ?? item.text))
+        errors[`outcomeItems.${idx}.textEn`] = REQUIRED_MSG;
+      if (isBlank(item.textAr))
+        errors[`outcomeItems.${idx}.textAr`] = REQUIRED_MSG;
     });
+    if (isBlank(form.recognitionLabelEn)) errors.recognitionLabelEn = REQUIRED_MSG;
+    if (isBlank(form.recognitionLabelAr)) errors.recognitionLabelAr = REQUIRED_MSG;
     return errors;
   }
 
@@ -2363,7 +2380,11 @@ export function PortfolioPage() {
               <button
                 type="button"
                 onClick={() =>
-                  addItem("outcomeItems", { color: "emerald", text: "" })
+                  addItem("outcomeItems", {
+                    color: "emerald",
+                    textEn: "",
+                    textAr: "",
+                  })
                 }
                 className="relative text-[12px] font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer border-2 border-red-500 rounded-lg px-3 py-1.5 bg-red-50"
               >
@@ -2373,7 +2394,8 @@ export function PortfolioPage() {
             )}
           </div>
           <p className="text-[12px] text-slate-400 mb-3">
-            Add 3 outcome items in total. Each item needs outcome text.
+            Add 3 outcome items in total. Each item needs outcome text in EN
+            and AR.
           </p>
           <FieldError message={fieldErrors.outcomeItems} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2411,20 +2433,45 @@ export function PortfolioPage() {
                     Remove
                   </button>
                 </div>
-                <textarea
-                  className={fieldTextareaCls(
-                    Boolean(fieldErrors[`outcomeItems.${idx}.text`]),
-                  )}
-                  rows={3}
-                  placeholder="Outcome paragraph"
-                  value={item.text}
-                  onChange={(e) =>
-                    updateItem<OutcomeItem>("outcomeItems", idx, {
-                      text: e.target.value,
-                    })
-                  }
-                />
-                <FieldError message={fieldErrors[`outcomeItems.${idx}.text`]} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`outcomeItems.${idx}.textEn`]),
+                      )}
+                      rows={3}
+                      placeholder="Body Text (EN)"
+                      value={item.textEn ?? item.text ?? ""}
+                      onChange={(e) =>
+                        updateItem<OutcomeItem>("outcomeItems", idx, {
+                          textEn: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`outcomeItems.${idx}.textEn`]}
+                    />
+                  </div>
+                  <div>
+                    <textarea
+                      className={fieldTextareaCls(
+                        Boolean(fieldErrors[`outcomeItems.${idx}.textAr`]),
+                      )}
+                      rows={3}
+                      dir="rtl"
+                      placeholder="Body Text (AR)"
+                      value={item.textAr ?? ""}
+                      onChange={(e) =>
+                        updateItem<OutcomeItem>("outcomeItems", idx, {
+                          textAr: e.target.value,
+                        })
+                      }
+                    />
+                    <FieldError
+                      message={fieldErrors[`outcomeItems.${idx}.textAr`]}
+                    />
+                  </div>
+                </div>
               </div>
             ))}
             {form.outcomeItems.length < 3 &&
@@ -2434,7 +2481,11 @@ export function PortfolioPage() {
                     key={`outcome-add-slot-${slot}`}
                     type="button"
                     onClick={() =>
-                      addItem("outcomeItems", { color: "emerald", text: "" })
+                      addItem("outcomeItems", {
+                        color: "emerald",
+                        textEn: "",
+                        textAr: "",
+                      })
                     }
                     className="min-h-55 rounded-xl border-2 border-dashed border-red-500 bg-red-50/50 hover:bg-red-50 flex flex-col items-center justify-center gap-2 cursor-pointer text-red-600 transition-colors"
                   >
@@ -2454,12 +2505,27 @@ export function PortfolioPage() {
         />
 
         <Field label="Recognition Label">
-          <input
-            className={inputCls}
-            value={form.recognitionLabel}
-            onChange={(e) => setField("recognitionLabel", e.target.value)}
-            placeholder="Formal Letter of Recognition"
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <input
+                className={inputCls}
+                value={form.recognitionLabelEn}
+                onChange={(e) => setField("recognitionLabelEn", e.target.value)}
+                placeholder="Recognition Label (EN)"
+              />
+              <FieldError message={fieldErrors.recognitionLabelEn} />
+            </div>
+            <div>
+              <input
+                className={inputCls}
+                dir="rtl"
+                value={form.recognitionLabelAr}
+                onChange={(e) => setField("recognitionLabelAr", e.target.value)}
+                placeholder="Recognition Label (AR)"
+              />
+              <FieldError message={fieldErrors.recognitionLabelAr} />
+            </div>
+          </div>
         </Field>
       </div>
     );
