@@ -1059,8 +1059,9 @@ export function CaseStudyPage() {
                                   ) : (
                                     <span />
                                   )}
-                                  <span className="text-[#36BFFB] font-semibold">
-                                    Verified
+                                  <span className="inline-flex items-center gap-1.5 text-[#36BFFB] font-semibold">
+                                    <CheckCircle2 className="w-6 h-6" />
+                                    <span className="sr-only">Verified</span>
                                   </span>
                                 </div>
                               )}
