@@ -847,9 +847,9 @@ export function CaseStudyPage() {
                               <div
                                 className={`flex items-center justify-between pt-4 border-t text-[12px] ${colors.divider}`}
                               >
-                                <span className="text-emerald-700 font-semibold flex items-center gap-1.5">
+                                {/* <span className="text-emerald-700 font-semibold flex items-center gap-1.5">
                                   ✓ Live in CRM 2.0
-                                </span>
+                                </span> */}
                                 <span className="text-[#36BFFB] font-semibold flex items-center gap-1">
                                   View Specs{" "}
                                   <ExternalLink className="w-3.5 h-3.5" />
