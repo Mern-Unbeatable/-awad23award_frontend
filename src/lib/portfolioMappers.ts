@@ -8,12 +8,6 @@ import type {
   SolutionCard,
 } from "../types";
 
-type LegacyApproachCard = ApproachCard & {
-  title?: string;
-  body?: string;
-  bullets?: string[];
-};
-
 /** Tab-grouped portfolio payload — matches Postman /gallery canonical shape */
 export interface PortfolioOverviewTab {
   titleEn: string;
@@ -113,37 +107,13 @@ function splitBodyLines(value?: string): string[] {
 }
 
 function normalizeApproachCard(card: ApproachCard): ApproachCard {
-  const legacyCard = card as LegacyApproachCard;
-  const titleEn = legacyCard.titleEn ?? legacyCard.title ?? "";
-  const titleAr = legacyCard.titleAr ?? legacyCard.title ?? "";
-  const bodyEn =
-    legacyCard.bodyEn ??
-    legacyCard.body ??
-    legacyCard.bullets?.join("\n") ??
-    "";
-  const bodyAr =
-    legacyCard.bodyAr ??
-    legacyCard.body ??
-    legacyCard.bullets?.join("\n") ??
-    "";
-  const bulletsEn = card.bulletsEn?.length
-    ? card.bulletsEn
-    : legacyCard.bullets?.length
-      ? legacyCard.bullets
-      : splitBodyLines(bodyEn);
-  const bulletsAr = card.bulletsAr?.length
-    ? card.bulletsAr
-    : legacyCard.bullets?.length
-      ? legacyCard.bullets
-      : splitBodyLines(bodyAr);
-
   return {
-    titleEn,
-    titleAr,
-    bodyEn,
-    bodyAr,
-    bulletsEn,
-    bulletsAr,
+    titleEn: card.titleEn ?? "",
+    titleAr: card.titleAr ?? "",
+    bodyEn: card.bodyEn ?? "",
+    bodyAr: card.bodyAr ?? "",
+    bulletsEn: card.bulletsEn ?? splitBodyLines(card.bodyEn),
+    bulletsAr: card.bulletsAr ?? splitBodyLines(card.bodyAr),
   };
 }
 

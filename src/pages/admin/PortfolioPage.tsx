@@ -1610,7 +1610,7 @@ export function PortfolioPage() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] text-slate-400 font-semibold mb-1">
                       Body (EN)
@@ -1631,6 +1631,7 @@ export function PortfolioPage() {
                       message={fieldErrors[`approachCards.${idx}.bodyEn`]}
                     />
                   </div>
+
                   <div>
                     <label className="block text-[11px] text-slate-400 font-semibold mb-1">
                       Body (AR)
@@ -1651,8 +1652,8 @@ export function PortfolioPage() {
                     <FieldError
                       message={fieldErrors[`approachCards.${idx}.bodyAr`]}
                     />
-                  </div>
-                </div>
+                  </div>     
+                </div> */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] text-slate-400 font-semibold mb-1">

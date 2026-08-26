@@ -215,12 +215,12 @@ export function CaseStudyPage() {
   );
   const approachCards = (item.approachCards ?? []).filter(
     (card) =>
-      hasValue(card.titleEn ?? card.title) ||
+      hasValue(card.titleEn) ||
       hasValue(card.titleAr) ||
-      hasValue(card.bodyEn ?? card.body) ||
+      hasValue(card.bodyEn) ||
       hasValue(card.bodyAr) ||
-      cleanArray(card.bulletsEn ?? card.bullets).length > 0 ||
-      cleanArray(card.bulletsAr ?? card.bullets).length > 0,
+      cleanArray(card.bulletsEn).length > 0 ||
+      cleanArray(card.bulletsAr).length > 0,
   );
   const approachInsight = cleanText(
     locale === "ar"
@@ -538,40 +538,32 @@ export function CaseStudyPage() {
                           </div>
                           {cleanText(
                             locale === "ar"
-                              ? (card.titleAr ?? card.titleEn ?? card.title)
-                              : (card.titleEn ?? card.titleAr ?? card.title),
+                              ? (card.titleAr ?? "")
+                              : (card.titleEn ?? ""),
                           ) && (
                             <h4 className="text-[20px] font-serif font-bold mb-4 text-[#0F2E25]">
                               {cleanText(
                                 locale === "ar"
-                                  ? (card.titleAr ?? card.titleEn ?? card.title)
-                                  : (card.titleEn ??
-                                      card.titleAr ??
-                                      card.title),
+                                  ? (card.titleAr ?? "")
+                                  : (card.titleEn ?? ""),
                               )}
                             </h4>
                           )}
                           <ul className="space-y-3 text-[14px] text-slate-600">
                             {(cleanArray(
                               locale === "ar"
-                                ? (card.bulletsAr ?? card.bullets)
-                                : (card.bulletsEn ?? card.bullets),
+                                ? (card.bulletsAr ?? [])
+                                : (card.bulletsEn ?? []),
                             ).length
                               ? cleanArray(
                                   locale === "ar"
-                                    ? (card.bulletsAr ?? card.bullets)
-                                    : (card.bulletsEn ?? card.bullets),
+                                    ? (card.bulletsAr ?? [])
+                                    : (card.bulletsEn ?? []),
                                 )
                               : cleanText(
                                   locale === "ar"
-                                    ? (card.bodyAr ??
-                                        card.bodyEn ??
-                                        card.body ??
-                                        "")
-                                    : (card.bodyEn ??
-                                        card.bodyAr ??
-                                        card.body ??
-                                        ""),
+                                    ? (card.bodyAr ?? "")
+                                    : (card.bodyEn ?? ""),
                                 )
                                   .split(/\r?\n/)
                                   .map((line) => line.trim())
