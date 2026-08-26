@@ -252,7 +252,9 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     approachInsightAr: item.approach.approachInsightAr ?? "",
     leadershipBodyEn: item.leadership.leadershipBodyEn,
     leadershipBodyAr: item.leadership.leadershipBodyAr,
-    leadershipCards: item.leadership.leadershipCards.map(normalizeLeadershipCard),
+    leadershipCards: item.leadership.leadershipCards.map(
+      normalizeLeadershipCard,
+    ),
     leadershipBannerStatEn:
       item.leadership.leadershipBannerStatEn ??
       item.leadership.leadershipBannerStat ??
@@ -271,9 +273,13 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     solutionCards: item.solution.solutionCards.map(normalizeSolutionCard),
     solutionArchImageUrl: item.solution.solutionArchImageUrl,
     solutionArchTitleEn:
-      item.solution.solutionArchTitleEn ?? item.solution.solutionArchTitle ?? "",
+      item.solution.solutionArchTitleEn ??
+      item.solution.solutionArchTitle ??
+      "",
     solutionArchTitleAr:
-      item.solution.solutionArchTitleAr ?? item.solution.solutionArchTitle ?? "",
+      item.solution.solutionArchTitleAr ??
+      item.solution.solutionArchTitle ??
+      "",
     solutionArchBodyEn:
       item.solution.solutionArchBodyEn ?? item.solution.solutionArchBody ?? "",
     solutionArchBodyAr:
@@ -469,34 +475,36 @@ export function portfolioFormToTabbedPayload(form: {
       solutionArchTitleAr: form.solutionArchTitleAr.trim(),
       solutionArchBodyEn: form.solutionArchBodyEn.trim(),
       solutionArchBodyAr: form.solutionArchBodyAr.trim(),
-      solutionCards: form.solutionCards.filter(
-        (c) =>
-          c.tagEn?.trim() ||
-          c.tagAr?.trim() ||
-          c.titleEn?.trim() ||
-          c.titleAr?.trim() ||
-          c.bodyEn?.trim() ||
-          c.bodyAr?.trim() ||
-          c.tag?.trim() ||
-          c.title?.trim() ||
-          c.body?.trim(),
-      ).map((c) => {
-        const tagEn = c.tagEn?.trim() || c.tag?.trim() || "";
-        const tagAr = c.tagAr?.trim() || c.tag?.trim() || "";
-        const titleEn = c.titleEn?.trim() || c.title?.trim() || "";
-        const titleAr = c.titleAr?.trim() || c.title?.trim() || "";
-        const bodyEn = c.bodyEn?.trim() || c.body?.trim() || "";
-        const bodyAr = c.bodyAr?.trim() || c.body?.trim() || "";
-        return {
-          color: c.color,
-          tagEn,
-          tagAr,
-          titleEn,
-          titleAr,
-          bodyEn,
-          bodyAr,
-        };
-      }),
+      solutionCards: form.solutionCards
+        .filter(
+          (c) =>
+            c.tagEn?.trim() ||
+            c.tagAr?.trim() ||
+            c.titleEn?.trim() ||
+            c.titleAr?.trim() ||
+            c.bodyEn?.trim() ||
+            c.bodyAr?.trim() ||
+            c.tag?.trim() ||
+            c.title?.trim() ||
+            c.body?.trim(),
+        )
+        .map((c) => {
+          const tagEn = c.tagEn?.trim() || c.tag?.trim() || "";
+          const tagAr = c.tagAr?.trim() || c.tag?.trim() || "";
+          const titleEn = c.titleEn?.trim() || c.title?.trim() || "";
+          const titleAr = c.titleAr?.trim() || c.title?.trim() || "";
+          const bodyEn = c.bodyEn?.trim() || c.body?.trim() || "";
+          const bodyAr = c.bodyAr?.trim() || c.body?.trim() || "";
+          return {
+            color: c.color,
+            tagEn,
+            tagAr,
+            titleEn,
+            titleAr,
+            bodyEn,
+            bodyAr,
+          };
+        }),
     },
     outcome: {
       recognitionImageUrl: form.recognitionImageUrl.trim(),

@@ -264,13 +264,25 @@ export function CaseStudyPage() {
   }
   const solutionArchTitle = cleanText(
     locale === "ar"
-      ? (item.solutionArchTitleAr ?? item.solutionArchTitleEn ?? item.solutionArchTitle ?? "")
-      : (item.solutionArchTitleEn ?? item.solutionArchTitleAr ?? item.solutionArchTitle ?? ""),
+      ? (item.solutionArchTitleAr ??
+          item.solutionArchTitleEn ??
+          item.solutionArchTitle ??
+          "")
+      : (item.solutionArchTitleEn ??
+          item.solutionArchTitleAr ??
+          item.solutionArchTitle ??
+          ""),
   );
   const solutionArchBody = cleanText(
     locale === "ar"
-      ? (item.solutionArchBodyAr ?? item.solutionArchBodyEn ?? item.solutionArchBody ?? "")
-      : (item.solutionArchBodyEn ?? item.solutionArchBodyAr ?? item.solutionArchBody ?? ""),
+      ? (item.solutionArchBodyAr ??
+          item.solutionArchBodyEn ??
+          item.solutionArchBody ??
+          "")
+      : (item.solutionArchBodyEn ??
+          item.solutionArchBodyAr ??
+          item.solutionArchBody ??
+          ""),
   );
 
   const outcomeItems = (item.outcomeItems ?? []).filter((item) =>
@@ -685,7 +697,10 @@ export function CaseStudyPage() {
                         const cardTitle = cleanText(
                           locale === "ar"
                             ? (card.titleAr ?? card.titleEn ?? card.title ?? "")
-                            : (card.titleEn ?? card.titleAr ?? card.title ?? ""),
+                            : (card.titleEn ??
+                                card.titleAr ??
+                                card.title ??
+                                ""),
                         );
                         const cardBody = cleanText(
                           locale === "ar"
@@ -757,7 +772,10 @@ export function CaseStudyPage() {
                         const cardTitle = cleanText(
                           locale === "ar"
                             ? (card.titleAr ?? card.titleEn ?? card.title ?? "")
-                            : (card.titleEn ?? card.titleAr ?? card.title ?? ""),
+                            : (card.titleEn ??
+                                card.titleAr ??
+                                card.title ??
+                                ""),
                         );
                         const cardBody = cleanText(
                           locale === "ar"

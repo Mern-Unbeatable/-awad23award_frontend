@@ -596,8 +596,10 @@ function formFromItem(item: GalleryItem): PortfolioForm {
         }))
       : EMPTY_FORM.solutionCards,
     solutionArchImageUrl: item.solutionArchImageUrl || "",
-    solutionArchTitleEn: item.solutionArchTitleEn || item.solutionArchTitle || "",
-    solutionArchTitleAr: item.solutionArchTitleAr || item.solutionArchTitle || "",
+    solutionArchTitleEn:
+      item.solutionArchTitleEn || item.solutionArchTitle || "",
+    solutionArchTitleAr:
+      item.solutionArchTitleAr || item.solutionArchTitle || "",
     solutionArchBodyEn: item.solutionArchBodyEn || item.solutionArchBody || "",
     solutionArchBodyAr: item.solutionArchBodyAr || item.solutionArchBody || "",
     outcomeItems: item.outcomeItems?.length
@@ -730,14 +732,16 @@ function validatePortfolioForm(form: PortfolioForm): {
     if (isSolutionCardEmpty(card)) return;
     if (isBlank(card.tagEn ?? card.tag))
       errors[`solutionCards.${idx}.tagEn`] = REQUIRED_MSG;
-    if (isBlank(card.tagAr)) errors[`solutionCards.${idx}.tagAr`] = REQUIRED_MSG;
+    if (isBlank(card.tagAr))
+      errors[`solutionCards.${idx}.tagAr`] = REQUIRED_MSG;
     if (isBlank(card.titleEn ?? card.title))
       errors[`solutionCards.${idx}.titleEn`] = REQUIRED_MSG;
     if (isBlank(card.titleAr))
       errors[`solutionCards.${idx}.titleAr`] = REQUIRED_MSG;
     if (isBlank(card.bodyEn ?? card.body))
       errors[`solutionCards.${idx}.bodyEn`] = REQUIRED_MSG;
-    if (isBlank(card.bodyAr)) errors[`solutionCards.${idx}.bodyAr`] = REQUIRED_MSG;
+    if (isBlank(card.bodyAr))
+      errors[`solutionCards.${idx}.bodyAr`] = REQUIRED_MSG;
   });
 
   form.outcomeItems.forEach((item, idx) => {
@@ -2031,7 +2035,9 @@ export function PortfolioPage() {
             <input
               className={inputCls}
               value={form.leadershipBannerStatEn}
-              onChange={(e) => setField("leadershipBannerStatEn", e.target.value)}
+              onChange={(e) =>
+                setField("leadershipBannerStatEn", e.target.value)
+              }
               placeholder="100% On Schedule"
             />
           </Field>
@@ -2040,7 +2046,9 @@ export function PortfolioPage() {
               className={inputCls}
               dir="rtl"
               value={form.leadershipBannerStatAr}
-              onChange={(e) => setField("leadershipBannerStatAr", e.target.value)}
+              onChange={(e) =>
+                setField("leadershipBannerStatAr", e.target.value)
+              }
               placeholder="%100 في الموعد"
             />
           </Field>
@@ -2163,7 +2171,9 @@ export function PortfolioPage() {
                     })
                   }
                 />
-                <FieldError message={fieldErrors[`solutionCards.${idx}.tagEn`]} />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.tagEn`]}
+                />
                 <input
                   className={fieldInputCls(
                     Boolean(fieldErrors[`solutionCards.${idx}.tagAr`]),
@@ -2177,7 +2187,9 @@ export function PortfolioPage() {
                     })
                   }
                 />
-                <FieldError message={fieldErrors[`solutionCards.${idx}.tagAr`]} />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.tagAr`]}
+                />
                 <input
                   className={fieldInputCls(
                     Boolean(fieldErrors[`solutionCards.${idx}.titleEn`]),
@@ -2190,7 +2202,9 @@ export function PortfolioPage() {
                     })
                   }
                 />
-                <FieldError message={fieldErrors[`solutionCards.${idx}.titleEn`]} />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.titleEn`]}
+                />
                 <input
                   className={fieldInputCls(
                     Boolean(fieldErrors[`solutionCards.${idx}.titleAr`]),
@@ -2204,7 +2218,9 @@ export function PortfolioPage() {
                     })
                   }
                 />
-                <FieldError message={fieldErrors[`solutionCards.${idx}.titleAr`]} />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.titleAr`]}
+                />
                 <textarea
                   className={fieldTextareaCls(
                     Boolean(fieldErrors[`solutionCards.${idx}.bodyEn`]),
@@ -2218,7 +2234,9 @@ export function PortfolioPage() {
                     })
                   }
                 />
-                <FieldError message={fieldErrors[`solutionCards.${idx}.bodyEn`]} />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.bodyEn`]}
+                />
                 <textarea
                   className={fieldTextareaCls(
                     Boolean(fieldErrors[`solutionCards.${idx}.bodyAr`]),
@@ -2233,7 +2251,9 @@ export function PortfolioPage() {
                     })
                   }
                 />
-                <FieldError message={fieldErrors[`solutionCards.${idx}.bodyAr`]} />
+                <FieldError
+                  message={fieldErrors[`solutionCards.${idx}.bodyAr`]}
+                />
               </div>
             ))}
             {form.solutionCards.length < 4 &&
@@ -2276,29 +2296,35 @@ export function PortfolioPage() {
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Architecture Title (EN)">
-              <input
-                className={inputCls}
+                <input
+                  className={inputCls}
                   value={form.solutionArchTitleEn}
-                  onChange={(e) => setField("solutionArchTitleEn", e.target.value)}
-              />
+                  onChange={(e) =>
+                    setField("solutionArchTitleEn", e.target.value)
+                  }
+                />
               </Field>
               <Field label="Architecture Title (AR)">
                 <input
                   className={inputCls}
                   dir="rtl"
                   value={form.solutionArchTitleAr}
-                  onChange={(e) => setField("solutionArchTitleAr", e.target.value)}
+                  onChange={(e) =>
+                    setField("solutionArchTitleAr", e.target.value)
+                  }
                 />
               </Field>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Architecture Body (EN)">
-              <textarea
-                className={textareaCls}
-                rows={3}
-                value={form.solutionArchBodyEn}
-                onChange={(e) => setField("solutionArchBodyEn", e.target.value)}
-              />
+                <textarea
+                  className={textareaCls}
+                  rows={3}
+                  value={form.solutionArchBodyEn}
+                  onChange={(e) =>
+                    setField("solutionArchBodyEn", e.target.value)
+                  }
+                />
               </Field>
               <Field label="Architecture Body (AR)">
                 <textarea
@@ -2306,7 +2332,9 @@ export function PortfolioPage() {
                   rows={3}
                   dir="rtl"
                   value={form.solutionArchBodyAr}
-                  onChange={(e) => setField("solutionArchBodyAr", e.target.value)}
+                  onChange={(e) =>
+                    setField("solutionArchBodyAr", e.target.value)
+                  }
                 />
               </Field>
             </div>
