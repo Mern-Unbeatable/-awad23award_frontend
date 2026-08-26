@@ -206,8 +206,8 @@ export function CaseStudyPage() {
   }
   const challengeCaption = cleanText(
     locale === "ar"
-      ? item.challengeCaptionAr ?? item.challengeCaption ?? ""
-      : item.challengeCaptionEn ?? item.challengeCaption ?? "",
+      ? (item.challengeCaptionAr ?? item.challengeCaption ?? "")
+      : (item.challengeCaptionEn ?? item.challengeCaption ?? ""),
   );
 
   const approachBody = cleanText(
@@ -434,13 +434,13 @@ export function CaseStudyPage() {
                           const Icon = iconName ? getIcon(iconName) : null;
                           const itemTitle = cleanText(
                             locale === "ar"
-                              ? ci.titleAr ?? ci.titleEn ?? ci.title
-                              : ci.titleEn ?? ci.title,
+                              ? (ci.titleAr ?? ci.titleEn ?? ci.title)
+                              : (ci.titleEn ?? ci.title),
                           );
                           const itemBody = cleanText(
                             locale === "ar"
-                              ? ci.bodyAr ?? ci.bodyEn ?? ci.body
-                              : ci.bodyEn ?? ci.body,
+                              ? (ci.bodyAr ?? ci.bodyEn ?? ci.body)
+                              : (ci.bodyEn ?? ci.body),
                           );
                           return (
                             <div

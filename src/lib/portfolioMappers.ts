@@ -165,9 +165,15 @@ export function tabbedToGalleryItem(raw: unknown): GalleryItem {
     challengeBodyAr: item.challenge.challengeBodyAr,
     challengeItems: item.challenge.challengeItems,
     challengeImageUrl: item.challenge.challengeImageUrl,
-    challengeCaption: item.challenge.challengeCaption ?? item.challenge.challengeCaptionEn ?? '',
-    challengeCaptionEn: item.challenge.challengeCaptionEn ?? item.challenge.challengeCaption ?? '',
-    challengeCaptionAr: item.challenge.challengeCaptionAr ?? '',
+    challengeCaption:
+      item.challenge.challengeCaption ??
+      item.challenge.challengeCaptionEn ??
+      "",
+    challengeCaptionEn:
+      item.challenge.challengeCaptionEn ??
+      item.challenge.challengeCaption ??
+      "",
+    challengeCaptionAr: item.challenge.challengeCaptionAr ?? "",
     challengeBadgeLabel: item.challenge.challengeBadgeLabel,
     approachBodyEn: item.approach.approachBodyEn,
     approachBodyAr: item.approach.approachBodyAr,
@@ -268,7 +274,8 @@ export function portfolioFormToTabbedPayload(form: {
       challengeBodyAr: form.challengeBodyAr.trim(),
       challengeBadgeLabel: form.challengeBadgeLabel.trim() || "CRITICAL",
       challengeImageUrl: form.challengeImageUrl.trim(),
-      challengeCaption: form.challengeCaptionEn.trim() || form.challengeCaption.trim(),
+      challengeCaption:
+        form.challengeCaptionEn.trim() || form.challengeCaption.trim(),
       challengeCaptionEn: form.challengeCaptionEn.trim(),
       challengeCaptionAr: form.challengeCaptionAr.trim(),
       challengeItems: form.challengeItems

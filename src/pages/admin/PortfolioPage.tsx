@@ -448,7 +448,17 @@ const EMPTY_FORM: PortfolioForm = {
   challengeHeadingAr: "",
   challengeBodyEn: "",
   challengeBodyAr: "",
-  challengeItems: [{ iconName: "AlertTriangle", title: "", titleEn: "", titleAr: "", body: "", bodyEn: "", bodyAr: "" }],
+  challengeItems: [
+    {
+      iconName: "AlertTriangle",
+      title: "",
+      titleEn: "",
+      titleAr: "",
+      body: "",
+      bodyEn: "",
+      bodyAr: "",
+    },
+  ],
   challengeImageUrl: "",
   challengeCaption: "",
   challengeCaptionEn: "",
