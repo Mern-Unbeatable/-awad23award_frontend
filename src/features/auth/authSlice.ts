@@ -1,23 +1,20 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   clearStoredSession,
   loadStoredSession,
   persistSession,
   persistTokens,
-} from '../../services/authStorage';
-import type { AuthUser } from './authTypes';
-import {
-  initializeAuth,
-  loginUser,
-  logoutUser,
-} from './authThunks';
+  persistUser,
+} from "../../services/authStorage";
+import type { AuthUser } from "./authTypes";
+import { initializeAuth, loginUser, logoutUser } from "./authThunks";
 
 export interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
-  status: 'idle' | 'loading' | 'initializing' | 'error';
+  status: "idle" | "loading" | "initializing" | "error";
   error: string | null;
   initialized: boolean;
 }
@@ -29,13 +26,13 @@ const initialState: AuthState = {
   accessToken: stored.accessToken,
   refreshToken: stored.refreshToken,
   isAuthenticated: Boolean(stored.accessToken),
-  status: 'idle',
+  status: "idle",
   error: null,
   initialized: false,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setTokens(
@@ -45,25 +42,33 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
-      persistTokens(
-        action.payload.accessToken,
-        action.payload.refreshToken,
-      );
+      persistTokens(action.payload.accessToken, action.payload.refreshToken);
     },
     clearAuth(state) {
       state.user = null;
       state.accessToken = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
-      state.status = 'idle';
+      state.status = "idle";
       state.error = null;
       clearStoredSession();
+    },
+    updateAuthUser(state, action: PayloadAction<Partial<AuthUser>>) {
+      if (!state.user) {
+        return;
+      }
+
+      state.user = {
+        ...state.user,
+        ...action.payload,
+      };
+      persistUser(state.user);
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
@@ -72,30 +77,30 @@ const authSlice = createSlice({
         state.accessToken = session.accessToken;
         state.refreshToken = session.refreshToken;
         state.isAuthenticated = true;
-        state.status = 'idle';
+        state.status = "idle";
         state.error = null;
         persistSession(session);
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.status = 'error';
+        state.status = "error";
         state.error =
-          (action.payload as string) || 'Invalid email or password.';
+          (action.payload as string) || "Invalid email or password.";
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.accessToken = null;
         state.refreshToken = null;
         state.isAuthenticated = false;
-        state.status = 'idle';
+        state.status = "idle";
         state.error = null;
         clearStoredSession();
       })
       .addCase(initializeAuth.pending, (state) => {
-        state.status = 'initializing';
+        state.status = "initializing";
       })
       .addCase(initializeAuth.fulfilled, (state, action) => {
         state.initialized = true;
-        state.status = 'idle';
+        state.status = "idle";
         const session = action.payload.session;
         if (session) {
           state.user = session.user;
@@ -111,10 +116,10 @@ const authSlice = createSlice({
       })
       .addCase(initializeAuth.rejected, (state) => {
         state.initialized = true;
-        state.status = 'idle';
+        state.status = "idle";
       });
   },
 });
 
-export const { setTokens, clearAuth } = authSlice.actions;
+export const { setTokens, clearAuth, updateAuthUser } = authSlice.actions;
 export default authSlice.reducer;
