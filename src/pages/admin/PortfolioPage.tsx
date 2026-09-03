@@ -746,10 +746,6 @@ function validatePortfolioForm(form: PortfolioForm): {
       errors[`approachCards.${idx}.titleEn`] = REQUIRED_MSG;
     if (isBlank(card.titleAr))
       errors[`approachCards.${idx}.titleAr`] = REQUIRED_MSG;
-    if (isBlank(card.bodyEn))
-      errors[`approachCards.${idx}.bodyEn`] = REQUIRED_MSG;
-    if (isBlank(card.bodyAr))
-      errors[`approachCards.${idx}.bodyAr`] = REQUIRED_MSG;
     if (!splitLines(card.bulletsEn).length)
       errors[`approachCards.${idx}.bulletsEn`] = REQUIRED_MSG;
     if (!splitLines(card.bulletsAr).length)
@@ -845,6 +841,7 @@ function validatePortfolioStep(
       errors.challengeItems = "Add 5 challenge items to continue.";
     }
     form.challengeItems.forEach((item, idx) => {
+      if (isChallengeItemEmpty(item)) return;
       if (isBlank(item.iconName))
         errors[`challengeItems.${idx}.iconName`] = REQUIRED_MSG;
       if (isBlank(item.titleEn ?? item.title))
@@ -864,14 +861,11 @@ function validatePortfolioStep(
       errors.approachCards = "Add 4 approach cards to continue.";
     }
     form.approachCards.forEach((card, idx) => {
+      if (isApproachCardEmpty(card)) return;
       if (isBlank(card.titleEn))
         errors[`approachCards.${idx}.titleEn`] = REQUIRED_MSG;
       if (isBlank(card.titleAr))
         errors[`approachCards.${idx}.titleAr`] = REQUIRED_MSG;
-      if (isBlank(card.bodyEn))
-        errors[`approachCards.${idx}.bodyEn`] = REQUIRED_MSG;
-      if (isBlank(card.bodyAr))
-        errors[`approachCards.${idx}.bodyAr`] = REQUIRED_MSG;
       if (!splitLines(card.bulletsEn).length)
         errors[`approachCards.${idx}.bulletsEn`] = REQUIRED_MSG;
       if (!splitLines(card.bulletsAr).length)
@@ -885,6 +879,7 @@ function validatePortfolioStep(
       errors.leadershipCards = "Add 4 leadership cards to continue.";
     }
     form.leadershipCards.forEach((card, idx) => {
+      if (isLeadershipCardEmpty(card)) return;
       if (isBlank(card.iconName))
         errors[`leadershipCards.${idx}.iconName`] = REQUIRED_MSG;
       if (isBlank(card.titleEn ?? card.title))
@@ -904,6 +899,7 @@ function validatePortfolioStep(
       errors.solutionCards = "Add 4 feature cards to continue.";
     }
     form.solutionCards.forEach((card, idx) => {
+      if (isSolutionCardEmpty(card)) return;
       if (isBlank(card.tagEn ?? card.tag))
         errors[`solutionCards.${idx}.tagEn`] = REQUIRED_MSG;
       if (isBlank(card.tagAr))
@@ -925,6 +921,7 @@ function validatePortfolioStep(
       errors.outcomeItems = "Add 3 outcome items to continue.";
     }
     form.outcomeItems.forEach((item, idx) => {
+      if (isOutcomeItemEmpty(item)) return;
       if (isBlank(item.textEn ?? item.text))
         errors[`outcomeItems.${idx}.textEn`] = REQUIRED_MSG;
       if (isBlank(item.textAr))
@@ -942,6 +939,7 @@ function validatePortfolioStep(
       errors.skillCards = "Add 7 skill cards to continue.";
     }
     form.skillCards.forEach((card, idx) => {
+      if (isSkillCardEmpty(card)) return;
       if (isBlank(card.num)) errors[`skillCards.${idx}.num`] = REQUIRED_MSG;
       if (isBlank(card.categoryEn ?? card.category))
         errors[`skillCards.${idx}.categoryEn`] = REQUIRED_MSG;
